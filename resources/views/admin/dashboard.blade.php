@@ -9,28 +9,50 @@
         </div>
     </div>
 
+    <!-- Card Box Section -->
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
+        <!-- Card Project -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
-                    <h5 class="card-title text-primary">Total Pegawai</h5>
-                    <p class="card-text fs-4 fw-semibold">120</p>
+                    <h5 class="card-title">Total Project</h5>
+                    <p class="card-text fs-4 fw-semibold">{{ $totalProyek }} Proyek</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
+
+        <!-- Card Team -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
-                    <h5 class="card-title text-success">Progress Aktif</h5>
-                    <p class="card-text fs-4 fw-semibold">8 Proyek</p>
+                    <h5 class="card-title">Total Tim</h5>
+                    <p class="card-text fs-4 fw-semibold">{{ $totalTim }} Tim</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
+
+        <!-- Card Produktivitas -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
-                    <h5 class="card-title text-warning">Pekerjaan Tertunda</h5>
-                    <p class="card-text fs-4 fw-semibold">3 Tugas</p>
+                    <h5 class="card-title">Produktivitas</h5>
+                    <p class="card-text fs-4 fw-semibold">{{ $totalProduktivitas }} Bobot</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Most Active -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
+                <div class="card-body">
+                    <h5 class="card-title">Most Active</h5>
+                    <p class="card-text fs-4 fw-semibold">
+                        @if ($mostActive)
+                            {{ $mostActive->nama }} ({{ $mostActive->jumlah_kegiatan }})
+                        @else
+                            Tidak ada data.
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
