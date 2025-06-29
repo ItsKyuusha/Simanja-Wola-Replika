@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\ProgressController as AdminProgressController;
 use App\Http\Controllers\Admin\PekerjaanController as AdminPekerjaanController;
 use App\Http\Controllers\Admin\MasterPegawaiController as AdminPegawaiController;
+use App\Http\Controllers\Admin\SupportController as AdminSupportController;
 
 // SUPERADMIN CONTROLLERS
 use App\Http\Controllers\Superadmin\ProgressController as SuperadminProgressController;
@@ -16,16 +17,13 @@ use App\Http\Controllers\Superadmin\MasterPegawaiController as SuperadminPegawai
 use App\Http\Controllers\Superadmin\MasterUserController;
 use App\Http\Controllers\Superadmin\MasterJenisPekerjaanController;
 use App\Http\Controllers\Superadmin\MasterJenisTimController;
+use App\Http\Controllers\Superadmin\SupportController as SuperadminSupportController;
 
 // =========================
 // AUTH ROUTES
 // =========================
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/', [AuthController::class, 'login']);
-
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // =========================
@@ -37,6 +35,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/progress', [AdminProgressController::class, 'index'])->name('progress');
     Route::get('/pekerjaan', [AdminPekerjaanController::class, 'index'])->name('pekerjaan');
     Route::get('/pegawai', [AdminPegawaiController::class, 'index'])->name('masterpegawai');
+    Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
 });
 
 // =========================
@@ -75,4 +74,6 @@ Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(fu
 
     Route::resource('/jenis-pekerjaan', MasterJenisPekerjaanController::class);
     Route::resource('/jenis-tim', MasterJenisTimController::class);
+
+    Route::get('/support', [SuperadminSupportController::class, 'index'])->name('support');
 });

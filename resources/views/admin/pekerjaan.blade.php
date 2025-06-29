@@ -16,8 +16,6 @@
                     <thead class="thead-dark text-center">
                         <tr>
                             <th>No</th>
-                            <th>Pegawai</th>
-                            <th>Tim</th>
                             <th>Tugas</th>
                             <th>Bobot</th>
                             <th>Asal</th>
@@ -25,20 +23,18 @@
                             <th>Realisasi</th>
                             <th>Satuan</th>
                             <th>Deadline</th>
-                            <th>Realisasi Tgl</th>
                             <th>Catatan</th>
+                            <th>Realisasi Tgl</th>
+                            <th>File</th>
                             <th>Nilai Kualitas</th>
                             <th>Nilai Kuantitas</th>
                             <th>Keterangan</th>
-                            <th>File</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($pekerjaan as $index => $item)
                             <tr>
                                 <td style="text-align:center">{{ $index + 1 }}</td>
-                                <td>{{ $item->user->nama ?? '-' }}</td>
-                                <td>{{ $item->user->tim->nama ?? '-' }}</td>
                                 <td>{{ $item->tugas }}</td>
                                 <td>{{ $item->bobot }}</td>
                                 <td>{{ $item->asal }}</td>
@@ -46,11 +42,8 @@
                                 <td>{{ $item->realisasi }}</td>
                                 <td>{{ $item->satuan }}</td>
                                 <td>{{ $item->deadline }}</td>
-                                <td>{{ $item->tanggal_realisasi }}</td>
                                 <td>{{ $item->catatan }}</td>
-                                <td>{{ $item->nilai_kualitas }}</td>
-                                <td>{{ $item->nilai_kuantitas }}</td>
-                                <td>{{ $item->keterangan }}</td>
+                                <td>{{ $item->tanggal_realisasi }}</td>
                                 <td>
                                     @if($item->file)
                                         <a href="{{ asset('storage/' . $item->file) }}" target="_blank" class="btn btn-link">
@@ -60,6 +53,9 @@
                                         <span>-</span>
                                     @endif
                                 </td>
+                                <td>{{ $item->nilai_kualitas }}</td>
+                                <td>{{ $item->nilai_kuantitas }}</td>
+                                <td>{{ $item->keterangan }}</td>
                             </tr>
                         @empty
                             <tr>

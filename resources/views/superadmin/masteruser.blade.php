@@ -23,15 +23,15 @@
         </div>
     @endif
 
-<!-- Form Pencarian dan Tambah User dalam Satu Baris -->
-<div class="d-flex mb-3">
-    <form method="GET" action="{{ route('superadmin.masteruser') }}" class="d-flex w-100">
-        <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="Cari pegawai..." aria-label="Cari Pegawai">
-        <button class="btn btn-primary" type="submit">Cari</button>
-    </form>
+    <!-- Form Pencarian dan Tambah User dalam Satu Baris -->
+    <div class="d-flex mb-3">
+        <form method="GET" action="{{ route('superadmin.masteruser') }}" class="d-flex w-100">
+            <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="Cari pegawai..." aria-label="Cari Pegawai">
+            <button class="btn btn-primary" type="submit">Cari</button>
+        </form>
 
-    <button class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#modalUser">+Tambah</button>
-</div>
+        <button class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#modalUser">+Tambah</button>
+    </div>
 
     <table class="table table-bordered small">
         <thead style="text-align:center">
@@ -84,7 +84,56 @@
 </div>
 
 {{-- MODAL TAMBAH --}}
-<!-- Modal content here... -->
+<div class="modal fade" id="modalUser" tabindex="-1" aria-labelledby="modalUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalUserLabel">Tambah Akun Pegawai</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('superadmin.masteruser.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="nama" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="nama" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nip" class="form-label">NIP</label>
+                        <input type="text" class="form-control" id="nip" name="nip" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="jabatan" class="form-label">Jabatan</label>
+                        <input type="text" class="form-control" id="jabatan" name="jabatan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tim_id" class="form-label">Tim Kerja</label>
+                        <select class="form-select" id="tim_id" name="tim_id" required>
+                            <option value="">Pilih Tim</option>
+                            @foreach($tims as $team)
+                                <option value="{{ $team->id }}">{{ $team->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="superadmin">Superadmin</option>
+                            <option value="admin">Admin</option>
+                            <!-- Add other roles if necessary -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {{-- SCRIPT UNTUK HANDLE EDIT --}}
 @push('scripts')

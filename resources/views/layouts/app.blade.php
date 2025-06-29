@@ -309,7 +309,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
+                            <a href="{{ route('superadmin.support') }}" class="nav-link {{ request()->routeIs('superadmin.support') ? 'active' : '' }}">
                                 <i class="fas fa-life-ring"></i> Support
                             </a>
                         </li>

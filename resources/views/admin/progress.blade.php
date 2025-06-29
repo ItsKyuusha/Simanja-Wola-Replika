@@ -15,7 +15,6 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Pegawai</th>
-                            <th>Tim</th>
                             <th>Tugas</th>
                             <th>Bobot</th>
                             <th>Asal</th>
@@ -34,7 +33,6 @@
                             <tr>
                                 <td style="text-align:center">{{ $index + 1 }}</td>
                                 <td>{{ $item->user->nama ?? '-' }}</td>
-                                <td>{{ $item->user->tim->nama ?? '-' }}</td>
                                 <td>{{ $item->tugas }}</td>
                                 <td>{{ $item->bobot }}</td>
                                 <td>{{ $item->asal }}</td>
@@ -69,9 +67,10 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Pegawai</th>
-                            <th>Tim</th>
+                            <th>NIP</th>
+                            <th>Kategori Bobot</th>
+                            <th>Total Bobot</th>
                             <th>Nilai Akhir</th>
-                            <th>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,13 +78,14 @@
                             <tr>
                                 <td style="text-align:center">{{ $index + 1 }}</td>
                                 <td>{{ $item->user->nama ?? '-' }}</td>
-                                <td>{{ $item->user->tim->nama ?? '-' }}</td>
-                                <td>{{ $item->nilai_akhir }}</td>
-                                <td>{{ $item->keterangan ?? '-' }}</td>
+                                <td>{{ $item->user->nip ?? '-' }}</td>
+                                <td>{{ $item->kategori_bobot }}</td>
+                                <td>{{ $item->total_bobot }}</td>
+                                <td>{{ $item->nilai_akhir ?? '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Tidak ada data nilai akhir.</td>
+                                <td colspan="6" class="text-center">Tidak ada data nilai akhir.</td>
                             </tr>
                         @endforelse
                     </tbody>
