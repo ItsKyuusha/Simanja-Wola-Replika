@@ -90,6 +90,32 @@
     </div>
 </div>
 
+{{-- MODAL EDIT --}}
+<div class="modal fade" id="modalEditTim" tabindex="-1" aria-labelledby="modalEditTimLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="formEditTim">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditTimLabel">Edit Jenis Tim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-nama" class="form-label">Nama Jenis Tim</label>
+                        <input type="text" class="form-control" id="edit-nama" name="nama" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 {{-- SCRIPT UNTUK HANDLE EDIT --}}
 @push('scripts')

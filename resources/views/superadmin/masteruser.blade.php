@@ -134,6 +134,61 @@
     </div>
 </div>
 
+{{-- MODAL EDIT --}}
+<div class="modal fade" id="modalEditUser" tabindex="-1" aria-labelledby="modalEditUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="formEditUser">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditUserLabel">Edit Akun Pegawai</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-nama" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="edit-nama" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-nip" class="form-label">NIP</label>
+                        <input type="text" class="form-control" id="edit-nip" name="nip" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-jabatan" class="form-label">Jabatan</label>
+                        <input type="text" class="form-control" id="edit-jabatan" name="jabatan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit-email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-tim_id" class="form-label">Tim Kerja</label>
+                        <select class="form-select" id="edit-tim_id" name="tim_id" required>
+                            <option value="">Pilih Tim</option>
+                            @foreach($tims as $team)
+                                <option value="{{ $team->id }}">{{ $team->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-role" class="form-label">Role</label>
+                        <select class="form-select" id="edit-role" name="role" required>
+                            <option value="superadmin">Superadmin</option>
+                            <option value="admin">Admin</option>
+                            <!-- Tambahkan role lain jika ada -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 {{-- SCRIPT UNTUK HANDLE EDIT --}}
 @push('scripts')

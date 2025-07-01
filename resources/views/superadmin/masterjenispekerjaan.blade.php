@@ -110,6 +110,45 @@
     </div>
 </div>
 
+{{-- MODAL EDIT --}}
+<div class="modal fade" id="modalEditPekerjaan" tabindex="-1" aria-labelledby="modalEditPekerjaanLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="formEditPekerjaan">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditPekerjaanLabel">Edit Jenis Pekerjaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-nama" class="form-label">Jenis Pekerjaan</label>
+                        <input type="text" class="form-control" id="edit-nama" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-satuan" class="form-label">Satuan</label>
+                        <input type="text" class="form-control" id="edit-satuan" name="satuan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-bobot" class="form-label">Bobot</label>
+                        <input type="number" class="form-control" id="edit-bobot" name="bobot" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-pemberi" class="form-label">Pemberi Pekerjaan</label>
+                        <input type="text" class="form-control" id="edit-pemberi" name="pemberi_pekerjaan" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 {{-- SCRIPT UNTUK HANDLE EDIT --}}
 @push('scripts')
 <script>
