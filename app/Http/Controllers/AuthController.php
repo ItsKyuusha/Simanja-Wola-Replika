@@ -23,9 +23,11 @@ class AuthController extends Controller
 
         if ($user->role === 'superadmin') {
             return redirect()->route('superadmin.dashboard');
-        } else {
+        } else if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
-        }
+        } else if ($user->role === 'user') {
+            return redirect()->route('user.dashboard');
+        } 
     }
 
         return back()->withErrors(['email' => 'Email atau password salah.']);

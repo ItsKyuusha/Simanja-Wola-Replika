@@ -16,7 +16,7 @@
             <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-project-diagram me-2"></i>Total Project</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalProyek }} Proyek</p>
+                    <p class="card-text fs-8 fw-semibold">{{ $totalProject }} Proyek</p>
                 </div>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Tim</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalTim }} Tim</p>
+                    <p class="card-text fs-8 fw-semibold">{{ $totalTeam }} Tim</p>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Produktivitas</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalProduktivitas }} Bobot</p>
+                    <p class="card-text fs-8 fw-semibold">{{ $totalPegawai }} Bobot</p>
                 </div>
             </div>
         </div>
@@ -46,13 +46,6 @@
             <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-trophy me-2"></i>Most Active</h5>
-                    <p class="card-text fs-8 fw-semibold">
-                        @if ($mostActive)
-                            {{ $mostActive->nama }} ({{ $mostActive->jumlah_kegiatan }})
-                        @else
-                            Tidak ada data.
-                        @endif
-                    </p>
                 </div>
             </div>
         </div>
@@ -90,9 +83,16 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($jumlahKegiatan as $item)
                                 <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data pekerjaan.</td>
+                                    <td>{{ $item->nama }}</td>
+                                    <td class="text-center">{{ $item->tugas_count }}</td>
                                 </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">Tidak ada data.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -117,9 +117,16 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($bobotPerPegawai as $item)
                                 <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data pekerjaan.</td>
+                                    <td>{{ $item->nama }}</td>
+                                    <td class="text-center">{{ $item->total_bobot }}</td>
                                 </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">Tidak ada data.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -144,9 +151,16 @@
                                 </tr>
                             </thead>
                             <tbody>
+                               @forelse($nilaiKinerja as $item)
                                 <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data pekerjaan.</td>
+                                    <td>{{ $item->pegawai->nama }}</td>
+                                    <td class="text-center">{{ $item->nilai_akhir }}</td>
                                 </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">Tidak ada data.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -171,9 +185,16 @@
                                 </tr>
                             </thead>
                             <tbody>
+                               @forelse($persentaseSelesai as $item)
                                 <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data pekerjaan.</td>
+                                    <td>{{ $item->nama }}</td>
+                                    <td class="text-center">{{ $item->persen_selesai ?? 0 }}%</td>
                                 </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">Tidak ada data.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

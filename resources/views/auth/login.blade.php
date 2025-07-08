@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login</title>
+  <meta name="description" content="SIMANJA - Sistem Manajemen Kerja" />
+  <meta name="author" content="David Sugiarto" />
+  <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
   <!-- Bootstrap 5 CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Custom CSS for styling -->

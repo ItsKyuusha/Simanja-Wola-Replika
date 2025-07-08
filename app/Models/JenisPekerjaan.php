@@ -3,13 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class JenisPekerjaan extends Model
 {
-    use HasFactory;
+    protected $fillable = ['nama_pekerjaan', 'satuan', 'bobot', 'pemberi_pekerjaan', 'tim_id'];
 
-    protected $fillable = ['nama', 'satuan', 'bobot', 'pemberi_pekerjaan'];
+    public function tugas()
+    {
+        return $this->hasMany(Tugas::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class, 'tim_id');
+    }
+
 }
-
-

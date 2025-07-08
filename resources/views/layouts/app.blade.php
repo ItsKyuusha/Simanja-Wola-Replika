@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <title>{{ ucfirst(Auth::user()->role ?? '') }} Panel | SIMANJA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="KyuuMedica - Sistem Manajemen Kesehatan" />
+    <meta name="description" content="SIMANJA - Sistem Manajemen Kerja" />
     <meta name="author" content="David Sugiarto" />
     <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
 
@@ -204,24 +204,24 @@
             <!-- Navigation Menu -->
             <ul class="nav flex-column">
                 @auth
-                    @if (Auth::user()->role === 'admin')
+                    @if (Auth::user()->role === 'superadmin')
                         <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}"
-                                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('superadmin.dashboard') }}"
+                                class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
                                 <i class="fas fa-tachometer-alt"></i> Dashboard
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('admin.progress') }}"
-                                class="nav-link {{ request()->routeIs('admin.progress') ? 'active' : '' }}">
+                            <a href="{{ route('superadmin.progress.index') }}"
+                                class="nav-link {{ request()->routeIs('superadmin.progress.index') ? 'active' : '' }}">
                                 <i class="fas fa-chart-line"></i> Progress
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('admin.pekerjaan') }}"
-                                class="nav-link {{ request()->routeIs('admin.pekerjaan') ? 'active' : '' }}">
+                            <a href="{{ route('superadmin.pekerjaan.index') }}"
+                                class="nav-link {{ request()->routeIs('superadmin.pekerjaan.index') ? 'active' : '' }}">
                                 <i class="fas fa-briefcase"></i> Pekerjaan
                             </a>
                         </li>
@@ -234,8 +234,73 @@
                             </a>
                             <ul class="nav nav-treeview ps-4">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.masterpegawai') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('admin.masterpegawai') ? 'active' : '' }}">
+                                    <a href="{{ route('superadmin.master_user.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.master_user.index') ? 'active' : '' }}">
+                                        <i class="fas fa-users nav-icon me-2"></i>
+                                        <p class="mb-0">User</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('superadmin.jenis-pekerjaan.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.jenis-pekerjaan.index') ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon me-2"></i>
+                                        <p class="mb-0">Jenis Pekerjaan</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('superadmin.pegawai.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.pegawai.index') ? 'active' : '' }}">
+                                        <i class="fas fa-user-tie nav-icon me-2"></i>
+                                        <p class="mb-0">Pegawai</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('superadmin.jenis-tim.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.jenis-tim.index') ? 'active' : '' }}">
+                                        <i class="fas fa-users-cog nav-icon me-2"></i>
+                                        <p class="mb-0">Jenis Tim</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('superadmin.support') }}" class="nav-link {{ request()->routeIs('superadmin.support') ? 'active' : '' }}">
+                                <i class="fas fa-life-ring"></i> Support
+                            </a>
+                        </li>
+                    @elseif (Auth::user()->role === 'admin')
+                        <li class="nav-item">
+                            <a href="{{ route('admin.dashboard') }}"
+                                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('admin.progress.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.progress.index') ? 'active' : '' }}">
+                                <i class="fas fa-chart-line"></i> Progress
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('admin.pekerjaan.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.pekerjaan.index') ? 'active' : '' }}">
+                                <i class="fas fa-briefcase"></i> Pekerjaan
+                            </a>
+                        </li>
+
+                        <li class="nav-item has-treeview {{ request()->is('master*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link d-flex align-items-center {{ request()->is('master*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-cogs"></i>
+                                <p class="mb-0 flex-grow-1"> Master</p>
+                                <i class="right fas fa-angle-left"></i>
+                            </a>
+                            <ul class="nav nav-treeview ps-4">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.pegawai.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('admin.pegawai.index') ? 'active' : '' }}">
                                         <i class="fas fa-users nav-icon me-2"></i>
                                         <p class="mb-0">Pegawai</p>
                                     </a>
@@ -248,24 +313,17 @@
                                 <i class="fas fa-life-ring"></i> Support
                             </a>
                         </li>
-                    @elseif (Auth::user()->role === 'superadmin')
+                    @elseif (Auth::user()->role === 'user')
                         <li class="nav-item">
-                            <a href="{{ route('superadmin.dashboard') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('user.dashboard') }}"
+                                class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
                                 <i class="fas fa-tachometer-alt"></i> Dashboard
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('superadmin.progress') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.progress') ? 'active' : '' }}">
-                                <i class="fas fa-chart-line"></i> Progress
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('superadmin.pekerjaan') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.pekerjaan') ? 'active' : '' }}">
+                            <a href="{{ route('user.pekerjaan.index') }}"
+                                class="nav-link {{ request()->routeIs('user.pekerjaan.index') ? 'active' : '' }}">
                                 <i class="fas fa-briefcase"></i> Pekerjaan
                             </a>
                         </li>
@@ -278,38 +336,17 @@
                             </a>
                             <ul class="nav nav-treeview ps-4">
                                 <li class="nav-item">
-                                    <a href="{{ route('superadmin.masteruser') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.masteruser') ? 'active' : '' }}">
+                                    <a href="{{ route('user.pegawai.index') }}"
+                                        class="nav-link d-flex align-items-center {{ request()->routeIs('user.pegawai.index') ? 'active' : '' }}">
                                         <i class="fas fa-users nav-icon me-2"></i>
-                                        <p class="mb-0">User</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.masterjenispekerjaan') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.masterjenispekerjaan') ? 'active' : '' }}">
-                                        <i class="fas fa-tasks nav-icon me-2"></i>
-                                        <p class="mb-0">Jenis Pekerjaan</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.masterpegawai') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.masterpegawai') ? 'active' : '' }}">
-                                        <i class="fas fa-user-tie nav-icon me-2"></i>
                                         <p class="mb-0">Pegawai</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.masterjenistim') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.masterjenistim') ? 'active' : '' }}">
-                                        <i class="fas fa-users-cog nav-icon me-2"></i>
-                                        <p class="mb-0">Jenis Tim</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ route('superadmin.support') }}" class="nav-link {{ request()->routeIs('superadmin.support') ? 'active' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
                                 <i class="fas fa-life-ring"></i> Support
                             </a>
                         </li>
@@ -325,7 +362,7 @@
                     Selamat datang di SIMANJA, Sistem Manajemen Kerja !
                 </div>
                 <div class="user-info d-flex align-items-center gap-2">
-                    <strong>{{ ucfirst(Auth::user()->nama ?? 'User') }}</strong>
+                    <strong>{{ ucfirst(Auth::user()->name ?? 'User') }}</strong>
                     <form action="{{ route('logout') }}" method="POST" class="mb-0">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline-light text-dark" title="Logout">

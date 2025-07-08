@@ -4,20 +4,28 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 
+// SUPERADMIN CONTROLLERS
+use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
+use App\Http\Controllers\Superadmin\JenisPekerjaanController;
+use App\Http\Controllers\Superadmin\JenisTimController;
+use App\Http\Controllers\Superadmin\PegawaiController;
+use App\Http\Controllers\Superadmin\ProgressController;
+use App\Http\Controllers\Superadmin\PekerjaanController;
+use App\Http\Controllers\Superadmin\UserController;
+use App\Http\Controllers\Superadmin\SupportController as SuperadminSupportController;
+
 // ADMIN CONTROLLERS
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProgressController as AdminProgressController;
 use App\Http\Controllers\Admin\PekerjaanController as AdminPekerjaanController;
-use App\Http\Controllers\Admin\MasterPegawaiController as AdminPegawaiController;
+use App\Http\Controllers\Admin\PegawaiController as AdminPegawaiController;
 use App\Http\Controllers\Admin\SupportController as AdminSupportController;
 
-// SUPERADMIN CONTROLLERS
-use App\Http\Controllers\Superadmin\ProgressController as SuperadminProgressController;
-use App\Http\Controllers\Superadmin\PekerjaanController as SuperadminPekerjaanController;
-use App\Http\Controllers\Superadmin\MasterPegawaiController as SuperadminPegawaiController;
-use App\Http\Controllers\Superadmin\MasterUserController;
-use App\Http\Controllers\Superadmin\MasterJenisPekerjaanController;
-use App\Http\Controllers\Superadmin\MasterJenisTimController;
-use App\Http\Controllers\Superadmin\SupportController as SuperadminSupportController;
+// USER CONTROLLERS
+use App\Http\Controllers\User\DashboardController as UserDashboardController;
+use App\Http\Controllers\User\PekerjaanController as UserPekerjaanController;
+use App\Http\Controllers\User\PegawaiController as UserPegawaiController;
+use App\Http\Controllers\User\SupportController as UserSupportController;
 
 // =========================
 // AUTH ROUTES
@@ -29,51 +37,72 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // =========================
 // ADMIN PANEL ROUTES
 // =========================
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-
-    Route::get('/progress', [AdminProgressController::class, 'index'])->name('progress');
-    Route::get('/pekerjaan', [AdminPekerjaanController::class, 'index'])->name('pekerjaan');
-    Route::get('/pegawai', [AdminPegawaiController::class, 'index'])->name('masterpegawai');
-    Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('pegawai', [AdminPegawaiController::class, 'index'])->name('pegawai.index');
+    Route::get('pekerjaan', [AdminPekerjaanController::class, 'index'])->name('pekerjaan.index');
+    Route::get('pekerjaan/create', [AdminPekerjaanController::class, 'create'])->name('pekerjaan.create');
+    Route::post('pekerjaan', [AdminPekerjaanController::class, 'store'])->name('pekerjaan.store');
+    Route::put('pekerjaan/{id}', [AdminPekerjaanController::class, 'update'])->name('pekerjaan.update');
+    Route::delete('pekerjaan{id}', [AdminPekerjaanController::class, 'destroy'])->name('pekerjaan.destroy');
+    Route::get('progress', [AdminProgressController::class, 'index'])->name('progress.index');
 });
+
 
 // =========================
 // SUPERADMIN PANEL ROUTES
 // =========================
-Route::middleware(['auth'])->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'superadmin'])->name('dashboard');
+Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:superadmin'])->group(function () {
+        // Dashboard Route
+        Route::get('dashboard', [SuperadminDashboardController::class, 'index'])
+            ->name('dashboard');
 
-    Route::get('/progress', [SuperadminProgressController::class, 'index'])->name('progress');
-    Route::get('/pekerjaan', [SuperadminPekerjaanController::class, 'index'])->name('pekerjaan');
-    Route::get('/pegawai', [SuperadminPegawaiController::class, 'index'])->name('masterpegawai');
+        // User Routes
+        Route::get('user', [UserController::class, 'index'])->name('master_user.index');
+        Route::post('user/create', [UserController::class, 'create'])->name('master_user.create');
+        Route::post('user', [UserController::class, 'store'])->name('master_user.store');
+        Route::put('user/{id}', [UserController::class, 'update'])->name('master_user.update');
+        Route::delete('user/{id}', [UserController::class, 'destroy'])->name('master_user.destroy');
 
-    // web.php (dalam group prefix 'superadmin', name 'superadmin.')
-    Route::get('/masteruser', [MasterUserController::class, 'index'])->name('masteruser');
-    Route::post('/masteruser', [MasterUserController::class, 'store'])->name('masteruser.store');
-    Route::get('/masteruser/create', [MasterUserController::class, 'create'])->name('masteruser.create');
-    Route::get('/masteruser/{id}/edit', [MasterUserController::class, 'edit'])->name('masteruser.edit');
-    Route::put('/masteruser/{id}', [MasterUserController::class, 'update'])->name('masteruser.update');
-    Route::delete('/masteruser/{id}', [MasterUserController::class, 'destroy'])->name('masteruser.destroy');
+        // Jenis Pekerjaan Routes
+        Route::get('jenis-pekerjaan', [JenisPekerjaanController::class, 'index'])->name('jenis-pekerjaan.index');
+        Route::post('jenis-pekerjaan/create', [JenisPekerjaanController::class, 'create'])->name('jenis-pekerjaan.create');
+        Route::post('jenis-pekerjaan', [JenisPekerjaanController::class, 'store'])->name('jenis-pekerjaan.store');
+        Route::put('jenis-pekerjaan/{id}', [JenisPekerjaanController::class, 'update'])->name('jenis-pekerjaan.update');
+        Route::delete('jenis-pekerjaan/{id}', [JenisPekerjaanController::class, 'destroy'])->name('jenis-pekerjaan.destroy');
 
-    // web.php (dalam group prefix 'superadmin', name 'superadmin.')
-    Route::get('/masterjenistim', [MasterJenisTimController::class, 'index'])->name('masterjenistim');
-    Route::post('/masterjenistim', [MasterJenisTimController::class, 'store'])->name('masterjenistim.store');
-    Route::get('/masterjenistim/create', [MasterJenisTimController::class, 'create'])->name('masterjenistim.create');
-    Route::get('/masterjenistim/{id}/edit', [MasterJenisTimController::class, 'edit'])->name('masterjenistim.edit');
-    Route::put('/masterjenistim/{id}', [MasterJenisTimController::class, 'update'])->name('masterjenistim.update');
-    Route::delete('/masterjenistim/{id}', [MasterJenisTimController::class, 'destroy'])->name('masterjenistim.destroy');
+        // Jenis Tim Routes
+        Route::get('jenis-tim', [JenisTimController::class, 'index'])->name('jenis-tim.index');
+        Route::post('jenis-tim', [JenisTimController::class, 'store'])->name('jenis-tim.store');
+        Route::put('jenis-tim/{id}', [JenisTimController::class, 'update'])->name('jenis-tim.update');
+        Route::delete('jenis-tim/{id}', [JenisTimController::class, 'destroy'])->name('jenis-tim.destroy');
 
-    // web.php (dalam group prefix 'superadmin', name 'superadmin.')
-    Route::get('/masterjenispekerjaan', [MasterJenisPekerjaanController::class, 'index'])->name('masterjenispekerjaan');
-    Route::post('/masterjenispekerjaan', [MasterJenisPekerjaanController::class, 'store'])->name('masterjenispekerjaan.store');
-    Route::get('/masterjenispekerjaan/create', [MasterJenisPekerjaanController::class, 'create'])->name('masterjenispekerjaan.create');
-    Route::get('/masterjenispekerjaan/{id}/edit', [MasterJenisPekerjaanController::class, 'edit'])->name('masterjenispekerjaan.edit');
-    Route::put('/masterjenispekerjaan/{id}', [MasterJenisPekerjaanController::class, 'update'])->name('masterjenispekerjaan.update');
-    Route::delete('/masterjenispekerjaan/{id}', [MasterJenisPekerjaanController::class, 'destroy'])->name('masterjenispekerjaan.destroy');
+        // Pegawai Routes
+        Route::get('pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
 
-    Route::resource('/jenis-pekerjaan', MasterJenisPekerjaanController::class);
-    Route::resource('/jenis-tim', MasterJenisTimController::class);
+        // Progress Routes
+        Route::get('progress', [ProgressController::class, 'index'])->name('progress.index');
+        Route::get('progress/{id}', [ProgressController::class, 'show'])->name('progress.show');
 
-    Route::get('/support', [SuperadminSupportController::class, 'index'])->name('support');
+        // Pekerjaan Routes
+        Route::get('pekerjaan', [PekerjaanController::class, 'index'])->name('pekerjaan.index');
+        
+        Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+    });
+
+// =========================
+// USER PANEL ROUTES
+// =========================
+Route::prefix('user')->name('user.')->middleware(['auth', 'role:user'])->group(function () {
+    Route::get('dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('pekerjaan', [UserPekerjaanController::class, 'index'])->name('pekerjaan.index');
+    Route::post('pekerjaan/{id}/realisasi', [UserPekerjaanController::class, 'storeRealisasi'])->name('pekerjaan.realisasi');
+    Route::put('pekerjaan/{id}/realisasi', [UserPekerjaanController::class, 'updateRealisasi'])->name('pekerjaan.realisasi.update');
+
+    Route::get('pegawai', [UserPegawaiController::class, 'index'])->name('pegawai.index');
+    Route::get('/support', [UserSupportController::class, 'index'])->name('support');
 });
+
+
+
