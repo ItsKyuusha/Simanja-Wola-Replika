@@ -46,6 +46,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::put('pekerjaan/{id}', [AdminPekerjaanController::class, 'update'])->name('pekerjaan.update');
     Route::delete('pekerjaan{id}', [AdminPekerjaanController::class, 'destroy'])->name('pekerjaan.destroy');
     Route::get('progress', [AdminProgressController::class, 'index'])->name('progress.index');
+    Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
 });
 
 
@@ -78,7 +79,7 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
         Route::delete('jenis-tim/{id}', [JenisTimController::class, 'destroy'])->name('jenis-tim.destroy');
 
         // Pegawai Routes
-        Route::get('pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+        Route::get('pegawai', [PegawaiController::class, 'index'])->name('master_pegawai.index');
 
         // Progress Routes
         Route::get('progress', [ProgressController::class, 'index'])->name('progress.index');
@@ -87,7 +88,7 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
         // Pekerjaan Routes
         Route::get('pekerjaan', [PekerjaanController::class, 'index'])->name('pekerjaan.index');
         
-        Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+        Route::get('/support', [SuperadminSupportController::class, 'index'])->name('support');
     });
 
 // =========================

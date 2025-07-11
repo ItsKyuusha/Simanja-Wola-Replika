@@ -11,10 +11,26 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with(['pegawai.team'])->whereNotNull('pegawai_id')->get();
-        $teams = Team::all(); // untuk create modal
+        $search = $request->input('search');
+
+        $users = User::with(['pegawai.team'])
+            ->whereNotNull('pegawai_id')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhereHas('pegawai', function ($q2) use ($search) {
+                        $q2->where('nama', 'like', '%' . $search . '%')
+                            ->orWhere('nip', 'like', '%' . $search . '%');
+                    });
+                });
+            })
+            ->get();
+
+        $teams = Team::all();
+
         return view('superadmin.master_user.index', compact('users', 'teams'));
     }
 

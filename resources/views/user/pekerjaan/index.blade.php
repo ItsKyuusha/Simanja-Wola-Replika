@@ -2,25 +2,67 @@
 @section('title', 'Tugas Saya')
 
 @section('content')
-<h4>Daftar Tugas Anda</h4>
+<div class="card shadow-sm">
+  <div class="card-body">
+<h3>Daftar Tugas Anda</h3>
+
+<!-- Form Search -->
+<form method="GET" action="{{ route('user.pekerjaan.index') }}" class="row mb-4">
+  <!-- Search Berdasarkan Nama Tugas -->
+  <div class="col-md-4 mb-3">
+    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari Nama Tugas...">
+  </div>
+
+  <!-- Search Berdasarkan Jenis Pekerjaan -->
+  <div class="col-md-2 mb-2">
+    <input type="text" name="jenis_pekerjaan" value="{{ request('jenis_pekerjaan') }}" class="form-control" placeholder="Cari Jenis Pekerjaan...">
+  </div>
+
+  <!-- Search Berdasarkan Deadline -->
+  <div class="col-md-3 mb-2">
+    <input type="text" name="deadline" value="{{ request('deadline') }}" class="form-control" placeholder="Cari Deadline (e.g. 01 Jan - 31 Mar)">
+  </div>
+
+  <!-- Search Berdasarkan Status Pekerjaan -->
+  <div class="col-md-2 mb-2">
+    <select name="status" class="form-control">
+      <option value="">Pilih Status</option>
+      <option value="belum_dikerjakan" {{ request('status') == 'belum_dikerjakan' ? 'selected' : '' }}>Belum Dikerjakan</option>
+      <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+      <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+    </select>
+  </div>
+
+  <!-- Tombol Cari -->
+  <div class="col-md-1 mb-1">
+    <button type="submit" class="btn btn-primary w-100">Cari</button>
+  </div>
+</form>
+
 
 @forelse($tugas as $t)
 <div class="card mb-4">
   <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
     <strong>{{ $t->nama_tugas }} - {{ $t->jenisPekerjaan->nama_pekerjaan }}</strong>
 
+    <div>
     @if(!$t->realisasi)
-      <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalRealisasi{{ $t->id }}">
+        <span class="badge bg-secondary me-2">Belum Dikerjakan</span>
+        <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalRealisasi{{ $t->id }}">
         Isi Realisasi
-      </button>
-    @else
-      <div>
-        <span class="badge bg-success me-2">Sudah Dikerjakan</span>
-        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditRealisasi{{ $t->realisasi->id }}">
-          Edit Realisasi
         </button>
-      </div>
+    @elseif($t->realisasi->realisasi < $t->target)
+        <span class="badge bg-warning text-dark me-2">Ongoing</span>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditRealisasi{{ $t->realisasi->id }}">
+        Edit Realisasi
+        </button>
+    @else
+        <span class="badge bg-success me-2">Selesai Dikerjakan</span>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditRealisasi{{ $t->realisasi->id }}">
+        Edit Realisasi
+        </button>
     @endif
+    </div>
   </div>
   <div class="card-body">
     <p><strong>Target:</strong> {{ $t->target }} {{ $t->satuan }}</p>
@@ -141,6 +183,9 @@
   <div class="alert alert-info">
     Tidak ada tugas yang tersedia saat ini.
   </div>
+
+</div>
+</div>
 @endforelse
 
 @endsection

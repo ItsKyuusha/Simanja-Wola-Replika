@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>{{ ucfirst(Auth::user()->role ?? '') }} Panel | SIMANJA</title>
+    <title>{{ ucfirst(Auth::user()->role ?? '') }} Panel | WOLA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="SIMANJA - Sistem Manajemen Kerja" />
+    <meta name="description" content="WOLA - Workload Application" />
     <meta name="author" content="David Sugiarto" />
     <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
 
@@ -248,7 +248,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('superadmin.pegawai.index') }}"
+                                    <a href="{{ route('superadmin.master_pegawai.index') }}"
                                         class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.pegawai.index') ? 'active' : '' }}">
                                         <i class="fas fa-user-tie nav-icon me-2"></i>
                                         <p class="mb-0">Pegawai</p>
@@ -309,7 +309,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
+                            <a href="{{ route('admin.support') }}" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
                                 <i class="fas fa-life-ring"></i> Support
                             </a>
                         </li>
@@ -346,7 +346,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
+                            <a href="{{ route('user.support') }}" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
                                 <i class="fas fa-life-ring"></i> Support
                             </a>
                         </li>
@@ -359,7 +359,7 @@
         <div class="main-container">
             <div class="main-top-area d-flex justify-content-between align-items-center">
                 <div>
-                    Selamat datang di SIMANJA, Sistem Manajemen Kerja !
+                    Selamat datang di WOLA, Workload Application !
                 </div>
                 <div class="user-info d-flex align-items-center gap-2">
                     <strong>{{ ucfirst(Auth::user()->name ?? 'User') }}</strong>
@@ -376,7 +376,7 @@
             </main>
             <footer class="main-footer text-center py-3 bg-light border-top">
                 <div class="container">
-                    <span class="text-muted">© {{ date('Y') }} SIMANJA - Sistem Manajemen Kerja. All rights reserved.</span>
+                    <span class="text-muted">© {{ date('Y') }} WOLA - Workload Application. All rights reserved.</span>
                 </div>
             </footer>
         </div>

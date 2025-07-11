@@ -2,10 +2,19 @@
 @section('title', 'Progress Tugas')
 
 @section('content')
-<h4>Rekap Tugas Tim</h4>
+<div class="card shadow-sm">
+  <div class="card-body">
+<h3 class="mb-4">Rekap Tugas Tim</h3>
+{{-- Form Search --}}
+<form action="{{ route('admin.progress.index') }}" method="GET" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nama pegawai atau tugas..." value="{{ request('search') }}">
+    <button class="btn btn-outline-secondary" type="submit">Cari</button>
+  </div>
+</form>
 
-<table class="table table-bordered">
-  <thead>
+<table class="table table-bordered table-sm">
+  <thead class="table-primary text-center">
     <tr>
       <th>No.</th>
       <th>Nama Pegawai</th>
@@ -28,13 +37,13 @@
       <td>{{ $t->realisasi->nilai_kualitas ?? '-' }}</td>
       <td>{{ $t->realisasi->nilai_kuantitas ?? '-' }}</td>
       <td>
-          @if (!$t->realisasi)
-            Belum Dikerjakan
-          @elseif ($t->realisasi->realisasi < $t->target)
-            Ongoing
-          @else
-            Selesai Dikerjakan
-          @endif
+        @if (!$t->realisasi)
+            <span class="badge bg-secondary">Belum Dikerjakan</span>
+        @elseif ($t->realisasi->realisasi < $t->target)
+            <span class="badge bg-warning text-dark">Ongoing</span>
+        @else
+            <span class="badge bg-success">Selesai Dikerjakan</span>
+        @endif
       </td>
     </tr>
     @empty
@@ -44,4 +53,6 @@
     @endforelse
   </tbody>
 </table>
+</div>
+</div>
 @endsection

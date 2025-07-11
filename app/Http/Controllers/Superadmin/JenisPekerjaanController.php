@@ -9,10 +9,27 @@ use Illuminate\Http\Request;
 
 class JenisPekerjaanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = JenisPekerjaan::with('team')->get(); // relasi team
-        $teams = Team::all(); // untuk dropdown
+        $teams = Team::all(); // Untuk dropdown Tim
+
+        // Cek apakah ada parameter search, jika ada lakukan pencarian
+        $query = JenisPekerjaan::with('team');
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_pekerjaan', 'like', '%' . $search . '%')
+                  ->orWhere('satuan', 'like', '%' . $search . '%')
+                  ->orWhereHas('team', function($query) use ($search) {
+                      $query->where('nama_tim', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        // Ambil data yang sudah difilter berdasarkan pencarian
+        $data = $query->get();
+
         return view('superadmin.master_jenis_pekerjaan.index', compact('data', 'teams'));
     }
 

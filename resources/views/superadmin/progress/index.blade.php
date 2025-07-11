@@ -2,7 +2,8 @@
 @section('title', 'Progress Pegawai')
 
 @section('content')
-
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
 <h3 class="mb-3">Tabel Kinerja Pegawai</h3>
 
 <table class="table table-bordered table-sm">
@@ -26,7 +27,7 @@
   </thead>
   <tbody>
     @forelse($progress as $p)
-      @forelse($p->pegawai->tugas as $tugas)
+      @foreach($p->pegawai->tugas as $tugas)
         <tr>
           <td>{{ $loop->parent->iteration }}</td>
           <td>{{ $p->pegawai->nama }}</td>
@@ -49,11 +50,7 @@
             @endif
           </td>
         </tr>
-      @empty
-        <tr>
-          <td colspan="14" class="text-center">Tidak ada tugas yang tersedia untuk {{ $p->pegawai->nama }}</td>
-        </tr>
-      @endforelse
+      @endforeach
     @empty
       <tr>
         <td colspan="14" class="text-center">Tidak ada data kinerja pegawai.</td>
@@ -61,12 +58,15 @@
     @endforelse
   </tbody>
 </table>
+</div>
+</div>
 
-
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
 <h3 class="mb-3">Tabel Nilai Akhir Pegawai</h3>
 
 <table class="table table-bordered mb-5">
-  <thead>
+  <thead  class="table-primary text-center">
     <tr>
       <th>No.</th>
       <th>Nama Pegawai</th>
@@ -91,5 +91,7 @@
     @endforelse
   </tbody>
 </table>
+</div>
+</div>
 
 @endsection

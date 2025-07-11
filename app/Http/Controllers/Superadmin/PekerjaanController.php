@@ -4,46 +4,54 @@ namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tugas;
-use App\Models\Pegawai;
 use App\Models\Progress;
+use Carbon\Carbon;
 
 class PekerjaanController extends Controller
 {
     public function index()
     {
-        // Ambil semua pegawai + tugas + realisasi + jenis pekerjaan
-        $pegawais = Pegawai::with(['tugas.realisasi', 'tugas.jenisPekerjaan'])->get();
+        $query = Tugas::query();
 
-        foreach ($pegawais as $pegawai) {
-            $totalBobot = 0;
-            $totalNilai = 0;
-            $jumlahTugas = 0;
-
-            foreach ($pegawai->tugas as $tugas) {
-                if ($tugas->realisasi) {
-                    $bobot = $tugas->jenisPekerjaan->bobot ?? 0;
-                    $kualitas = $tugas->realisasi->nilai_kualitas ?? 0;
-                    $kuantitas = $tugas->realisasi->nilai_kuantitas ?? 0;
-                    $nilai = ($kualitas + $kuantitas) / 2;
-
-                    $totalBobot += $bobot;
-                    $totalNilai += $nilai;
-                    $jumlahTugas++;
-                }
-            }
-
-            $nilaiAkhir = $jumlahTugas > 0 ? round($totalNilai / $jumlahTugas, 2) : 0;
-
-            Progress::updateOrCreate(
-                ['pegawai_id' => $pegawai->id],
-                ['total_bobot' => $totalBobot, 'nilai_akhir' => $nilaiAkhir]
-            );
+        // Searching
+        if ($search = request('search')) {
+            $query->where('nama_tugas', 'like', '%' . $search . '%');
         }
 
-        // Ambil ulang semua progress dan pegawai setelah update
-        $progress = Progress::with(['pegawai.tugas.realisasi', 'pegawai.tugas.jenisPekerjaan'])->get();
+        // Filtering by deadline month and year
+        if ($deadlineMonth = request('deadline_month')) {
+            $query->whereMonth('deadline', $deadlineMonth);
+        }
 
-        return view('superadmin.pekerjaan.index', compact('progress'));
+        if ($deadlineYear = request('deadline_year')) {
+            $query->whereYear('deadline', $deadlineYear);
+        }
+
+        // Filtering by realisasi month and year
+        if ($realisasiMonth = request('realisasi_month')) {
+            $query->whereMonth('realisasi.tanggal_realisasi', $realisasiMonth);
+        }
+
+        if ($realisasiYear = request('realisasi_year')) {
+            $query->whereYear('realisasi.tanggal_realisasi', $realisasiYear);
+        }
+
+        // Sorting
+        if ($sortBy = request('sort_by')) {
+            $sortOrder = request('sort_order', 'asc');
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        // Execute the query
+        $tugas = $query->with(['jenisPekerjaan', 'realisasi'])->get();
+
+        // Calculate the summary data
+        $totalTugas = $tugas->count();
+        $tugasSelesai = $tugas->where('realisasi.realisasi', '>=', 100)->count();
+        $tugasOngoing = $tugas->where('realisasi.realisasi', '>', 0)->where('realisasi.realisasi', '<', 100)->count();
+        $tugasBelum = $totalTugas - $tugasSelesai - $tugasOngoing;
+        $persentaseSelesai = $totalTugas ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
+
+        return view('superadmin.pekerjaan.index', compact('tugas', 'totalTugas', 'tugasSelesai', 'tugasOngoing', 'tugasBelum', 'persentaseSelesai'));
     }
 }
-

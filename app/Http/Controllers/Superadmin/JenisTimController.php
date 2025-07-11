@@ -8,12 +8,21 @@ use Illuminate\Http\Request;
 
 class JenisTimController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = Team::all();
+        $search = $request->input('search');
+
+        $query = Team::query();
+
+        if ($search) {
+            $query->where('nama_tim', 'like', "%{$search}%");
+        }
+
+        $data = $query->get();
+
         return view('superadmin.jenis_tim.index', compact('data'));
     }
-
+    
     public function store(Request $request)
     {
         $request->validate(['nama_tim' => 'required']);

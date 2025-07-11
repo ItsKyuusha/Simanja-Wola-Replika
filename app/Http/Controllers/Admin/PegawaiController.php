@@ -12,8 +12,9 @@ class PegawaiController extends Controller
         $teamId = auth()->user()->pegawai->team_id;
 
         $pegawai = Pegawai::where('team_id', $teamId)->get();
+        $pegawaiGlobal = Pegawai::all();
 
-        return view('admin.pegawai.index', compact('pegawai'));
+        return view('admin.pegawai.index', compact('pegawai', 'pegawaiGlobal'));
     }
 }
 

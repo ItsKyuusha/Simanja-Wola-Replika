@@ -10,27 +10,31 @@ use Illuminate\Http\Request;
 
 class PekerjaanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teamId = auth()->user()->pegawai->team_id;
+        $search = $request->input('search');
 
-        $tugas = Tugas::whereHas('pegawai', fn($q) => $q->where('team_id', $teamId))
-                      ->with(['pegawai', 'jenisPekerjaan', 'realisasi'])
-                      ->get();
-                      
+        $tugas = Tugas::with(['pegawai', 'jenisPekerjaan', 'realisasi'])
+            ->whereHas('pegawai', function ($query) use ($teamId, $search) {
+                $query->where('team_id', $teamId);
+
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nip', 'like', "%{$search}%");
+                    });
+                }
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->orWhere('nama_tugas', 'like', "%{$search}%");
+            })
+            ->get();
+
         $pegawai = Pegawai::where('team_id', $teamId)->get();
         $jenisPekerjaan = JenisPekerjaan::all();
+
         return view('admin.pekerjaan.index', compact('tugas', 'pegawai', 'jenisPekerjaan'));
-    }
-
-    public function create()
-    {
-        $teamId = auth()->user()->pegawai->team_id;
-
-        $pegawai = Pegawai::where('team_id', $teamId)->get();
-        $jenisPekerjaan = JenisPekerjaan::all();
-
-        return view('admin.pekerjaan.create', compact('pegawai', 'jenisPekerjaan'));
     }
 
     public function store(Request $request)
@@ -40,12 +44,21 @@ class PekerjaanController extends Controller
             'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
             'target' => 'required|numeric',
-            'asal' => 'nullable|string',
             'satuan' => 'required|string',
-            'deadline' => 'required|date'
+            'deadline' => 'required|date',
         ]);
 
-        Tugas::create($request->all());
+        $asalInstruksi = auth()->user()->pegawai->team->nama_tim ?? 'Tidak diketahui';
+
+        Tugas::create([
+            'nama_tugas'         => $request->nama_tugas,
+            'pegawai_id'         => $request->pegawai_id,
+            'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
+            'target'             => $request->target,
+            'satuan'             => $request->satuan,
+            'asal'               => $asalInstruksi,
+            'deadline'           => $request->deadline,
+        ]);
 
         return redirect()->route('admin.pekerjaan.index')->with('success', 'Tugas berhasil ditambahkan.');
     }
@@ -57,13 +70,22 @@ class PekerjaanController extends Controller
             'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
             'target' => 'required|numeric',
-            'asal' => 'nullable|string',
             'satuan' => 'required|string',
-            'deadline' => 'required|date'
+            'deadline' => 'required|date',
         ]);
 
         $tugas = Tugas::findOrFail($id);
-        $tugas->update($request->all());
+        $asalInstruksi = auth()->user()->pegawai->team->nama_tim ?? 'Tidak diketahui';
+
+        $tugas->update([
+            'nama_tugas'         => $request->nama_tugas,
+            'pegawai_id'         => $request->pegawai_id,
+            'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
+            'target'             => $request->target,
+            'satuan'             => $request->satuan,
+            'asal'               => $asalInstruksi,
+            'deadline'           => $request->deadline,
+        ]);
 
         return redirect()->route('admin.pekerjaan.index')->with('success', 'Tugas berhasil diperbarui.');
     }
@@ -75,5 +97,4 @@ class PekerjaanController extends Controller
 
         return redirect()->route('admin.pekerjaan.index')->with('success', 'Tugas berhasil dihapus.');
     }
-
 }
