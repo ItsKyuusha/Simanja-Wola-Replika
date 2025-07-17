@@ -1,109 +1,104 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="SIMANJA - Sistem Manajemen Kerja" />
-  <meta name="author" content="David Sugiarto" />
   <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
-  <!-- Bootstrap 5 CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Custom CSS for styling -->
+  <title>Login - SIMANJA</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+
   <style>
-    body {
-      background-color: #1565c0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-      flex-direction: column; /* Menambahkan vertikal alignment */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
-    .logo {
-      display: block;
-      margin-bottom: 20px;
-      width: 250px; /* Ukuran logo */
-      height: auto;
-    }
-
-    .login-container {
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .login-container h2 {
-      margin-bottom: 20px;
-    }
-
-    .login-container .btn-primary {
-      background-color: #1565c0;
-      border-color: #1565c0;
-    }
-
-    .login-container .btn-primary:hover {
-      background-color: #0d47a1;
-      border-color: #0d47a1;
-    }
-
-    .alert {
-      margin-bottom: 20px;
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
     }
   </style>
 </head>
-<body>
-  <!-- Logo di luar form -->
-  <img src="{{ asset('logo.png') }}" alt="Logo" class="logo" />
 
-  <div class="login-container">
-    <h2 class="text-center mb-4">Login</h2>
+<body class="bg-gradient-to-br from-blue-800 via-blue-600 to-purple-800 min-h-screen flex items-center justify-center relative">
 
-    <!-- Error message -->
-    @if($errors->any())
-      <div class="alert alert-danger">{{ $errors->first() }}</div>
-    @endif
+  <x-loading-overlay />
 
-    <!-- Login Form -->
-    <form method="POST" action="{{ route('login') }}">
-      @csrf
-      <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          id="email"
-          name="email"
-          placeholder="Enter email"
-          required
-          autofocus
-        />
+  <!-- Logo kiri atas khusus mobile -->
+  <div class="absolute top-4 left-4 md:hidden z-20">
+    <img src="{{ asset('logo.png') }}" alt="Logo" class="w-24">
+  </div>
+
+  <!-- Kontainer Utama -->
+  <div
+    class="w-full max-w-6xl mx-auto px-4 md:px-0 flex flex-col md:grid md:grid-cols-2 items-center justify-center md:justify-start gap-y-4 md:gap-6 fade-in relative z-10 min-h-screen md:min-h-0">
+
+    <!-- Kiri: Deskripsi -->
+    <div
+      class="text-white pt-2 px-8 space-y-4 flex flex-col justify-center items-center text-center md:items-start md:text-left">
+      <img src="{{ asset('logo.png') }}" alt="Logo" class="w-32 hidden md:block">
+      <h2 class="text-3xl font-bold">Selamat Datang di <span class="text-yellow-300">WOLA</span></h2>
+      <p class="text-lg leading-relaxed hidden md:block max-w-xl">
+        Platform manajemen kinerja untuk BPS Kota Semarang. Membantu memantau dan meningkatkan kinerja secara efektif, efisien, dan transparan.
+      </p>
+    </div>
+
+    <!-- Kanan: Form Login -->
+    <div
+      class="backdrop-blur-md bg-white/20 border border-white/30 shadow-lg rounded-xl p-6 md:p-10 w-full max-w-md mx-auto text-white">
+      <h2 class="text-2xl font-bold mb-6 text-center">Masuk ke Akun Anda</h2>
+
+      @if($errors->any())
+      <div class="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
+        {{ $errors->first() }}
       </div>
+      @endif
 
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="password"
-          name="password"
-          placeholder="Enter password"
-          required
-        />
-      </div>
+      <form method="POST" action="{{ route('login') }}" onsubmit="showLoading()" class="space-y-5">
+        @csrf
 
-      <button type="submit" class="btn btn-primary w-100">Login</button>
-    </form>
+        <div>
+          <label for="email" class="block mb-1 font-medium text-white">Email</label>
+          <input type="email" id="email" name="email" required autofocus
+            class="w-full px-4 py-2 rounded bg-white/80 text-gray-800 border focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="nama@bps.go.id" />
+        </div>
 
-    <div class="mt-3 text-center">
-      <a href="">Forgot Your Password ?</a>
+        <div>
+          <label for="password" class="block mb-1 font-medium text-white">Password</label>
+          <input type="password" id="password" name="password" required
+            class="w-full px-4 py-2 rounded bg-white/80 text-gray-800 border focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="***********" />
+        </div>
+
+        <button type="submit"
+          class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-4 rounded transition duration-300 shadow-md hover:shadow-lg">
+          Login
+        </button>
+      </form>
+
+      <p class="mt-6 text-sm text-center text-white">
+        Lupa Password? <a href="https://wa.me/62895360000606" target="_blank" class="underline hover:text-yellow-300">Hubungi Admin via WhatsApp</a>
+      </p>
+
     </div>
   </div>
 
-  <!-- Bootstrap 5 JS Bundle (optional, for components that require JS) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+  </script>
+
 </body>
+
 </html>
