@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
 
 <head>
   <meta charset="UTF-8" />
@@ -7,8 +7,19 @@
   <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
   <title>Login - SIMANJA</title>
 
+  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FACC15',
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
     @keyframes fadeIn {
@@ -23,7 +34,7 @@
       }
     }
 
-    .animate-fade-in {
+    .fade-in {
       animation: fadeIn 0.5s ease-out forwards;
     }
   </style>
@@ -31,6 +42,7 @@
 
 <body class="bg-gradient-to-br from-blue-800 via-blue-600 to-purple-800 min-h-screen flex items-center justify-center relative">
 
+  <!-- Komponen Loading -->
   <x-loading-overlay />
 
   <!-- Logo kiri atas khusus mobile -->
@@ -58,9 +70,9 @@
       <h2 class="text-2xl font-bold mb-6 text-center">Masuk ke Akun Anda</h2>
 
       @if($errors->any())
-      <div class="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
-        {{ $errors->first() }}
-      </div>
+        <div class="bg-red-100 text-red-700 text-sm px-4 py-2 rounded mb-4">
+          {{ $errors->first() }}
+        </div>
       @endif
 
       <form method="POST" action="{{ route('login') }}" onsubmit="showLoading()" class="space-y-5">
@@ -87,15 +99,19 @@
       </form>
 
       <p class="mt-6 text-sm text-center text-white">
-        Lupa Password? <a href="https://wa.me/62895360000606" target="_blank" class="underline hover:text-yellow-300">Hubungi Admin via WhatsApp</a>
+        Lupa Password? <a href="https://wa.me/62895360000606" target="_blank"
+          class="underline hover:text-yellow-300">Hubungi Admin via WhatsApp</a>
       </p>
-
     </div>
   </div>
 
+  <!-- Script untuk tampilkan loading saat form disubmit -->
   <script>
     function showLoading() {
-      document.getElementById('loadingOverlay').classList.remove('hidden');
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('hidden');
+      }
     }
   </script>
 
