@@ -16,7 +16,7 @@ class WolaSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Super Admin',
+            'name' => 'Helmi Azkia',
             'email' => 'superadmin@bps.go.id',
             'password' => Hash::make('password'),
             'role' => 'superadmin',

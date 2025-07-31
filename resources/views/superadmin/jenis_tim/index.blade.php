@@ -1,107 +1,107 @@
 @extends('layouts.app')
-@section('title', 'Manajemen Jenis Tim')
+
+@section('page-title', 'Master | Jenis TIM')
+
 
 @section('content')
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h3 class="mb-4">Tabel Jenis Tim</h3>
+<div class="bg-white rounded-2xl shadow p-6 mb-12 border border-gray-200" x-data="{ openCreate: false, openEdit: null }">
+  <h3 class="text-2xl font-semibold text-gray-700 mb-4">📋 Tabel Jenis Tim</h3>
 
-    <div class="d-flex mb-3">
-      <form action="{{ route('superadmin.jenis-tim.index') }}" method="GET" class="d-flex flex-grow-1 me-3">
-        <input type="text" name="search" class="form-control" placeholder="Cari jenis tim..." value="{{ request('search') }}">
-        <button class="btn btn-outline-secondary ms-2" type="submit">Cari</button>
-      </form>
+  <!-- Form Pencarian & Tambah -->
+  <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+    <form action="{{ route('superadmin.jenis-tim.index') }}" method="GET" class="flex w-full md:w-auto gap-2">
+      <input type="text" name="search" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari jenis tim..." value="{{ request('search') }}">
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Cari</button>
+    </form>
 
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-        Tambah Jenis Tim
-      </button>
-    </div>
+    <button @click="openCreate = true" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+      Tambah Jenis Tim
+    </button>
+  </div>
 
-    {{-- Alert sukses --}}
-    @if(session('success'))
-      <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+  @if(session('success'))
+  <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-md">
+    {{ session('success') }}
+  </div>
+  @endif
 
-    {{-- Tabel --}}
-    <table class="table table-bordered table-sm">
-      <thead class="table-primary text-center">
-        <tr>
-          <th style="width: 5%">No</th>
-          <th>Jenis Tim</th>
-          <th style="width: 15%">Aksi</th>
+  <div class="overflow-x-auto border rounded-md">
+    <table class="min-w-full text-sm text-gray-800 border-collapse">
+      <thead class="bg-blue-100 text-gray-700 font-semibold">
+        <tr class="text-center text-xs uppercase tracking-wide">
+          <th class="px-4 py-3 border w-12">No</th>
+          <th class="px-4 py-3 border text-left">Jenis Tim</th>
+          <th class="px-4 py-3 border w-40">Aksi</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $tim)
-        <tr>
-          <td class="text-center">{{ $loop->iteration }}</td>
-          <td>{{ $tim->nama_tim }}</td>
-          <td class="text-center">
-            {{-- Edit --}}
-            <button class="btn btn-sm btn-warning"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editModal{{ $tim->id }}">
-              Edit
-            </button>
-
-            {{-- Delete --}}
-            <form action="{{ route('superadmin.jenis-tim.destroy', $tim->id) }}" method="POST" style="display:inline-block;">
+        <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100 transition duration-200">
+          <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
+          <td class="text-left px-4 py-2 border">{{ $tim->nama_tim }}</td>
+          <td class="px-4 py-2 border flex justify-center items-center gap-2">
+            <button @click="openEdit = {{ $tim->id }}" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1 rounded">Edit</button>
+            <form action="{{ route('superadmin.jenis-tim.destroy', $tim->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
               @csrf @method('DELETE')
-              <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus data ini?')">Hapus</button>
+              <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">Hapus</button>
             </form>
           </td>
         </tr>
 
-        {{-- Modal Edit --}}
-        <div class="modal fade" id="editModal{{ $tim->id }}" tabindex="-1" aria-labelledby="editLabel{{ $tim->id }}" aria-hidden="true">
-          <div class="modal-dialog">
-            <form action="{{ route('superadmin.jenis-tim.update', $tim->id) }}" method="POST">
-              @csrf @method('PUT')
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="editLabel{{ $tim->id }}">Edit Jenis Tim</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Modal Edit -->
+        <template x-if="openEdit === {{ $tim->id }}">
+          <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+              <button @click="openEdit = null" class="absolute top-2 right-3 text-gray-600 hover:text-red-500 text-2xl">&times;</button>
+              <h2 class="text-lg font-semibold mb-4">Edit Jenis Tim</h2>
+              <form action="{{ route('superadmin.jenis-tim.update', $tim->id) }}" method="POST">
+                @csrf @method('PUT')
+                <input type="text" name="nama_tim" value="{{ $tim->nama_tim }}" required
+                  class="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                <div class="flex justify-end gap-2">
+                  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan</button>
+                  <button type="button" @click="openEdit = null" class="border px-4 py-2 rounded">Batal</button>
                 </div>
-                <div class="modal-body">
-                  <input type="text" name="nama_tim" class="form-control" value="{{ $tim->nama_tim }}" required>
-                </div>
-                <div class="modal-footer">
-                  <button type="submit" class="btn btn-primary">Simpan</button>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
+        </template>
         @empty
         <tr>
-          <td colspan="3" class="text-center">Tidak ada data tim yang tersedia.</td>
+          <td colspan="3" class="text-center px-4 py-6 text-gray-500 italic">Tidak ada data tim yang tersedia.</td>
         </tr>
         @endforelse
       </tbody>
     </table>
   </div>
+  <!-- Modal Tambah -->
+  <template x-if="openCreate">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+        <button @click="openCreate = false" class="absolute top-2 right-3 text-gray-600 hover:text-red-500 text-2xl">&times;</button>
+        <h2 class="text-lg font-semibold mb-4">Tambah Jenis Tim</h2>
+        <form action="{{ route('superadmin.jenis-tim.store') }}" method="POST">
+          @csrf
+          <input type="text" name="nama_tim" required placeholder="Nama Jenis Tim"
+            class="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+          <div class="flex justify-end gap-2">
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Simpan</button>
+            <button type="button" @click="openCreate = false" class="border px-4 py-2 rounded">Batal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </template>
 </div>
 
-{{-- Modal Create --}}
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form action="{{ route('superadmin.jenis-tim.store') }}" method="POST">
-      @csrf
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="createLabel">Tambah Jenis Tim</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <input type="text" name="nama_tim" class="form-control" placeholder="Nama Jenis Tim" required>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Simpan</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
+
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('modalState', () => ({
+      openCreate: false,
+      openEdit: null,
+    }));
+  });
+</script>
 @endsection

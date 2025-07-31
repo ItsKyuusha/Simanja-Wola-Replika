@@ -18,17 +18,17 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
-
-        if ($user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
-        } else if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        } else if ($user->role === 'user') {
-            return redirect()->route('user.dashboard');
-        } 
-    }
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            session()->flash('show_welcome_popup', true);
+            if ($user->role === 'superadmin') {
+                return redirect()->route('superadmin.dashboard');
+            } else if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } else if ($user->role === 'user') {
+                return redirect()->route('user.dashboard');
+            }
+        }
 
         return back()->withErrors(['email' => 'Email atau password salah.']);
     }
@@ -42,4 +42,3 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 }
-

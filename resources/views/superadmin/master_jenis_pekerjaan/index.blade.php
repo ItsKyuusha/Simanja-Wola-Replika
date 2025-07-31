@@ -1,157 +1,141 @@
 @extends('layouts.app')
-@section('title', 'Manajemen Jenis Pekerjaan')
+
+
+@section('page-title', 'Master | Jenis Pekerjaan')
+
 
 @section('content')
-<div class="card mb-4 shadow-sm">
-  <div class="card-body">
-    <h3 class="mb-3">Tabel Jenis Pekerjaan</h3>
+<div x-data="{ openCreate: false, openEdit: null }" class="p-6 bg-white shadow rounded-xl">
 
-    <!-- Form Pencarian & Tombol Tambah -->
-    <div class="row mb-3 justify-content-end">
-      <div class="col-md-12 col-lg-12 d-flex justify-content-end">
-        <form method="GET" action="{{ route('superadmin.jenis-pekerjaan.index') }}" class="d-flex me-2 flex-grow-1">
-          <input type="text" name="search" class="form-control" placeholder="Cari nama pekerjaan..." value="{{ request('search') }}">
-          <button type="submit" class="btn btn-outline-secondary ms-2">Cari</button>
-        </form>
-        <button class="btn btn-primary text-nowrap" data-bs-toggle="modal" data-bs-target="#createModal">Tambah Jenis Pekerjaan</button>
-      </div>
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <h2 class="text-xl font-semibold text-gray-800">Tabel Jenis Pekerjaan</h2>
+
+    <div class="flex flex-wrap gap-2">
+      <!-- Search Form -->
+      <form method="GET" action="{{ route('superadmin.jenis-pekerjaan.index') }}" class="flex items-center gap-2">
+        <input type="text" name="search" class="border-gray-300 rounded px-3 py-2 w-48" placeholder="Cari nama pekerjaan..." value="{{ request('search') }}">
+        <button type="submit" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">Cari</button>
+      </form>
+
+      @if(auth()->user()?->role === 'superadmin')
+        <a href="{{ route('superadmin.jenis-pekerjaan.export') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Export Excel</a>
+      @endif
+
+      <button @click="openCreate = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">+ Tambah Jenis Pekerjaan</button>
     </div>
+  </div>
 
-    @if(session('success'))
-      <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+  <!-- Notifikasi -->
+  @if(session('success'))
+    <div class="mb-4 bg-green-100 text-green-800 px-4 py-2 rounded">{{ session('success') }}</div>
+  @endif
 
-    @if($errors->any())
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
-      </div>
-    @endif
+  @if($errors->any())
+    <div class="mb-4 bg-red-100 text-red-700 px-4 py-2 rounded">
+      <ul class="list-disc pl-5">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
 
-    <!-- Tabel Jenis Pekerjaan -->
-    <table class="table table-bordered table-sm">
-      <thead class="table-primary text-center">
+  <!-- Tabel -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-300 text-sm">
+      <thead class="bg-blue-50 text-blue-800 text-center font-semibold">
         <tr>
-          <th>No.</th>
-          <th>Nama</th>
-          <th>Satuan</th>
-          <th>Bobot</th>
-          <th>Pemberi Pekerjaan (Tim)</th>
-          <th>Aksi</th>
+          <th class="border px-3 py-2">No.</th>
+          <th class="border px-3 py-2">Nama</th>
+          <th class="border px-3 py-2">Satuan</th>
+          <th class="border px-3 py-2">Bobot</th>
+          <th class="border px-3 py-2">Tim</th>
+          <th class="border px-3 py-2">Aksi</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
-          <tr>
-            <td class="text-center">{{ $loop->iteration }}</td>
-            <td>{{ $item->nama_pekerjaan }}</td>
-            <td class="text-center">{{ $item->satuan }}</td>
-            <td class="text-center">{{ $item->bobot }}</td>
-            <td>{{ $item->team->nama_tim ?? '-' }}</td>
-            <td class="text-center">
-              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $item->id }}">Edit</button>
-              <form action="{{ route('superadmin.jenis-pekerjaan.destroy', $item->id) }}" method="POST" class="d-inline">
-                @csrf @method('DELETE')
-                <button class="btn btn-sm btn-danger" onclick="return confirm('Hapus jenis pekerjaan ini?')">Hapus</button>
-              </form>
-            </td>
-          </tr>
+        <tr class="even:bg-gray-50">
+          <td class="border px-3 py-2 text-center">{{ $loop->iteration }}</td>
+          <td class="border px-3 py-2">{{ $item->nama_pekerjaan }}</td>
+          <td class="border px-3 py-2 text-center">{{ $item->satuan }}</td>
+          <td class="border px-3 py-2 text-center">{{ $item->bobot }}</td>
+          <td class="border px-3 py-2">{{ $item->team->nama_tim ?? '-' }}</td>
+          <td class="border px-3 py-2 text-center space-x-2">
+            <button @click="openEdit = {{ $item->id }}" class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm">Edit</button>
+            <form action="{{ route('superadmin.jenis-pekerjaan.destroy', $item->id) }}" method="POST" class="inline">
+              @csrf @method('DELETE')
+              <button onclick="return confirm('Hapus jenis pekerjaan ini?')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Hapus</button>
+            </form>
+          </td>
+        </tr>
 
-          <!-- Edit Modal -->
-          <div class="modal fade" id="editModal{{ $item->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $item->id }}" aria-hidden="true">
-            <div class="modal-dialog">
+        <!-- Modal Edit -->
+        <template x-if="openEdit === {{ $item->id }}">
+          <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
+              <button @click="openEdit = null" class="absolute top-2 right-2 text-gray-500 text-2xl hover:text-red-500">&times;</button>
+              <h3 class="text-lg font-semibold mb-4">Edit Jenis Pekerjaan</h3>
               <form action="{{ route('superadmin.jenis-pekerjaan.update', $item->id) }}" method="POST">
                 @csrf @method('PUT')
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Edit Jenis Pekerjaan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-2">
-                      <label>Nama Pekerjaan</label>
-                      <input name="nama_pekerjaan" class="form-control" value="{{ $item->nama_pekerjaan }}" required>
-                    </div>
-                    <div class="mb-2">
-                      <label>Satuan</label>
-                      <input name="satuan" class="form-control" value="{{ $item->satuan }}" required>
-                    </div>
-                    <div class="mb-2">
-                      <label>Bobot</label>
-                      <input name="bobot" class="form-control" type="number" step="any" value="{{ $item->bobot }}" required>
-                    </div>
-                    <div class="mb-2">
-                      <label>Pemberi Pekerjaan (Tim)</label>
-                      <select name="tim_id" class="form-control" required>
-                        <option value="">-- Pilih Tim --</option>
-                        @foreach($teams as $team)
-                          <option value="{{ $team->id }}" {{ $item->tim_id == $team->id ? 'selected' : '' }}>
-                            {{ $team->nama_tim }}
-                          </option>
-                        @endforeach
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-success">Simpan Perubahan</button>
-                  </div>
+                <div class="grid grid-cols-1 gap-3">
+                  <input name="nama_pekerjaan" class="border rounded px-3 py-2" value="{{ $item->nama_pekerjaan }}" required>
+                  <input name="satuan" class="border rounded px-3 py-2" value="{{ $item->satuan }}" required>
+                  <input name="bobot" type="number" step="any" class="border rounded px-3 py-2" value="{{ $item->bobot }}" required>
+                  <select name="tim_id" class="border rounded px-3 py-2" required>
+                    <option value="">-- Pilih Tim --</option>
+                    @foreach($teams as $team)
+                      <option value="{{ $team->id }}" {{ $item->tim_id == $team->id ? 'selected' : '' }}>{{ $team->nama_tim }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                  <button type="button" @click="openEdit = null" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
+                  <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Simpan</button>
                 </div>
               </form>
             </div>
           </div>
+        </template>
         @empty
-          <tr>
-            <td colspan="6" class="text-center">Tidak ada data jenis pekerjaan yang tersedia.</td>
-          </tr>
+        <tr>
+          <td colspan="6" class="text-center text-gray-500 py-4">Tidak ada data jenis pekerjaan.</td>
+        </tr>
         @endforelse
       </tbody>
     </table>
   </div>
-</div>
 
-<!-- Create Modal -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form action="{{ route('superadmin.jenis-pekerjaan.store') }}" method="POST">
-      @csrf
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Tambah Jenis Pekerjaan</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-2">
-            <label>Nama Pekerjaan</label>
-            <input name="nama_pekerjaan" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Satuan</label>
-            <input name="satuan" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Bobot</label>
-            <input name="bobot" class="form-control" type="number" step="any" required>
-          </div>
-          <div class="mb-2">
-            <label>Pemberi Pekerjaan (Tim)</label>
-            <select name="tim_id" class="form-control" required>
+  <!-- Modal Create -->
+  <template x-if="openCreate">
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
+         <button @click="openCreate = false" class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+        <h3 class="text-lg font-semibold mb-4">Tambah Jenis Pekerjaan</h3>
+        <form action="{{ route('superadmin.jenis-pekerjaan.store') }}" method="POST">
+          @csrf
+          <div class="grid grid-cols-1 gap-3">
+            <input name="nama_pekerjaan" class="border rounded px-3 py-2" placeholder="Nama Pekerjaan" required>
+            <input name="satuan" class="border rounded px-3 py-2" placeholder="Satuan" required>
+            <input name="bobot" type="number" step="any" class="border rounded px-3 py-2" placeholder="Bobot" required>
+            <select name="tim_id" class="border rounded px-3 py-2" required>
               <option value="">-- Pilih Tim --</option>
               @foreach($teams as $team)
                 <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
               @endforeach
             </select>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button class="btn btn-primary">Simpan</button>
-        </div>
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" @click="openCreate = false" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
+    </div>
+  </template>
 </div>
+
 @endsection
+
+@section('body-attrs', 'x-data')

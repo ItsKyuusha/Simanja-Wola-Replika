@@ -1,427 +1,189 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full bg-gray-100">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>{{ ucfirst(Auth::user()->role ?? '') }} Panel | WOLA</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="WOLA - Workload Application" />
-    <meta name="author" content="David Sugiarto" />
-    <link rel="shortcut icon" href="{{ asset('logo BPS only.png') }}" type="image/x-icon" />
+    <meta charset="UTF-8">
+    <title>{{ ucfirst(Auth::user()->role ?? 'User') }} Panel | WOLA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('logo BPS only.png') }}">
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <!-- Tailwind CSS & Alpine.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Font Awesome -->
+    <!-- Font & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <!-- Toastr -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #bbdefb);
-            margin: 0;
-            min-height: 100vh;
-        }
-
-        /* Navbar atas full-width */
-        header.navbar-top {
-            width: 100%;
-            background-color: #1565c0;
-            color: #e3f2fd;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 30px;
-            box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        header.navbar-top .brand {
-            font-weight: 700;
-            font-size: 1.3rem;
-            user-select: none;
-        }
-
-        header.navbar-top .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 600;
-        }
-
-        header.navbar-top .btn-logout {
-            background: transparent;
-            border: none;
-            color: #e3f2fd;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        header.navbar-top .btn-logout:hover {
-            color: #ffffff;
-        }
-
-        /* Container utama: sidebar kiri + main kanan */
-        .container-main {
-            display: flex;
-            min-height: calc(100vh - 60px); /* 60px navbar height */
-            flex-wrap: nowrap;
-        }
-
-        /* Sidebar kiri */
-        aside.sidebar {
-            width: 260px;
-            background-color: #1565c0;
-            padding: 30px 20px 20px 20px;
-            color: #e3f2fd;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Logo */
-        .sidebar .logo {
-            max-width: 180px;
-            margin: 0 auto 30px auto;
-            display: block;
-        }
-
-        /* Sidebar Heading */
-        .sidebar h4 {
-            font-weight: 600;
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        /* Sidebar Navigation */
-        .sidebar .nav-link {
-            transition: all 0.2s ease;
-            padding: 10px 15px;
-            border-radius: 10px;
-            color: #e3f2fd;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar .nav-link i {
-            font-size: 1rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .sidebar .nav-link:hover {
-            background-color: #1e88e5;
-            color: #fff;
-        }
-
-        .sidebar .nav-link.active {
-            background-color: #ffffff;
-            color: #1565c0 !important;
-            font-weight: 600;
-        }
-
-        /* Main content kanan */
-        .main-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
-            min-width: 0;
-        }
-
-        /* Area atas di main content */
-        .main-top-area {
-            padding: 20px 30px;
-            background-color: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #333;
-        }
-
-        /* Main content area */
-        main.main-content {
-            padding: 40px 30px;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .container-main {
-                flex-direction: column;
-                min-height: auto;
-            }
-
-            aside.sidebar {
-                width: 100%;
-                height: auto;
-                padding: 20px;
-                box-shadow: none;
-            }
-
-            .main-container {
-                order: 2;
-            }
-
-            .main-top-area {
-                padding: 15px 20px;
-                font-size: 1rem;
-            }
-
-            main.main-content {
-                padding: 20px;
-            }
         }
     </style>
-
-    @stack('styles')
 </head>
 
-<body>
-    <div class="container-main">
-        <!-- Sidebar kiri -->
-        <aside class="sidebar">
-            <img src="{{ asset('logo.png') }}" alt="KyuuMedica Logo" class="logo" />
+<body class="h-full" x-data="userModal()">
 
-            <h4>{{ ucfirst(Auth::user()->role ?? 'Guest') }} Dashboard</h4>
-            <hr class="text-light" />
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-60 bg-blue-800 text-white flex flex-col px-8 py-10 fixed inset-y-0 left-0 z-40">
+            <div class="mb-6 text-center border-b border-blue-600 pb-10">
+                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-40 mx-auto">
+            </div>
 
-            <!-- Navigation Menu -->
-            <ul class="nav flex-column">
-                @auth
-                    @if (Auth::user()->role === 'superadmin')
-                        <li class="nav-item">
-                            <a href="{{ route('superadmin.dashboard') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
+            <nav class="space-y-1 text-sm">
+                @if(Auth::user()->role === 'superadmin')
+                    {{-- Menu Superadmin --}}
+                    <a href="{{ route('superadmin.dashboard') }}" class="{{ request()->routeIs('superadmin.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-home w-5"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </a>
+                    <a href="{{ route('superadmin.progress.index') }}" class="{{ request()->routeIs('superadmin.progress.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="ml-3">Progress</span>
+                    </a>
+                    <a href="{{ route('superadmin.pekerjaan.index') }}" class="{{ request()->routeIs('superadmin.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-briefcase w-5"></i>
+                        <span class="ml-3">Pekerjaan</span>
+                    </a>
 
-                        <li class="nav-item">
-                            <a href="{{ route('superadmin.progress.index') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.progress.index') ? 'active' : '' }}">
-                                <i class="fas fa-chart-line"></i> Progress
-                            </a>
-                        </li>
+                    {{-- Dropdown Master --}}
+                    @php
+                        $isMasterRoute = request()->is('master*') || request()->routeIs(
+                            'superadmin.master_user.index',
+                            'superadmin.jenis-pekerjaan.index',
+                            'superadmin.master_pegawai.index',
+                            'superadmin.jenis-tim.index'
+                        );
+                    @endphp
 
-                        <li class="nav-item">
-                            <a href="{{ route('superadmin.pekerjaan.index') }}"
-                                class="nav-link {{ request()->routeIs('superadmin.pekerjaan.index') ? 'active' : '' }}">
-                                <i class="fas fa-briefcase"></i> Pekerjaan
-                            </a>
-                        </li>
-
-                        <li class="nav-item has-treeview {{ request()->is('master*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link d-flex align-items-center {{ request()->is('master*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-cogs"></i>
-                                <p class="mb-0 flex-grow-1"> Master</p>
-                                <i class="right fas fa-angle-left"></i>
-                            </a>
-                            <ul class="nav nav-treeview ps-4">
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.master_user.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.master_user.index') ? 'active' : '' }}">
-                                        <i class="fas fa-users nav-icon me-2"></i>
-                                        <p class="mb-0">User</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.jenis-pekerjaan.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.jenis-pekerjaan.index') ? 'active' : '' }}">
-                                        <i class="fas fa-tasks nav-icon me-2"></i>
-                                        <p class="mb-0">Jenis Pekerjaan</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.master_pegawai.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.pegawai.index') ? 'active' : '' }}">
-                                        <i class="fas fa-user-tie nav-icon me-2"></i>
-                                        <p class="mb-0">Pegawai</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('superadmin.jenis-tim.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('superadmin.jenis-tim.index') ? 'active' : '' }}">
-                                        <i class="fas fa-users-cog nav-icon me-2"></i>
-                                        <p class="mb-0">Jenis Tim</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('superadmin.support') }}" class="nav-link {{ request()->routeIs('superadmin.support') ? 'active' : '' }}">
-                                <i class="fas fa-life-ring"></i> Support
-                            </a>
-                        </li>
-                    @elseif (Auth::user()->role === 'admin')
-                        <li class="nav-item">
-                            <a href="{{ route('admin.dashboard') }}"
-                                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('admin.progress.index') }}"
-                                class="nav-link {{ request()->routeIs('admin.progress.index') ? 'active' : '' }}">
-                                <i class="fas fa-chart-line"></i> Progress
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('admin.pekerjaan.index') }}"
-                                class="nav-link {{ request()->routeIs('admin.pekerjaan.index') ? 'active' : '' }}">
-                                <i class="fas fa-briefcase"></i> Pekerjaan
-                            </a>
-                        </li>
-
-                        <li class="nav-item has-treeview {{ request()->is('master*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link d-flex align-items-center {{ request()->is('master*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-cogs"></i>
-                                <p class="mb-0 flex-grow-1"> Master</p>
-                                <i class="right fas fa-angle-left"></i>
-                            </a>
-                            <ul class="nav nav-treeview ps-4">
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.pegawai.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('admin.pegawai.index') ? 'active' : '' }}">
-                                        <i class="fas fa-users nav-icon me-2"></i>
-                                        <p class="mb-0">Pegawai</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('admin.support') }}" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
-                                <i class="fas fa-life-ring"></i> Support
-                            </a>
-                        </li>
-                    @elseif (Auth::user()->role === 'user')
-                        <li class="nav-item">
-                            <a href="{{ route('user.dashboard') }}"
-                                class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('user.pekerjaan.index') }}"
-                                class="nav-link {{ request()->routeIs('user.pekerjaan.index') ? 'active' : '' }}">
-                                <i class="fas fa-briefcase"></i> Pekerjaan
-                            </a>
-                        </li>
-
-                        <li class="nav-item has-treeview {{ request()->is('master*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link d-flex align-items-center {{ request()->is('master*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-cogs"></i>
-                                <p class="mb-0 flex-grow-1"> Master</p>
-                                <i class="right fas fa-angle-left"></i>
-                            </a>
-                            <ul class="nav nav-treeview ps-4">
-                                <li class="nav-item">
-                                    <a href="{{ route('user.pegawai.index') }}"
-                                        class="nav-link d-flex align-items-center {{ request()->routeIs('user.pegawai.index') ? 'active' : '' }}">
-                                        <i class="fas fa-users nav-icon me-2"></i>
-                                        <p class="mb-0">Pegawai</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('user.support') }}" class="nav-link {{ request()->routeIs('support') ? 'active' : '' }}">
-                                <i class="fas fa-life-ring"></i> Support
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-            </ul>
-        </aside>
-
-        <!-- Main content kanan -->
-        <div class="main-container">
-            <div class="main-top-area d-flex justify-content-between align-items-center">
-                <div>
-                    Selamat datang di WOLA, Workload Application !
-                </div>
-                <div class="user-info d-flex align-items-center gap-2">
-                    <strong>{{ ucfirst(Auth::user()->name ?? 'User') }}</strong>
-                    <form action="{{ route('logout') }}" method="POST" class="mb-0">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-outline-light text-dark" title="Logout">
-                            <i class="fas fa-sign-out-alt"></i>
+                    <div x-data="{ open: {{ $isMasterRoute ? 'true' : 'false' }} }" x-init="$watch('open', value => localStorage.setItem('masterOpen', value))">
+                        <button @click="open = !open" class="flex items-center justify-between w-full px-4 py-2 rounded transition focus:outline-none hover:bg-blue-700" :class="{ 'bg-blue-700': open }">
+                            <div class="flex items-center">
+                                <i class="fas fa-cogs w-5"></i>
+                                <span class="ml-3 font-medium">Master</span>
+                            </div>
+                            <i :class="{ 'rotate-90': open }" class="fas fa-chevron-right transform transition-transform duration-200"></i>
                         </button>
-                    </form>
+
+                        <div x-show="open" x-collapse class="ml-8 mt-2 space-y-1 text-sm">
+                            <a href="{{ route('superadmin.master_user.index') }}" class="{{ request()->routeIs('superadmin.master_user.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-blue-200 hover:bg-blue-700 hover:text-white' }} flex items-center px-3 py-2 rounded transition">
+                                <i class="fas fa-users w-4 mr-2"></i>
+                                <span>User</span>
+                            </a>
+                            <a href="{{ route('superadmin.jenis-pekerjaan.index') }}" class="{{ request()->routeIs('superadmin.jenis-pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-blue-200 hover:bg-blue-700 hover:text-white' }} flex items-center px-3 py-2 rounded transition">
+                                <i class="fas fa-tasks w-4 mr-2"></i>
+                                <span>Jenis Pekerjaan</span>
+                            </a>
+                            <a href="{{ route('superadmin.master_pegawai.index') }}" class="{{ request()->routeIs('superadmin.master_pegawai.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-blue-200 hover:bg-blue-700 hover:text-white' }} flex items-center px-3 py-2 rounded transition">
+                                <i class="fas fa-user-tie w-4 mr-2"></i>
+                                <span>Pegawai</span>
+                            </a>
+                            <a href="{{ route('superadmin.jenis-tim.index') }}" class="{{ request()->routeIs('superadmin.jenis-tim.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-blue-200 hover:bg-blue-700 hover:text-white' }} flex items-center px-3 py-2 rounded transition">
+                                <i class="fas fa-users-cog w-4 mr-2"></i>
+                                <span>Jenis Tim</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('superadmin.support') }}" class="{{ request()->routeIs('superadmin.support.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-life-ring w-5"></i>
+                        <span class="ml-3">Support</span>
+                    </a>
+
+                @elseif(Auth::user()->role === 'admin')
+                    {{-- Menu Admin --}}
+                    <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-home w-5"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </a>
+                    <a href="{{ route('admin.progress.index') }}" class="{{ request()->routeIs('admin.progress.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="ml-3">Progress</span>
+                    </a>
+                    <a href="{{ route('admin.pekerjaan.index') }}" class="{{ request()->routeIs('admin.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-briefcase w-5"></i>
+                        <span class="ml-3">Pekerjaan</span>
+                    </a>
+                    <a href="{{ route('admin.pegawai.index') }}" class="{{ request()->routeIs('admin.pegawai.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-user w-5"></i>
+                        <span class="ml-3">Pegawai</span>
+                    </a>
+
+                @elseif(Auth::user()->role === 'user')
+                    {{-- Menu User --}}
+                    <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-home w-5"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </a>
+                    <a href="{{ route('user.progress') }}" class="{{ request()->routeIs('user.progress') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="ml-3">Progress</span>
+                    </a>
+                @endif
+            </nav>
+
+            <!-- Logout Button -->
+            <div x-data="{ showLogout: false }" class="mt-auto px-4">
+                <button @click="showLogout = true" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 font-semibold rounded-xl mt-6 flex items-center justify-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+
+                <!-- Modal Logout -->
+                <div x-show="showLogout" x-transition class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+                    <div @click.outside="showLogout = false" class="bg-white rounded-xl p-6 w-80 shadow-lg text-center">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h2 class="text-lg font-semibold mb-1">Yakin ingin logout?</h2>
+                        <p class="text-sm text-gray-600">Anda akan keluar dari sesi ini.</p>
+
+                        <div class="flex justify-center space-x-3 mt-5">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-sm">Yakin</button>
+                            </form>
+                            <button @click="showLogout = false" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded shadow-sm">Batal</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <main class="main-content">
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col ml-60">
+            <!-- Navbar -->
+            <header class="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                <h2 class="text-xl font-semibold text-blue-800">@yield('page-title', 'WOLA - Workload Application')</h2>
+                <div class="flex flex-col items-end text-gray-600 font-medium leading-tight">
+                    <div class="text-base">{{ ucfirst(Auth::user()->name ?? 'User') }}</div>
+                    <div class="text-sm text-gray-500">{{ ucfirst(Auth::user()->role ?? 'Guest') }}</div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
                 @yield('content')
             </main>
-            <footer class="main-footer text-center py-3 bg-light border-top">
-                <div class="container">
-                    <span class="text-muted">© {{ date('Y') }} WOLA - Workload Application. All rights reserved.</span>
+
+            @if(session('show_welcome_popup'))
+                <!-- Welcome Popup -->
+                <div x-data="{ show: true }" x-show="show" x-cloak x-transition.opacity.duration.300ms class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div @click.outside="show = false" class="bg-white max-w-xl w-full mx-4 p-8 rounded-2xl shadow-2xl text-center relative">
+                        <img src="{{ asset('icon_dashboard.png') }}" alt="Dashboard Icon" class="w-20 h-20 mx-auto mb-4 rounded-full shadow-lg">
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-blue-700 mb-4">Selamat Datang di Panel Superadmin!</h2>
+                        <p class="text-gray-700 mb-6 leading-relaxed text-sm md:text-base">
+                            <strong>WOLA</strong> adalah platform replikasi dari <strong>Simanja BPS Klaten</strong> yang disesuaikan untuk <strong>BPS Kota Semarang</strong>.<br>
+                            Tujuannya adalah mempermudah manajemen dan pemantauan kinerja berbasis data, transparan, dan efisien.
+                        </p>
+                        <button @click="show = false" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition duration-200 shadow">
+                            Tutup
+                        </button>
+                    </div>
                 </div>
-            </footer>
+            @endif
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-    <script>
-        @if (session('success'))
-            toastr.success("{{ session('success') }}");
-        @elseif (session('error'))
-            toastr.error("{{ session('error') }}");
-        @elseif (session('warning'))
-            toastr.warning("{{ session('warning') }}");
-        @elseif (session('info'))
-            toastr.info("{{ session('info') }}");
-        @endif
-    </script>
-
-    <script>
-        document.querySelectorAll('.has-treeview > a').forEach((menu) => {
-            menu.addEventListener('click', function (e) {
-                e.preventDefault();
-                const parent = this.parentElement;
-                parent.classList.toggle('menu-open');
-                const submenu = parent.querySelector('.nav-treeview');
-                if (submenu) {
-                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-                }
-            });
-
-            const parent = menu.parentElement;
-            const submenu = parent.querySelector('.nav-treeview');
-            if (parent.classList.contains('menu-open') && submenu) {
-                submenu.style.display = 'block';
-            } else if (submenu) {
-                submenu.style.display = 'none';
-            }
-        });
-    </script>
-
-    @stack('scripts')
 </body>
 
 </html>

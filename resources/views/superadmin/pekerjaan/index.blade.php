@@ -1,144 +1,142 @@
 @extends('layouts.app')
 
-@section('title', 'Data Pekerjaan')
+
+@section('page-title', 'Pekerjaan')
 
 @section('content')
-<div class="card mb-4 shadow-sm">
-  <div class="card-body">
+<div class="bg-white shadow-md rounded-xl p-6 mb-8">
 
-  <h3 class="mb-3">Data Progress</h3>
-    <!-- Progress bar -->
-    <div class="mb-3">
-      <div class="progress" style="height: 25px;">
-        <div 
-          class="progress-bar bg-success" 
-          role="progressbar" 
-          style="width: {{ $persentaseSelesai }}%;" 
-          aria-valuenow="{{ $persentaseSelesai }}" 
-          aria-valuemin="0" 
-          aria-valuemax="100">
-          {{ $persentaseSelesai }}%
-        </div>
-      </div>
+  <h3 class="text-2xl font-semibold text-gray-700 mb-6">📊 Data Progress Pekerjaan</h3>
+
+  <!-- Progress Bar -->
+  <div class="w-full bg-gray-200 rounded-full h-5 mb-4">
+    <div 
+      class="bg-green-500 h-5 rounded-full text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
+      style="width: {{ $persentaseSelesai }}%;">
+      {{ $persentaseSelesai }}%
     </div>
+  </div>
 
-    <!-- Detail statistik -->
-    <div class="row text-center">
-      <div class="col-md-2 offset-md-1">
-        <strong>Persentase</strong><br>{{ $persentaseSelesai }}%
-      </div>
-      <div class="col-md-2">
-        <strong>Total Tugas</strong><br>{{ $totalTugas }}
-      </div>
-      <div class="col-md-2">
-        <strong>Selesai</strong><br>{{ $tugasSelesai }}
-      </div>
-      <div class="col-md-2">
-        <strong>Ongoing</strong><br>{{ $tugasOngoing }}
-      </div>
-      <div class="col-md-2">
-        <strong>Belum</strong><br>{{ $tugasBelum }}
-      </div>
+  <!-- Statistik -->
+  <div class="grid grid-cols-2 sm:grid-cols-5 text-center text-gray-600 text-sm mb-6 gap-y-4">
+    <div>
+      <div class="font-semibold">Persentase</div>
+      <div>{{ $persentaseSelesai }}%</div>
+    </div>
+    <div>
+      <div class="font-semibold">Total Tugas</div>
+      <div>{{ $totalTugas }}</div>
+    </div>
+    <div>
+      <div class="font-semibold">Selesai</div>
+      <div>{{ $tugasSelesai }}</div>
+    </div>
+    <div>
+      <div class="font-semibold">Ongoing</div>
+      <div>{{ $tugasOngoing }}</div>
+    </div>
+    <div>
+      <div class="font-semibold">Belum</div>
+      <div>{{ $tugasBelum }}</div>
     </div>
   </div>
 </div>
 
-<div class="card mb-4 shadow-sm">
-  <div class="card-body">
-<h3 class="mb-3">Tabel Pekerjaan</h3>
-<!-- Form Pencarian dan Filter -->
-<form method="GET" action="{{ route('superadmin.pekerjaan.index') }}">
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <input type="text" name="search" class="form-control" placeholder="Cari Nama Tugas" value="{{ request('search') }}">
-    </div>
-    <div class="col-md-2">
-      <select name="deadline_month" class="form-control">
-        <option value="">Bulan Deadline</option>
-        @for($i = 1; $i <= 12; $i++)
-          <option value="{{ $i }}" {{ request('deadline_month') == $i ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($i)->format('F') }}</option>
-        @endfor
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="deadline_year" class="form-control">
-        <option value="">Tahun Deadline</option>
-        @for($i = 2020; $i <= now()->year; $i++)
-          <option value="{{ $i }}" {{ request('deadline_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
-        @endfor
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="realisasi_month" class="form-control">
-        <option value="">Bulan Realisasi</option>
-        @for($i = 1; $i <= 12; $i++)
-          <option value="{{ $i }}" {{ request('realisasi_month') == $i ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($i)->format('F') }}</option>
-        @endfor
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="realisasi_year" class="form-control">
-        <option value="">Tahun Realisasi</option>
-        @for($i = 2020; $i <= now()->year; $i++)
-          <option value="{{ $i }}" {{ request('realisasi_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
-        @endfor
-      </select>
-    </div>
-    <div class="col-md-1">
-      <button type="submit" class="btn btn-primary">Filter</button>
-    </div>
-  </div>
-</form>
+<!-- Tabel Pekerjaan -->
+<div class="bg-white shadow-md rounded-xl p-6">
+  <h3 class="text-2xl font-semibold text-gray-700 mb-4">📁 Tabel Pekerjaan</h3>
 
-<!-- Data Tugas Table -->
-<table class="table table-bordered table-sm">
-  <thead class="table-primary text-center">
-    <tr>
-      <th>No.</th>
-      <th>Nama Tugas</th>
-      <th>Bobot</th>
-      <th>Asal</th>
-      <th>Target</th>
-      <th>Realisasi</th>
-      <th>Satuan</th>
-      <th>Deadline</th>
-      <th>Tanggal Realisasi</th>
-      <th>Nilai Kualitas</th>
-      <th>Nilai Kuantitas</th>
-      <th>Catatan</th>
-      <th>Bukti</th>
-    </tr>
-  </thead>
-  <tbody>
-    @forelse($tugas as $tugas)
-      <tr>
-        <td>{{ $loop->iteration }}</td>
-        <td>{{ $tugas->nama_tugas }}</td>
-        <td class="text-center">{{ $tugas->jenisPekerjaan->bobot ?? 0 }}</td>
-        <td>{{ $tugas->asal ?? '-' }}</td>
-        <td class="text-center">{{ $tugas->target }}</td>
-        <td class="text-center">{{ $tugas->realisasi->realisasi ?? '-' }}</td>
-        <td>{{ $tugas->satuan }}</td>
-        <td>{{ \Carbon\Carbon::parse($tugas->deadline)->format('d M Y') }}</td>
-        <td>{{ optional($tugas->realisasi)->tanggal_realisasi ?? '-' }}</td>
-        <td class="text-center">{{ $tugas->realisasi->nilai_kualitas ?? '-' }}</td>
-        <td class="text-center">{{ $tugas->realisasi->nilai_kuantitas ?? '-' }}</td>
-        <td class="text-center">{{ $tugas->realisasi->catatan ?? '-' }}</td>
-        <td class="text-center">
-          @if($tugas->realisasi && $tugas->realisasi->file_bukti)
-            <a href="{{ asset('storage/' . $tugas->realisasi->file_bukti) }}" target="_blank">Lihat</a>
-          @else
-            -
-          @endif
-        </td>
-      </tr>
-    @empty
-      <tr>
-        <td colspan="13" class="text-center">Tidak ada data pekerjaan yang tersedia.</td>
-      </tr>
-    @endforelse
-  </tbody>
-</table>
-</div>
+  <!-- Filter Form -->
+  <form method="GET" action="{{ route('superadmin.pekerjaan.index') }}" class="grid grid-cols-1 sm:grid-cols-6 gap-3 text-sm mb-6">
+    <input type="text" name="search" class="border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Nama Tugas" value="{{ request('search') }}">
+
+    <select name="deadline_month" class="border-gray-300 rounded-md px-3 py-2">
+      <option value="">Bulan Deadline</option>
+      @for($i = 1; $i <= 12; $i++)
+        <option value="{{ $i }}" {{ request('deadline_month') == $i ? 'selected' : '' }}>
+          {{ \Carbon\Carbon::create()->month($i)->format('F') }}
+        </option>
+      @endfor
+    </select>
+
+    <select name="deadline_year" class="border-gray-300 rounded-md px-3 py-2">
+      <option value="">Tahun Deadline</option>
+      @for($i = 2020; $i <= now()->year; $i++)
+        <option value="{{ $i }}" {{ request('deadline_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
+      @endfor
+    </select>
+
+    <select name="realisasi_month" class="border-gray-300 rounded-md px-3 py-2">
+      <option value="">Bulan Realisasi</option>
+      @for($i = 1; $i <= 12; $i++)
+        <option value="{{ $i }}" {{ request('realisasi_month') == $i ? 'selected' : '' }}>
+          {{ \Carbon\Carbon::create()->month($i)->format('F') }}
+        </option>
+      @endfor
+    </select>
+
+    <select name="realisasi_year" class="border-gray-300 rounded-md px-3 py-2">
+      <option value="">Tahun Realisasi</option>
+      @for($i = 2020; $i <= now()->year; $i++)
+        <option value="{{ $i }}" {{ request('realisasi_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
+      @endfor
+    </select>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+      Filter
+    </button>
+  </form>
+
+  <!-- Tabel -->
+  <div class="overflow-x-auto rounded-md border border-gray-200">
+    <table class="min-w-full text-sm text-gray-700">
+      <thead class="bg-blue-50 text-blue-800 font-semibold text-center">
+        <tr>
+          <th class="px-3 py-3 border">No.</th>
+          <th class="px-3 py-3 border text-left">Nama Tugas</th>
+          <th class="px-3 py-3 border">Bobot</th>
+          <th class="px-3 py-3 border text-left">Asal</th>
+          <th class="px-3 py-3 border">Target</th>
+          <th class="px-3 py-3 border">Realisasi</th>
+          <th class="px-3 py-3 border">Satuan</th>
+          <th class="px-3 py-3 border">Deadline</th>
+          <th class="px-3 py-3 border">Tgl Realisasi</th>
+          <th class="px-3 py-3 border">Kualitas</th>
+          <th class="px-3 py-3 border">Kuantitas</th>
+          <th class="px-3 py-3 border text-left">Catatan</th>
+          <th class="px-3 py-3 border">Bukti</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($tugas as $tugas)
+        <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100 transition">
+          <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
+          <td class="text-left px-3 py-2 border">{{ $tugas->nama_tugas }}</td>
+          <td class="px-3 py-2 border text-purple-600">{{ $tugas->jenisPekerjaan->bobot ?? 0 }}</td>
+          <td class="text-left px-3 py-2 border">{{ $tugas->asal ?? '-' }}</td>
+          <td class="px-3 py-2 border">{{ $tugas->target }}</td>
+          <td class="px-3 py-2 border">{{ $tugas->realisasi->realisasi ?? '-' }}</td>
+          <td class="px-3 py-2 border">{{ $tugas->satuan }}</td>
+          <td class="px-3 py-2 border text-red-500 font-medium">{{ \Carbon\Carbon::parse($tugas->deadline)->format('d M Y') }}</td>
+          <td class="px-3 py-2 border">{{ optional($tugas->realisasi)->tanggal_realisasi ?? '-' }}</td>
+          <td class="px-3 py-2 border text-green-600">{{ $tugas->realisasi->nilai_kualitas ?? '-' }}</td>
+          <td class="px-3 py-2 border text-yellow-600">{{ $tugas->realisasi->nilai_kuantitas ?? '-' }}</td>
+          <td class="text-left px-3 py-2 border italic text-gray-600">{{ $tugas->realisasi->catatan ?? '-' }}</td>
+          <td class="px-3 py-2 border">
+            @if($tugas->realisasi && $tugas->realisasi->file_bukti)
+              <a href="{{ asset('storage/' . $tugas->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline font-semibold">Lihat</a>
+            @else
+              <span class="text-gray-400">-</span>
+            @endif
+          </td>
+        </tr>
+        @empty
+        <tr>
+          <td colspan="13" class="text-center py-5 text-gray-500">Tidak ada data pekerjaan yang tersedia.</td>
+        </tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
 </div>
 @endsection

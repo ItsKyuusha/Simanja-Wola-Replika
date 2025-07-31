@@ -1,229 +1,212 @@
 @extends('layouts.app')
 
+@section('page-title', 'Dashboard')
+
 @section('content')
+<div x-data="{ tab: 'kegiatan' }" class="container mx-auto px-4 py-6">
 
-<div class="container">
-    <!-- Title Section -->
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="h3 fw-bold">Dashboard Superadmin</h1>
-            <p class="text-muted">Selamat datang di halaman utama panel superadmin.</p>
-        </div>
-    </div>
-
-    <!-- Welcome Card -->
-    <div class="app-card alert alert-dismissible shadow-lg mb-4 border-left-decoration bg-white" role="alert">
-        <div class="inner">
-            <div class="app-card-body p-3 p-lg-4">
-                <div class="row gx-5 gy-3">
-                    <div class="col-12 col-lg-9">
-                        <!-- Teks sambutan dengan lebih bold -->
-                        <h3 class="mb-3" style="font-weight: 700; color: #1565c0;">Welcome to panel Superadmin!</h3>
-                        <p class="text-justify" style="text-align: justify; font-weight: 600; color: #333;">
-                            "WOLA" adalah sebuah platform yang dikembangkan sebagai replika dari Sistem Manajemen Kinerja "Simanja" yang sebelumnya digunakan oleh BPS Kabupaten Klaten, namun disesuaikan secara khusus untuk memenuhi kebutuhan BPS Kota Semarang. Tujuan utama Wolaku adalah untuk membantu BPS Kota Semarang dalam mengelola, memantau, dan meningkatkan kinerja karyawan serta tim secara lebih efektif dan efisien. Platform ini menyediakan berbagai fitur untuk mengukur dan mengevaluasi kinerja individu maupun kelompok, serta mendukung pencapaian tujuan organisasi dengan pendekatan yang lebih terstruktur dan berbasis data. Wolaku juga memastikan proses evaluasi kinerja berjalan secara transparan, objektif, dan dapat diakses dengan mudah oleh semua pihak yang berkepentingan.
-                        </p>
-                    </div><!--//col-->
-                    <div class="col-12 col-lg-3">
-                        <img src="{{ asset('icon_dashboard.png') }}" alt="Dashboard" class="img-fluid">
-                    </div><!--//col-->
-                </div><!--//row-->
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div><!--//app-card-body-->
-        </div><!--//inner-->
-    </div><!--//app-card-->
-
-    <!-- Card Box Section -->
-    <div class="row g-4">
-        <!-- Card Project -->
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-project-diagram me-2"></i>Total Project</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalProject }} Proyek</p>
+    <!-- Statistik Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white shadow rounded-lg p-4 border-l-4 border-blue-600">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-blue-600 font-medium">PROJECT</p>
+                    <h2 class="text-2xl font-bold">0</h2>
+                    <p class="text-sm text-gray-500">0 Completed</p>
                 </div>
+                <i class="fas fa-project-diagram text-2xl text-blue-600"></i>
             </div>
         </div>
 
-        <!-- Card Team -->
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Tim</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalTeam }} Tim</p>
+        <div class="bg-white shadow rounded-lg p-4 border-l-4 border-green-500">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-green-600 font-medium">TEAM</p>
+                    <h2 class="text-2xl font-bold">{{ $totalTeam }}</h2>
                 </div>
+                <i class="fas fa-users text-2xl text-green-500"></i>
             </div>
         </div>
 
-        <!-- Card Produktivitas -->
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Produktivitas</h5>
-                    <p class="card-text fs-8 fw-semibold">{{ $totalPegawai }} Bobot</p>
+        <div class="bg-white shadow rounded-lg p-4 border-l-4 border-cyan-500">
+            <div class="flex justify-between items-center w-full">
+                <div class="w-full">
+                    <p class="text-sm text-cyan-600 font-medium">PRODUKTIVITAS</p>
+                    <h2 class="text-2xl font-bold">0%</h2>
+                    <div class="w-full bg-gray-200 h-2 rounded-full mt-1">
+                        <div class="bg-cyan-500 h-2 w-[0%] rounded-full"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">0 Completed</p>
                 </div>
+                <i class="fas fa-chart-line text-2xl text-cyan-500"></i>
             </div>
         </div>
 
-        <!-- Card Most Active -->
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0" style="background-color: #1565c0; color: white;">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-trophy me-2"></i>Most Active</h5>
+        <div class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-500">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-yellow-600 font-medium">MOST ACTIVE</p>
+                    <h2 class="text-2xl font-bold">0</h2>
+                    <p class="text-sm text-gray-500">Completed</p>
                 </div>
+                <i class="fas fa-trophy text-2xl text-yellow-500"></i>
             </div>
         </div>
     </div>
 
-    <br/>
-
-    <!-- Nav Tabs -->
-    <div class="d-flex justify-content-center mb-3">
-        <div class="nav nav-pills" id="v-pills-tab" role="tablist">
-            <a class="nav-link active" id="v-pills-kegiatan-tab" data-bs-toggle="pill" href="#v-pills-kegiatan" role="tab" aria-controls="v-pills-kegiatan" aria-selected="true">Jumlah Kegiatan Pegawai</a>
-            <a class="nav-link" id="v-pills-bobot-tab" data-bs-toggle="pill" href="#v-pills-bobot" role="tab" aria-controls="v-pills-bobot" aria-selected="false">Jumlah Bobot Pekerjaan Pegawai</a>
-            <a class="nav-link" id="v-pills-kinerja-tab" data-bs-toggle="pill" href="#v-pills-kinerja" role="tab" aria-controls="v-pills-kinerja" aria-selected="false">Nilai Kinerja Pegawai</a>
-            <a class="nav-link" id="v-pills-persen-tab" data-bs-toggle="pill" href="#v-pills-persen" role="tab" aria-controls="v-pills-persen" aria-selected="false">Persentase Tugas Selesai Tim</a>
-        </div>
+    <!-- Tab Navigation -->
+    <div class="mb-4 flex flex-wrap gap-2">
+        <button @click="tab = 'kegiatan'" :class="tab === 'kegiatan' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
+            class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
+            Jumlah Kegiatan Pegawai
+        </button>
+        <button @click="tab = 'bobot'" :class="tab === 'bobot' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
+            class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
+            Jumlah Bobot Pekerjaan Pegawai
+        </button>
+        <button @click="tab = 'kinerja'" :class="tab === 'kinerja' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
+            class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
+            Nilai Kinerja Pegawai
+        </button>
+        <button @click="tab = 'persen'" :class="tab === 'persen' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
+            class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
+            Persentase Tugas Selesai Tim
+        </button>
+        <button @click="tab = ''"
+            class="bg-red-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-sm hover:bg-red-600 transition">
+            Tutup Semua
+        </button>
     </div>
 
-    <!-- Tab Contents -->
-    <div class="tab-content" id="v-pills-tabContent">
-        <!-- Tabel Jumlah Kegiatan -->
-        <div class="tab-pane fade show active" id="v-pills-kegiatan" role="tabpanel" aria-labelledby="v-pills-kegiatan-tab">
-            <div class="card">
-                <div class="card-header" style="background-color: #1565c0; color: white;">
-                    <strong>Jumlah Kegiatan Pegawai</strong>
-                </div>
-                <div class="card-body">
-                    <!-- Tabel Pekerjaan -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-striped small">
-                            <thead class="thead-dark text-center">
-                                <tr>
-                                    <th>Nama Pegawai</th>
-                                    <th>Jumlah kegiatan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($jumlahKegiatan as $item)
-                                <tr>
-                                    <td>{{ $item->nama }}</td>
-                                    <td class="text-center">{{ $item->tugas_count }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+    <!-- Tab: Jumlah Kegiatan -->
+    <div x-show="tab === 'kegiatan'" x-transition>
+        <div class="bg-white rounded shadow p-4 border">
+            <h5 class="font-bold text-blue-700 mb-3">Jumlah Kegiatan Pegawai <span class="text-sm font-normal text-gray-400">July</span></h5>
+
+            <div class="flex justify-between items-center mb-3">
+                <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded text-sm">
+                    <i class="fas fa-file-export mr-1"></i> Export Tabel
+                </button>
+                <div class="relative">
+                    <input type="text" placeholder="Search..." class="border border-gray-300 px-3 py-1 rounded text-sm">
                 </div>
             </div>
-        </div>
 
-        <!-- Tabel Jumlah Bobot -->
-        <div class="tab-pane fade" id="v-pills-bobot" role="tabpanel" aria-labelledby="v-pills-bobot-tab">
-            <div class="card">
-                <div class="card-header" style="background-color: #1565c0; color: white;">
-                    <strong>Jumlah Bobot Pekerjaan Pegawai</strong>
-                </div>
-                <div class="card-body">
-                    <!-- Tabel Pekerjaan -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-striped small">
-                            <thead class="thead-dark text-center">
-                                <tr>
-                                    <th>Nama Pegawai</th>
-                                    <th>Total Bobot</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($bobotPerPegawai as $item)
-                                <tr>
-                                    <td>{{ $item->nama }}</td>
-                                    <td class="text-center">{{ $item->total_bobot }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabel Nilai Kinerja -->
-        <div class="tab-pane fade" id="v-pills-kinerja" role="tabpanel" aria-labelledby="v-pills-kinerja-tab">
-            <div class="card">
-                <div class="card-header" style="background-color: #1565c0; color: white;">
-                    <strong>Nilai Kinerja Pegawai</strong>
-                </div>
-                <div class="card-body">
-                    <!-- Tabel Pekerjaan -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-striped small">
-                            <thead class="thead-dark text-center">
-                                <tr>
-                                    <th>Nama Pegawai</th>
-                                    <th>Nilai Akhir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                               @forelse($nilaiKinerja as $item)
-                                <tr>
-                                    <td>{{ $item->pegawai->nama }}</td>
-                                    <td class="text-center">{{ $item->nilai_akhir }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabel Persentase Tugas Selesai -->
-        <div class="tab-pane fade" id="v-pills-persen" role="tabpanel" aria-labelledby="v-pills-persen-tab">
-            <div class="card">
-                <div class="card-header" style="background-color: #1565c0; color: white;">
-                    <strong>Persentase Tugas Selesai Tim</strong>
-                </div>
-                <div class="card-body">
-                    <!-- Tabel Pekerjaan -->
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered table-striped small">
-                            <thead class="thead-dark text-center">
-                                <tr>
-                                    <th>Nama Pegawai</th>
-                                    <th>Persentase Tugas Selesai</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                               @forelse($persentaseSelesai as $item)
-                                <tr>
-                                    <td>{{ $item->nama }}</td>
-                                    <td class="text-center">{{ $item->persen_selesai ?? 0 }}%</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="2" class="text-center">Tidak ada data.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="overflow-auto">
+                <table class="table-auto w-full text-sm border border-gray-200">
+                    <thead class="bg-blue-100 text-center text-sm text-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 border">Nama Pegawai</th>
+                            <th class="px-4 py-2 border">Jumlah Kegiatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($jumlahKegiatan as $item)
+                        <tr class="text-center">
+                            <td class="px-4 py-2 border text-left">{{ $item->nama }}</td>
+                            <td class="px-4 py-2 border">{{ $item->tugas_count }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="2" class="text-center text-gray-500 py-3">Tidak ada data.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
+    <!-- Tab: Jumlah Bobot -->
+    <div x-show="tab === 'bobot'" x-transition>
+        <div class="bg-white rounded shadow p-4 border">
+            <h5 class="font-bold text-blue-700 mb-3">Jumlah Bobot Pegawai</h5>
+            <div class="overflow-auto">
+                <table class="table-auto w-full text-sm border border-gray-200">
+                    <thead class="bg-blue-100 text-center text-sm text-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 border">Nama Pegawai</th>
+                            <th class="px-4 py-2 border">Total Bobot</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($bobotPerPegawai as $item)
+                        <tr class="text-center">
+                            <td class="px-4 py-2 border text-left">{{ $item->nama }}</td>
+                            <td class="px-4 py-2 border">{{ $item->total_bobot }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="2" class="text-center text-gray-500 py-3">Tidak ada data.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Nilai Kinerja -->
+    <div x-show="tab === 'kinerja'" x-transition>
+        <div class="bg-white rounded shadow p-4 border">
+            <h5 class="font-bold text-blue-700 mb-3">Nilai Kinerja Pegawai</h5>
+            <div class="overflow-auto">
+                <table class="table-auto w-full text-sm border border-gray-200">
+                    <thead class="bg-blue-100 text-center text-sm text-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 border">Nama Pegawai</th>
+                            <th class="px-4 py-2 border">Nilai Akhir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($nilaiKinerja as $item)
+                        <tr class="text-center">
+                            <td class="px-4 py-2 border text-left">{{ $item->pegawai->nama }}</td>
+                            <td class="px-4 py-2 border">{{ $item->nilai_akhir }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="2" class="text-center text-gray-500 py-3">Tidak ada data.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Persentase -->
+    <div x-show="tab === 'persen'" x-transition>
+        <div class="bg-white rounded shadow p-4 border">
+            <h5 class="font-bold text-blue-700 mb-3">Persentase Selesai per Pegawai</h5>
+            <div class="overflow-auto">
+                <table class="table-auto w-full text-sm border border-gray-200">
+                    <thead class="bg-blue-100 text-center text-sm text-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 border">Nama Pegawai</th>
+                            <th class="px-4 py-2 border">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($persentaseSelesai as $item)
+                        <tr class="text-center">
+                            <td class="px-4 py-2 border text-left">{{ $item->nama }}</td>
+                            <td class="px-4 py-2 border">{{ $item->persen_selesai ?? 0 }}%</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="2" class="text-center text-gray-500 py-3">Tidak ada data.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 </div>
 @endsection
