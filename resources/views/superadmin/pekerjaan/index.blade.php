@@ -1,17 +1,16 @@
 @extends('layouts.app')
 
-
 @section('page-title', 'Pekerjaan')
 
 @section('content')
-<div class="bg-white shadow-md rounded-xl p-6 mb-8">
+<div class="bg-white rounded-xl p-6 mb-8 border border-gray-200">
 
   <h3 class="text-2xl font-semibold text-gray-700 mb-6">📊 Data Progress Pekerjaan</h3>
 
   <!-- Progress Bar -->
-  <div class="w-full bg-gray-200 rounded-full h-5 mb-4">
+  <div class="w-full bg-gray-200 rounded-full h-5 mb-4 overflow-hidden">
     <div 
-      class="bg-green-500 h-5 rounded-full text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
+      class="bg-green-500 h-5 text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
       style="width: {{ $persentaseSelesai }}%;">
       {{ $persentaseSelesai }}%
     </div>
@@ -43,14 +42,13 @@
 </div>
 
 <!-- Tabel Pekerjaan -->
-<div class="bg-white shadow-md rounded-xl p-6">
+<div class="bg-white rounded-xl p-6 border border-gray-200">
   <h3 class="text-2xl font-semibold text-gray-700 mb-4">📁 Tabel Pekerjaan</h3>
 
   <!-- Filter Form -->
   <form method="GET" action="{{ route('superadmin.pekerjaan.index') }}" class="grid grid-cols-1 sm:grid-cols-6 gap-3 text-sm mb-6">
-    <input type="text" name="search" class="border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Nama Tugas" value="{{ request('search') }}">
-
-    <select name="deadline_month" class="border-gray-300 rounded-md px-3 py-2">
+    <input type="text" name="search" class="border border-gray-300 rounded-md px-3 py-2" placeholder="Cari Nama Tugas" value="{{ request('search') }}">
+    <select name="deadline_month" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Bulan Deadline</option>
       @for($i = 1; $i <= 12; $i++)
         <option value="{{ $i }}" {{ request('deadline_month') == $i ? 'selected' : '' }}>
@@ -58,15 +56,13 @@
         </option>
       @endfor
     </select>
-
-    <select name="deadline_year" class="border-gray-300 rounded-md px-3 py-2">
+    <select name="deadline_year" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Tahun Deadline</option>
       @for($i = 2020; $i <= now()->year; $i++)
         <option value="{{ $i }}" {{ request('deadline_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
       @endfor
     </select>
-
-    <select name="realisasi_month" class="border-gray-300 rounded-md px-3 py-2">
+    <select name="realisasi_month" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Bulan Realisasi</option>
       @for($i = 1; $i <= 12; $i++)
         <option value="{{ $i }}" {{ request('realisasi_month') == $i ? 'selected' : '' }}>
@@ -74,14 +70,12 @@
         </option>
       @endfor
     </select>
-
-    <select name="realisasi_year" class="border-gray-300 rounded-md px-3 py-2">
+    <select name="realisasi_year" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Tahun Realisasi</option>
       @for($i = 2020; $i <= now()->year; $i++)
         <option value="{{ $i }}" {{ request('realisasi_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
       @endfor
     </select>
-
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
       Filter
     </button>
@@ -89,8 +83,8 @@
 
   <!-- Tabel -->
   <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full text-sm text-gray-700">
-      <thead class="bg-blue-50 text-blue-800 font-semibold text-center">
+    <table class="min-w-full text-sm text-gray-700 table-auto">
+      <thead class="bg-blue-100 text-blue-900 font-semibold text-center">
         <tr>
           <th class="px-3 py-3 border">No.</th>
           <th class="px-3 py-3 border text-left">Nama Tugas</th>
@@ -109,7 +103,7 @@
       </thead>
       <tbody>
         @forelse($tugas as $tugas)
-        <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100 transition">
+        <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100">
           <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
           <td class="text-left px-3 py-2 border">{{ $tugas->nama_tugas }}</td>
           <td class="px-3 py-2 border text-purple-600">{{ $tugas->jenisPekerjaan->bobot ?? 0 }}</td>
