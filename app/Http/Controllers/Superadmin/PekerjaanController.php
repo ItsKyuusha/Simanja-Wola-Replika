@@ -27,13 +27,16 @@ class PekerjaanController extends Controller
             $query->whereYear('deadline', $deadlineYear);
         }
 
-        // Filtering by realisasi month and year
-        if ($realisasiMonth = request('realisasi_month')) {
-            $query->whereMonth('realisasi.tanggal_realisasi', $realisasiMonth);
+        // Filtering by realisasi month and year using whereHas
+        if (request('realisasi_month') || request('realisasi_year')) {
+            $query->whereHas('realisasi', function ($q) {
+        if ($bulan = request('realisasi_month')) {
+            $q->whereMonth('tanggal_realisasi', $bulan);
         }
-
-        if ($realisasiYear = request('realisasi_year')) {
-            $query->whereYear('realisasi.tanggal_realisasi', $realisasiYear);
+        if ($tahun = request('realisasi_year')) {
+            $q->whereYear('tanggal_realisasi', $tahun);
+        }
+        });
         }
 
         // Sorting
