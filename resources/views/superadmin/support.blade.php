@@ -1,82 +1,91 @@
 @extends('layouts.app')
 
-@section('title', 'Support - SIMANJA')
+@section('page-title', 'Support')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-        <div class="bg-blue-700 text-white text-xl font-semibold px-6 py-4 rounded-t-xl">
-            Halaman Support
+<div class="max-w-7xl mx-auto px-3 py-1">
+  <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    
+    <div class="px-8 py-10 space-y-14">
+
+      <!-- Support & Resources Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        
+        <!-- Kontak Support -->
+        <div class="flex flex-col items-center text-center">
+          <img src="/support1.png" alt="Support" class="w-64 h-auto rounded-lg shadow-md">
+          <h4 class="text-lg font-semibold mt-6">Butuh bantuan Penggunaan SIMANJA?</h4>
+          <div class="mt-4 space-y-3 sm:space-y-0 sm:flex sm:justify-center sm:items-center sm:gap-6 text-blue-700">
+            <a href="https://wa.me/62895360000606" target="_blank" class="flex items-center hover:underline hover:text-blue-800 transition">
+              <i class="fas fa-phone-alt text-lg"></i>
+              <span class="ml-2">+62895360000606</span>
+            </a>
+            <a href="mailto:helmiazkia2@gmail.com" target="_blank" class="flex items-center hover:underline hover:text-blue-800 transition">
+              <i class="fas fa-envelope text-lg"></i>
+              <span class="ml-2">helmiazkia2@gmail.com</span>
+            </a>
+          </div>
         </div>
-        <div class="px-6 py-4">
-            <!-- Support Info Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Contact Card -->
-                <div class="flex flex-col items-center text-center">
-                    <img src="/support1.png" alt="Support Image" class="w-64 h-auto rounded">
-                    <h4 class="text-lg font-semibold mt-4">Butuh bantuan Penggunaan SIMANJA?</h4>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4 mt-4 text-blue-600">
-                        <a href="https://wa.me/6281229429025" target="_blank" class="flex items-center hover:underline">
-                            <i class="fas fa-phone text-xl"></i>
-                            <span class="ml-2">+62 812 2942 9025</span>
-                        </a>
-                        <a href="mailto:kyuushaxyz@gmail.com" target="_blank" class="flex items-center hover:underline">
-                            <i class="fas fa-envelope text-xl"></i>
-                            <span class="ml-2">kyuushaxyz@gmail.com</span>
-                        </a>
-                    </div>
-                </div>
 
-                <!-- Video & Doc -->
-                <div class="space-y-6">
-                    <!-- Video Tutorial -->
-                    <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-4 shadow">
-                        <img src="/support2.png" alt="Video Tutorial" class="w-16 h-16 object-cover">
-                        <div class="flex-1">
-                            <h5 class="font-bold text-md">Video Tutorial</h5>
-                            <p class="text-sm text-gray-600">Tonton video tutorial penggunaan SIMANJA untuk mempelajari fitur-fitur utama.</p>
-                            <a href="#" class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Lihat Video</a>
-                        </div>
-                    </div>
-
-                    <!-- Dokumentasi -->
-                    <div class="bg-gray-100 p-4 rounded-lg flex items-center gap-4 shadow">
-                        <img src="/support3.png" alt="Documentation" class="w-16 h-16 object-cover">
-                        <div class="flex-1">
-                            <h5 class="font-bold text-md">Dokumentasi Penggunaan SIMANJA</h5>
-                            <p class="text-sm text-gray-600">Baca dokumentasi lengkap mengenai cara penggunaan SIMANJA untuk memaksimalkan penggunaan sistem.</p>
-                            <a href="#" class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Baca Dokumentasi</a>
-                        </div>
-                    </div>
-                </div>
+        <!-- Video & Dokumentasi -->
+        <div class="space-y-6">
+          
+          <!-- Video Card -->
+          <div class="bg-gray-50 hover:bg-gray-100 transition duration-200 p-5 rounded-lg flex items-center gap-5 shadow-sm border border-gray-200">
+            <img src="/support2.png" alt="Video Tutorial" class="w-16 h-16 object-cover rounded">
+            <div>
+              <h5 class="font-semibold text-md">Video Tutorial</h5>
+              <p class="text-sm text-gray-600">Pelajari fitur SIMANJA melalui video panduan yang praktis.</p>
+              <a href="#" class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded text-sm transition">
+                Lihat Video
+              </a>
             </div>
+          </div>
 
-            <!-- FAQ Section -->
-            <div class="mt-10">
-                <h4 class="text-xl font-semibold mb-4">❓ Frequently Asked Questions</h4>
-                <div class="space-y-4">
-                    <!-- FAQ Item 1 -->
-                    <details class="bg-gray-50 border border-gray-300 rounded-lg p-4">
-                        <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara mengganti password akun SIMANJA?</summary>
-                        <p class="text-gray-700 mt-2">Untuk mengganti password akun, klik "Lupa Password?" di halaman login, masukkan email akun Anda, dan ikuti instruksi yang diberikan.</p>
-                    </details>
-
-                    <!-- FAQ Item 2 -->
-                    <details class="bg-gray-50 border border-gray-300 rounded-lg p-4">
-                        <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara membuat pekerjaan untuk pegawai?</summary>
-                        <p class="text-gray-700 mt-2">Klik "Tambah Pekerjaan" di halaman progress tim ketua, pilih jenis pekerjaan dan target waktu, lalu pilih pegawai yang bertugas.</p>
-                    </details>
-
-                    <!-- FAQ Item 3 -->
-                    <details class="bg-gray-50 border border-gray-300 rounded-lg p-4">
-                        <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara mengekspor pekerjaan berdasarkan bulan yang diinginkan?</summary>
-                        <p class="text-gray-700 mt-2">Pilih bulan dan tahun yang diinginkan di halaman progress tim ketua, klik tombol "Filter", kemudian pilih "Export" untuk mengunduh data.</p>
-                    </details>
-                </div>
+          <!-- Dokumentasi Card -->
+          <div class="bg-gray-50 hover:bg-gray-100 transition duration-200 p-5 rounded-lg flex items-center gap-5 shadow-sm border border-gray-200">
+            <img src="/support3.png" alt="Dokumentasi SIMANJA" class="w-16 h-16 object-cover rounded">
+            <div>
+              <h5 class="font-semibold text-md">Dokumentasi SIMANJA</h5>
+              <p class="text-sm text-gray-600">Panduan lengkap penggunaan fitur-fitur SIMANJA.</p>
+              <a href="#" class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded text-sm transition">
+                Baca Dokumentasi
+              </a>
             </div>
+          </div>
+
         </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <div>
+        <h4 class="text-xl font-semibold mb-6">Frequently Asked Questions❓</h4>
+        <div class="space-y-4">
+          <!-- FAQ Item -->
+          <details class="bg-gray-50 border border-gray-300 rounded-lg p-5 transition-all duration-200 open:ring-2 open:ring-blue-200">
+            <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara mengganti password akun SIMANJA?</summary>
+            <p class="text-gray-700 mt-3">Klik "Lupa Password?" di halaman login, masukkan email Anda, dan ikuti instruksi reset.</p>
+          </details>
+
+          <details class="bg-gray-50 border border-gray-300 rounded-lg p-5 transition-all duration-200 open:ring-2 open:ring-blue-200">
+            <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara membuat pekerjaan untuk pegawai?</summary>
+            <p class="text-gray-700 mt-3">Masuk ke halaman progress tim, klik "Tambah Pekerjaan", isi detail pekerjaan dan pilih pegawai.</p>
+          </details>
+
+          <details class="bg-gray-50 border border-gray-300 rounded-lg p-5 transition-all duration-200 open:ring-2 open:ring-blue-200">
+            <summary class="font-semibold cursor-pointer text-blue-700">Bagaimana cara mengekspor pekerjaan berdasarkan bulan yang diinginkan?</summary>
+            <p class="text-gray-700 mt-3">Gunakan filter bulan dan tahun di halaman progress, lalu klik "Export" untuk mengunduh laporan.</p>
+          </details>
+        </div>
+      </div>
+
     </div>
+  </div>
 </div>
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 @endsection
 
 @push('styles')

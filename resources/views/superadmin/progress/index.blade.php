@@ -6,11 +6,11 @@
 
 <!-- CARD: Tabel Kinerja Pegawai -->
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">📒 Tabel Kinerja Pegawai</h3>
+  <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Kinerja Pegawai</h3>
 
   <div class="overflow-x-auto rounded-md border border-gray-200">
     <table class="min-w-full text-sm text-gray-800">
-      <thead class="bg-blue-600 text-white">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr class="text-xs uppercase tracking-wide text-center">
           <th class="px-4 py-3">No.</th>
           <th class="px-4 py-3 text-left">Nama Pegawai</th>
@@ -20,7 +20,7 @@
           <th class="px-4 py-3">Target</th>
           <th class="px-4 py-3">Realisasi</th>
           <th class="px-4 py-3">Satuan</th>
-          <th class="px-4 py-3 text-red-100">Deadline</th>
+          <th class="px-4 py-3 text-red-500">Deadline</th>
           <th class="px-4 py-3">Tgl Realisasi</th>
           <th class="px-4 py-3">Nilai Kualitas</th>
           <th class="px-4 py-3">Nilai Kuantitas</th>
@@ -66,11 +66,11 @@
 
 <!-- CARD: Tabel Nilai Akhir Pegawai -->
 <div class="bg-white rounded-2xl p-6 mb-16 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">🎯 Tabel Nilai Akhir Pegawai</h3>
+  <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Nilai Akhir Pegawai</h3>
 
   <div class="overflow-x-auto rounded-md border border-gray-200">
     <table class="min-w-full text-sm text-gray-800">
-      <thead class="bg-blue-600 text-white">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr class="text-xs uppercase tracking-wide text-center">
           <th class="px-4 py-3">No.</th>
           <th class="px-4 py-3 text-left">Nama Pegawai</th>
@@ -98,9 +98,9 @@
   </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-gray-50 text-center py-4 text-sm text-gray-500 border-t">
-  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-</footer>
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 
 @endsection

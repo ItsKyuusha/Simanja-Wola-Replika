@@ -5,15 +5,22 @@
 
 @section('content')
 <div class="bg-white rounded-2xl shadow p-6 mb-12 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">📋 Tabel Pegawai</h3>
+ <!-- Judul dan Form Pencarian sejajar -->
+<div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+  <h3 class="text-2xl font-semibold text-gray-700">Tabel Pegawai</h3>
 
   <!-- Form Pencarian -->
-  <div class="flex justify-end mb-4">
-    <form method="GET" action="{{ route('superadmin.master_pegawai.index') }}" class="flex w-full max-w-md gap-2">
-      <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-400" placeholder="Cari nama pegawai ..." value="{{ request('search') }}">
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Cari</button>
-    </form>
-  </div>
+  <form method="GET" action="{{ route('superadmin.master_pegawai.index') }}" class="flex gap-2 w-full sm:w-auto">
+    <input type="text" name="search"
+      class="w-full sm:w-72 border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200"
+      placeholder="Cari nama pegawai ..." value="{{ request('search') }}">
+    <button type="submit"
+       class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-700 border border-gray-300">
+      Cari
+    </button>
+  </form>
+</div>
+
 
   <!-- Alert Sukses -->
   @if(session('success'))
@@ -25,7 +32,7 @@
   <!-- Tabel Pegawai -->
   <div class="overflow-x-auto rounded-md border border-gray-200">
     <table class="min-w-full text-sm text-gray-800 border-collapse">
-      <thead class="bg-blue-100 text-gray-700 font-semibold">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr class="text-center text-xs uppercase tracking-wide">
           <th class="px-4 py-3 border">No.</th>
           <th class="px-4 py-3 border">Nama Pegawai</th>
@@ -52,4 +59,8 @@
     </table>
   </div>
 </div>
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 @endsection

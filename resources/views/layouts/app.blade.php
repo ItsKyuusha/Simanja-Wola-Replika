@@ -87,7 +87,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('superadmin.support') }}" class="{{ request()->routeIs('superadmin.support.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                    <a href="{{ route('superadmin.support') }}" class="{{ request()->routeIs('superadmin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                         <i class="fas fa-life-ring w-5"></i>
                         <span class="ml-3">Support</span>
                     </a>
@@ -136,13 +136,13 @@
                         <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
                         <h2 class="text-lg font-semibold mb-1">Yakin ingin logout?</h2>
                         <p class="text-sm text-gray-600">Anda akan keluar dari sesi ini.</p>
-
                         <div class="flex justify-center space-x-3 mt-5">
                             <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-sm">Yakin</button>
-                            </form>
-                            <button @click="showLogout = false" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded shadow-sm">Batal</button>
+                            @csrf
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-sm">Yakin</button>
+                            <button type="button" @click="showLogout = false" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded shadow-sm">Batal</button>
+                        </form>
+
                         </div>
                     </div>
                 </div>

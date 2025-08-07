@@ -14,7 +14,7 @@
     <div class="flex flex-wrap gap-2">
       <!-- Search Form -->
       <form method="GET" action="{{ route('superadmin.jenis-pekerjaan.index') }}" class="flex items-center gap-2">
-        <input type="text" name="search" class="border-gray-300 rounded px-3 py-2 w-48" placeholder="Cari nama pekerjaan..." value="{{ request('search') }}">
+        <input type="text" name="search" class="w-full sm:w-72 border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200" placeholder="Cari nama pekerjaan..." value="{{ request('search') }}" >
         <button type="submit" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">Cari</button>
       </form>
 
@@ -44,7 +44,7 @@
   <!-- Tabel -->
   <div class="overflow-x-auto">
     <table class="min-w-full border border-gray-300 text-sm">
-      <thead class="bg-blue-50 text-blue-800 text-center font-semibold">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr>
           <th class="border px-3 py-2">No.</th>
           <th class="border px-3 py-2">Nama</th>
@@ -128,13 +128,17 @@
           </div>
           <div class="mt-4 flex justify-end gap-2">
             <button type="button" @click="openCreate = false" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+            <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Simpan</button>
           </div>
         </form>
       </div>
     </div>
   </template>
 </div>
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 
 @endsection
 

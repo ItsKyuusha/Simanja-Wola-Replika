@@ -2,67 +2,66 @@
 @section('title', 'Anggota Tim')
 
 @section('content')
-<div class="card shadow-sm">
-  <div class="card-body">
-<h3>Daftar Pegawai dalam Tim Anda</h3>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>No.</th>
-      <th>Nama</th>
-      <th>NIP</th>
-      <th>Jabatan</th>
-    </tr>
-  </thead>
-  <tbody>
-    @forelse($pegawai as $p)
-    <tr>
-      <td>{{ $loop->iteration }}</td>
-      <td>{{ $p->nama }}</td>
-      <td>{{ $p->nip }}</td>
-      <td>{{ $p->jabatan }}</td>
-    </tr>
-    @empty
-    <tr>
-      <td colspan="4" class="text-center">Tidak ada data pegawai yang tersedia.</td>
-    </tr>
-    @endforelse
-  </tbody>
-</table>
-</div>
-</div>
-<hr>
+<div class="bg-white shadow rounded-md p-6 mb-6">
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">Daftar Pegawai dalam Tim Anda</h3>
+  <div class="overflow-x-auto">
+    <table class="min-w-full table-auto border border-gray-300 text-sm text-left">
+      <thead class="bg-blue-100 text-gray-700">
+  <tr>
+    <th class="px-2 py-2 border w-12 text-center">No.</th>
+    <th class="px-4 py-2 border">Nama</th>
+    <th class="px-4 py-2 border">NIP</th>
+    <th class="px-4 py-2 border">Jabatan</th>
+  </tr>
+</thead>
+<tbody>
+  @forelse($pegawai as $p)
+  <tr class="hover:bg-gray-50">
+    <td class="px-2 py-2 border text-center w-12">{{ $loop->iteration }}</td>
+    <td class="px-4 py-2 border">{{ $p->nama }}</td>
+    <td class="px-4 py-2 border">{{ $p->nip }}</td>
+    <td class="px-4 py-2 border">{{ $p->jabatan }}</td>
+  </tr>
+  @empty
+  <tr>
+    <td colspan="4" class="px-4 py-4 border text-center text-gray-500">Tidak ada data pegawai yang tersedia.</td>
+  </tr>
+  @endforelse
+</tbody>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-<h3>Daftar Pegawai Global</h3>
-
-<table class="table table-striped table-bordered">
-  <thead>
-    <tr>
-      <th>No.</th>
-      <th>Nama</th>
-      <th>NIP</th>
-      <th>Tim</th>
-      <th>Jabatan</th>
-    </tr>
-  </thead>
-  <tbody>
-    @forelse($pegawaiGlobal as $pg)
-    <tr>
-      <td>{{ $loop->iteration }}</td>
-      <td>{{ $pg->nama }}</td>
-      <td>{{ $pg->nip }}</td>
-      <td>{{ $pg->team->nama_tim ?? '-' }}</td>
-      <td>{{ $pg->jabatan }}</td>
-    </tr>
-    @empty
-    <tr>
-      <td colspan="5" class="text-center">Tidak ada pegawai di sistem.</td>
-    </tr>
-    @endforelse
-  </tbody>
-</table>
+    </table>
+  </div>
 </div>
+
+<div class="bg-white shadow rounded-md p-6">
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">Daftar Pegawai Global</h3>
+  <div class="overflow-x-auto">
+    <table class="min-w-full table-auto border border-gray-300 text-sm text-left">
+      <thead class="bg-blue-100 text-gray-700">
+        <tr>
+          <th class="px-2 py-2 border w-12 text-center whitespace-nowrap">No.</th>
+          <th class="px-4 py-2 border">Nama</th>
+          <th class="px-4 py-2 border">NIP</th>
+          <th class="px-4 py-2 border">Tim</th>
+          <th class="px-4 py-2 border">Jabatan</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($pegawaiGlobal as $pg)
+        <tr class="hover:bg-gray-50">
+          <td class="px-2 py-2 border w-12 text-center whitespace-nowrap">{{ $loop->iteration }}</td>
+          <td class="px-4 py-2 border">{{ $pg->nama }}</td>
+          <td class="px-4 py-2 border">{{ $pg->nip }}</td>
+          <td class="px-4 py-2 border">{{ $pg->team->nama_tim ?? '-' }}</td>
+          <td class="px-4 py-2 border">{{ $pg->jabatan }}</td>
+        </tr>
+        @empty
+        <tr>
+          <td colspan="5" class="px-4 py-4 border text-center text-gray-500">Tidak ada pegawai di sistem.</td>
+        </tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
 </div>
 @endsection

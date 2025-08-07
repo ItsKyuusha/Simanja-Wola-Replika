@@ -5,11 +5,11 @@
 @section('content')
 <div class="bg-white rounded-xl p-6 mb-8 border border-gray-200">
 
-  <h3 class="text-2xl font-semibold text-gray-700 mb-6">📊 Data Progress Pekerjaan</h3>
+  <h3 class="text-2xl font-semibold text-gray-700 mb-6">Data Progress Pekerjaan</h3>
 
   <!-- Progress Bar -->
   <div class="w-full bg-gray-200 rounded-full h-5 mb-4 overflow-hidden">
-    <div 
+    <div
       class="bg-green-500 h-5 text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
       style="width: {{ $persentaseSelesai }}%;">
       {{ $persentaseSelesai }}%
@@ -43,7 +43,7 @@
 
 <!-- Tabel Pekerjaan -->
 <div class="bg-white rounded-xl p-6 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">📁 Tabel Pekerjaan</h3>
+  <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Pekerjaan</h3>
 
   <!-- Filter Form -->
   <form method="GET" action="{{ route('superadmin.pekerjaan.index') }}" class="grid grid-cols-1 sm:grid-cols-6 gap-3 text-sm mb-6">
@@ -52,29 +52,29 @@
       <option value="">Bulan Deadline</option>
       @for($i = 1; $i <= 12; $i++)
         <option value="{{ $i }}" {{ request('deadline_month') == $i ? 'selected' : '' }}>
-          {{ \Carbon\Carbon::create()->month($i)->format('F') }}
+        {{ \Carbon\Carbon::create()->month($i)->format('F') }}
         </option>
-      @endfor
+        @endfor
     </select>
     <select name="deadline_year" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Tahun Deadline</option>
       @for($i = 2020; $i <= now()->year; $i++)
         <option value="{{ $i }}" {{ request('deadline_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
-      @endfor
+        @endfor
     </select>
     <select name="realisasi_month" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Bulan Realisasi</option>
       @for($i = 1; $i <= 12; $i++)
         <option value="{{ $i }}" {{ request('realisasi_month') == $i ? 'selected' : '' }}>
-          {{ \Carbon\Carbon::create()->month($i)->format('F') }}
+        {{ \Carbon\Carbon::create()->month($i)->format('F') }}
         </option>
-      @endfor
+        @endfor
     </select>
     <select name="realisasi_year" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Tahun Realisasi</option>
       @for($i = 2020; $i <= now()->year; $i++)
         <option value="{{ $i }}" {{ request('realisasi_year') == $i ? 'selected' : '' }}>{{ $i }}</option>
-      @endfor
+        @endfor
     </select>
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
       Filter
@@ -84,7 +84,7 @@
   <!-- Tabel -->
   <div class="overflow-x-auto rounded-md border border-gray-200">
     <table class="min-w-full text-sm text-gray-700 table-auto">
-      <thead class="bg-blue-100 text-blue-900 font-semibold text-center">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr>
           <th class="px-3 py-3 border">No.</th>
           <th class="px-3 py-3 border text-left">Nama Tugas</th>
@@ -118,9 +118,9 @@
           <td class="text-left px-3 py-2 border italic text-gray-600">{{ $tugas->realisasi->catatan ?? '-' }}</td>
           <td class="px-3 py-2 border">
             @if($tugas->realisasi && $tugas->realisasi->file_bukti)
-              <a href="{{ asset('storage/' . $tugas->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline font-semibold">Lihat</a>
+            <a href="{{ asset('storage/' . $tugas->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline font-semibold">Lihat</a>
             @else
-              <span class="text-gray-400">-</span>
+            <span class="text-gray-400">-</span>
             @endif
           </td>
         </tr>
@@ -133,4 +133,9 @@
     </table>
   </div>
 </div>
+
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 @endsection

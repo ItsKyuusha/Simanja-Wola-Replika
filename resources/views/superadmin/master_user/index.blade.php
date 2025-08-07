@@ -3,27 +3,29 @@
 @section('page-title', 'Master | User')
 
 @section('content')
-<div class="bg-white rounded-xl p-6 border border-gray-200">
-  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-    <h2 class="text-2xl font-semibold text-gray-800">📋 Manajemen User & Pegawai</h2>
+  <div class="bg-white rounded-xl p-6 border border-gray-200">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
+    <h2 class="text-2xl font-semibold text-gray-800">Manajemen User & Pegawai</h2>
+
+    <!-- Form Search + Tambah Button dalam satu baris -->
+    <div class="flex flex-col sm:flex-row items-center gap-3">
+      <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="flex gap-3">
+        <input type="text" name="search" value="{{ request('search') }}"
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Cari nama pegawai, NIP, email...">
+        <button type="submit"
+          class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-700 border border-gray-300">
+          Cari
+        </button>
+      </form>
+
+    <!-- Tombol Tambah User -->
     <button @click="openCreate = true"
       class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
       + Tambah User
     </button>
   </div>
-
-  <!-- Search -->
-  <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="mb-5">
-    <div class="flex flex-col sm:flex-row items-center gap-3">
-      <input type="text" name="search" value="{{ request('search') }}"
-        class="w-full sm:w-72 border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200"
-        placeholder="🔍 Cari nama pegawai, NIP, email...">
-      <button type="submit"
-        class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-700 border border-gray-300">
-        Cari
-      </button>
-    </div>
-  </form>
+</div>
 
   <!-- Pesan Sukses -->
   @if(session('success'))
@@ -35,7 +37,7 @@
   <!-- Tabel -->
   <div class="overflow-x-auto rounded-md border border-gray-200">
     <table class="w-full table-auto text-sm text-gray-700">
-      <thead class="bg-blue-50 text-blue-800 font-medium text-center uppercase tracking-wide">
+      <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr>
           <th class="p-3 border">No.</th>
           <th class="p-3 border text-left">Nama Pegawai</th>
@@ -169,12 +171,16 @@
           <button type="button" @click="openCreate = false"
             class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
           <button type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Simpan</button>
         </div>
       </form>
     </div>
   </div>
 </template>
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 
 <script>
   document.addEventListener('alpine:init', () => {
