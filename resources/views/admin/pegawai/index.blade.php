@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Anggota Tim')
+@section('page-title', 'Pegawai')
 
 @section('content')
 <div class="bg-white shadow rounded-md p-6 mb-6">

@@ -1,11 +1,6 @@
-@extends('layouts.app')
-@section('title', 'Dashboard Admin')
-
-@section('content')
-
 <!-- Statistik Cards -->
 @extends('layouts.app')
-@section('title', 'Dashboard Admin')
+@section('page-title', 'Dashboard Admin')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Daftar Tugas Tim')
+@section('page-title', 'Pekerjaan')
 
 @section('content')
 <div x-data="{ tambahModal: false, editModal: null }">

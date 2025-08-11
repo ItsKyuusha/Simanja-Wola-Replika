@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Progress Tugas')
+@section('page-title', 'Progress')
 
 @section('content')
 <div class="bg-white shadow rounded p-6">
