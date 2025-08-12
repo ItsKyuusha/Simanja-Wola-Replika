@@ -105,4 +105,9 @@
         <div class="bg-blue-100 text-blue-700 p-4 rounded">Tidak ada tugas yang tersedia saat ini.</div>
     @endforelse
 </div>
+
+ <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
 @endsection
