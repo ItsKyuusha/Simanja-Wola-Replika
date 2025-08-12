@@ -1,8 +1,3 @@
-@extends('layouts.app')
-@section('title', 'Dashboard Admin')
-
-@section('content')
-
 <!-- Statistik Cards -->
 @extends('layouts.app')
 @section('title', 'Dashboard Admin')
