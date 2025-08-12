@@ -1,89 +1,51 @@
 @extends('layouts.app')
-@section('title', 'Dashboard User')
+@section('page-title', 'Dashboard User')
 
 @section('content')
+<div class="container mx-auto px-4 py-6">
 
-<!-- Dashboard Header -->
-<div class="row mb-4">
-        <div class="col">
-            <h1 class="h3 fw-bold">Dashboard User</h1>
-            <p class="text-muted">Selamat datang di halaman utama panel user.</p>
-        </div>
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">Dashboard User</h1>
+        <p class="text-gray-600">Selamat datang di halaman utama panel user.</p>
     </div>
 
-<!-- Welcome Card -->
-<div class="app-card alert alert-dismissible shadow-lg mb-4 border-left-decoration bg-white" role="alert">
-    <div class="inner">
-        <div class="app-card-body p-3 p-lg-4">
-            <div class="row gx-5 gy-3">
-                <div class="col-12 col-lg-9">
-                    <h3 class="mb-3" style="font-weight: 700; color: #1565c0;">Welcome to Panel User!</h3>  
-                    <p class="text-justify" style="text-align: justify; font-weight: 600; color: #333;">
-                        "WOLA" adalah sebuah platform yang dikembangkan sebagai replika dari Sistem Manajemen Kinerja "Simanja" yang sebelumnya digunakan oleh BPS Kabupaten Klaten, namun disesuaikan secara khusus untuk memenuhi kebutuhan BPS Kota Semarang. Tujuan utama Wolaku adalah untuk membantu BPS Kota Semarang dalam mengelola, memantau, dan meningkatkan kinerja karyawan serta tim secara lebih efektif dan efisien. Platform ini menyediakan berbagai fitur untuk mengukur dan mengevaluasi kinerja individu maupun kelompok, serta mendukung pencapaian tujuan organisasi dengan pendekatan yang lebih terstruktur dan berbasis data. Wolaku juga memastikan proses evaluasi kinerja berjalan secara transparan, objektif, dan dapat diakses dengan mudah oleh semua pihak yang berkepentingan.
-                    </p>
-                </div>
-                <div class="col-12 col-lg-3">
-                    <img src="{{ asset('icon_dashboard.png') }}" alt="Dashboard" class="img-fluid">
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
-</div>
+    <!-- Statistik Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-<!-- Card Count -->
-<div class="row mt-4">
-    <!-- Total Tugas -->
-    <div class="col-md-6 mb-4">
-        <div class="small-box bg-primary shadow-lg rounded-3 card-hover position-relative overflow-hidden text-white p-4">
-            <div class="inner position-relative z-1">
-                <h3 class="fw-bold">{{ $totalTugas }}</h3>
-                <p>Total Tugas</p>
+        <!-- Total Tugas -->
+        <div class="bg-white shadow-md rounded-xl p-6 border-l-4 border-blue-600 relative overflow-hidden">
+            <div class="flex flex-col space-y-1">
+                <h3 class="text-sm font-semibold text-blue-600 uppercase">Total Tugas</h3>
+                <p class="text-3xl font-bold text-gray-800">{{ $totalTugas }}</p>
             </div>
-            <div class="icon position-absolute top-0 end-0 pe-4 pt-3 opacity-25" style="font-size: 3rem;">
+            <div class="absolute top-4 right-4 text-blue-100 text-4xl opacity-30">
                 <i class="fas fa-tasks"></i>
             </div>
         </div>
-    </div>
 
-    <!-- Total Realisasi -->
-    <div class="col-md-6 mb-4">
-        <div class="small-box bg-success shadow-lg rounded-3 card-hover position-relative overflow-hidden text-white p-4">
-            <div class="inner position-relative z-1">
-                <h3 class="fw-bold">{{ $totalRealisasi }}</h3>
-                <p>Total Realisasi</p>
+        <!-- Total Realisasi -->
+        <div class="bg-white shadow-md rounded-xl p-6 border-l-4 border-green-600 relative overflow-hidden">
+            <div class="flex flex-col space-y-1">
+                <h3 class="text-sm font-semibold text-green-600 uppercase">Total Realisasi</h3>
+                <p class="text-3xl font-bold text-gray-800">{{ $totalRealisasi }}</p>
             </div>
-            <div class="icon position-absolute top-0 end-0 pe-4 pt-3 opacity-25" style="font-size: 3rem;">
+            <div class="absolute top-4 right-4 text-green-100 text-4xl opacity-30">
                 <i class="fas fa-check-circle"></i>
             </div>
         </div>
+
+        <!-- Anggota Teraktif -->
+        <div class="bg-white shadow-md rounded-xl p-6 border-l-4 border-yellow-500 relative overflow-hidden">
+            <div class="flex flex-col space-y-1">
+                <h3 class="text-sm font-semibold text-yellow-600 uppercase">Anggota Teraktif</h3>
+                <p class="text-3xl font-bold text-gray-800">{{ $mostActive->nama ?? '-' }}</p>
+            </div>
+            <div class="absolute top-4 right-4 text-yellow-100 text-4xl opacity-30">
+                <i class="fas fa-star"></i>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    .card-hover {
-        transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .small-box h3 {
-        font-size: 2rem;
-    }
-
-    .small-box p {
-        margin: 0;
-        font-size: 1rem;
-        opacity: 0.9;
-    }
-
-    .small-box .icon {
-        z-index: 0;
-    }
-</style>
-@endpush
