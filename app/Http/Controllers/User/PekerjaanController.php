@@ -28,15 +28,17 @@ class PekerjaanController extends Controller
             });
         }
 
-        if ($request->has('deadline') && $request->deadline) {
-            // Assuming the deadline format is "01 Jan - 31 Mar"
-            $dates = explode(' - ', $request->deadline);
-            if (count($dates) == 2) {
-                $startDate = \Carbon\Carbon::createFromFormat('d M Y', $dates[0]);
-                $endDate = \Carbon\Carbon::createFromFormat('d M Y', $dates[1]);
-                $tugasQuery->whereBetween('deadline', [$startDate, $endDate]);
-            }
+        if ($request->filled('deadline_start') && $request->filled('deadline_end')) {
+            $tugasQuery->whereBetween('deadline', [
+                $request->deadline_start,
+                $request->deadline_end
+            ]);
+        } elseif ($request->filled('deadline_start')) {
+            $tugasQuery->where('deadline', '>=', $request->deadline_start);
+        } elseif ($request->filled('deadline_end')) {
+            $tugasQuery->where('deadline', '<=', $request->deadline_end);
         }
+
 
         if ($request->has('status') && $request->status) {
             switch ($request->status) {
@@ -122,5 +124,4 @@ class PekerjaanController extends Controller
 
         return back()->with('success', 'Realisasi berhasil diupdate.');
     }
-
 }
