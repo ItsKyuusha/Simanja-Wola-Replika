@@ -213,6 +213,9 @@
   </div>
 
 </div>
+<footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+</footer>
 
 <script>
   document.getElementById('jenisTambah')?.addEventListener('change', function() {
