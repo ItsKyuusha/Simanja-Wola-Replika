@@ -23,15 +23,17 @@
       class="w-[300px] px-3 py-2 border rounded" />
 
     <!-- Deadline (Tanggal Mulai & Akhir) -->
-    <input type="date"
-      name="deadline_start"
-      value="{{ request('deadline_start') }}"
-      class="px-3 py-2 border rounded" />
+    <div class="flex items-center gap-2">
+  <label for="deadline_start" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Mulai:</label>
+  <input type="date" id="deadline_start" name="deadline_start" value="{{ request('deadline_start') }}" class="w-[150px] px-3 py-2 border rounded" />
+</div>
 
-    <input type="date"
-      name="deadline_end"
-      value="{{ request('deadline_end') }}"
-      class="px-3 py-2 border rounded" />
+<div class="flex items-center gap-2 mt-2">
+  <label for="deadline_end" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Akhir:</label>
+  <input type="date" id="deadline_end" name="deadline_end" value="{{ request('deadline_end') }}" class="w-[150px] px-3 py-2 border rounded" />
+</div>
+
+
 
     <!-- Status -->
     <select name="status" class="w-[150px] px-3 py-2 border rounded">
