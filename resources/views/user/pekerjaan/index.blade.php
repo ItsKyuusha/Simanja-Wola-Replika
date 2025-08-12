@@ -6,18 +6,44 @@
     <h3 class="text-lg font-semibold mb-4">Daftar Tugas Anda</h3>
 
     <!-- Form Search -->
-    <form method="GET" action="{{ route('user.pekerjaan.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-6">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama Tugas..." class="border rounded px-3 py-2 col-span-2">
-        <input type="text" name="jenis_pekerjaan" value="{{ request('jenis_pekerjaan') }}" placeholder="Cari Jenis Pekerjaan..." class="border rounded px-3 py-2">
-        <input type="text" name="deadline" value="{{ request('deadline') }}" placeholder="Cari Deadline (e.g. 01 Jan - 31 Mar)" class="border rounded px-3 py-2 col-span-2">
-        <select name="status" class="border rounded px-3 py-2">
-            <option value="">Pilih Status</option>
-            <option value="belum_dikerjakan" {{ request('status') == 'belum_dikerjakan' ? 'selected' : '' }}>Belum Dikerjakan</option>
-            <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
-            <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-        </select>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2">Cari</button>
-    </form>
+<form method="GET" action="{{ route('user.pekerjaan.index') }}" class="flex flex-wrap gap-3 mb-6 items-center">
+    <!-- Cari Nama Tugas -->
+    <input type="text" 
+        name="search" 
+        value="{{ request('search') }}" 
+        placeholder="Cari Nama Tugas..." 
+        class="w-[300px] px-3 py-2 border rounded" />
+
+
+
+    <!-- Cari Jenis Pekerjaan -->
+    <input type="text" 
+        name="jenis_pekerjaan" 
+        value="{{ request('jenis_pekerjaan') }}" 
+        placeholder="Cari Jenis Pekerjaan..." 
+        class="w-[300px] px-3 py-2 border rounded" />
+
+    <!-- Cari Deadline -->
+    <input type="text" 
+        name="deadline" 
+        value="{{ request('deadline') }}" 
+        placeholder="Cari Deadline (e.g. 01 Jan - 31 Mar)" 
+        class="w-[300px] px-3 py-2 border rounded" />
+
+    <!-- Status -->
+    <select name="status" class="w-[150px] px-3 py-2 border rounded">
+        <option value="">Pilih Status</option>
+        <option value="belum_dikerjakan" {{ request('status') == 'belum_dikerjakan' ? 'selected' : '' }}>Belum Dikerjakan</option>
+        <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+        <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+    </select>
+
+    <!-- Tombol -->
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2">
+        Cari
+    </button>
+</form>
+
 
     @forelse($tugas as $t)
         <div class="border rounded-lg mb-4 overflow-hidden">
