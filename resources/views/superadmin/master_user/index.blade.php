@@ -3,12 +3,14 @@
 @section('page-title', 'Master | User')
 
 @section('content')
-  <div class="bg-white rounded-xl p-6 border border-gray-200">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
+<div class="bg-white rounded-xl p-6 border border-gray-200">
+
+  <!-- Header & Action -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-gray-800">Manajemen User & Pegawai</h2>
 
-    <!-- Form Search + Tambah Button dalam satu baris -->
     <div class="flex flex-col sm:flex-row items-center gap-3">
+      <!-- Form Search -->
       <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="flex gap-3">
         <input type="text" name="search" value="{{ request('search') }}"
           class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -19,19 +21,31 @@
         </button>
       </form>
 
-    <!-- Tombol Tambah User -->
-    <button @click="openCreate = true"
-      class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-      + Tambah User
-    </button>
+      <!-- Tombol Export -->
+      <a href="{{ route('superadmin.master_user.export') }}"
+        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+        Export Excel
+      </a>
+
+      <!-- Tombol Import -->
+      <button @click="openImport = true"
+        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
+        Import Excel
+      </button>
+
+      <!-- Tombol Tambah User -->
+      <button @click="openCreate = true"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+        + Tambah User
+      </button>
+    </div>
   </div>
-</div>
 
   <!-- Pesan Sukses -->
   @if(session('success'))
-  <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
-    {{ session('success') }}
-  </div>
+    <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
+      {{ session('success') }}
+    </div>
   @endif
 
   <!-- Tabel -->
@@ -79,56 +93,48 @@
 
         <!-- Modal Edit -->
         <template x-if="openEdit === {{ $user->id }}">
-  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md relative border border-gray-300">
-      <button @click="openEdit = null"
-        class="absolute top-2 right-2 text-gray-400 text-2xl hover:text-red-500">&times;</button>
-      <h3 class="text-lg font-semibold mb-4 text-gray-700">Edit Data User</h3>
-      <form action="{{ route('superadmin.master_user.update', $user->id) }}" method="POST">
-        @csrf @method('PUT')
-        <div class="grid grid-cols-1 gap-3">
-          <input name="nama" class="border rounded px-3 py-2" value="{{ $user->pegawai->nama ?? '' }}"
-            placeholder="Nama Pegawai" required>
-          <input name="nip" class="border rounded px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}"
-            placeholder="NIP" required>
-          <input name="jabatan" class="border rounded px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}"
-            placeholder="Jabatan" required>
+          <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-xl w-full max-w-md relative border border-gray-300">
+              <button @click="openEdit = null"
+                class="absolute top-2 right-2 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700">Edit Data User</h3>
+              <form action="{{ route('superadmin.master_user.update', $user->id) }}" method="POST">
+                @csrf @method('PUT')
+                <div class="grid grid-cols-1 gap-3">
+                  <input name="nama" class="border rounded px-3 py-2" value="{{ $user->pegawai->nama ?? '' }}" required>
+                  <input name="nip" class="border rounded px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}" required>
+                  <input name="jabatan" class="border rounded px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}" required>
 
-          <select name="team_id" class="border rounded px-3 py-2" required>
-            <option value="">-- Pilih Tim --</option>
-            @foreach($teams as $team)
-            <option value="{{ $team->id }}" {{ optional($user->pegawai->team)->id == $team->id ? 'selected' : '' }}>
-              {{ $team->nama_tim }}
-            </option>
-            @endforeach
-          </select>
+                  <select name="team_id" class="border rounded px-3 py-2" required>
+                    <option value="">-- Pilih Tim --</option>
+                    @foreach($teams as $team)
+                      <option value="{{ $team->id }}" {{ optional($user->pegawai->team)->id == $team->id ? 'selected' : '' }}>
+                        {{ $team->nama_tim }}
+                      </option>
+                    @endforeach
+                  </select>
 
-          <input type="text" name="name" class="border rounded px-3 py-2" value="{{ $user->name }}"
-            placeholder="Nama User" required>
-          <input type="email" name="email" class="border rounded px-3 py-2" value="{{ $user->email }}"
-            placeholder="Email" required>
-
-          <!-- Input password baru -->
-          <input type="password" name="password" class="border rounded px-3 py-2"
-            placeholder="Password baru (kosongkan jika tidak ganti)">
-
-          <select name="role" class="border rounded px-3 py-2" required>
-            <option disabled>-- Pilih Role --</option>
-            <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-          </select>
-        </div>
-        <div class="mt-4 flex justify-end gap-2">
-          <button type="button" @click="openEdit = null"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
-          <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Simpan</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</template>
-
+                  <input type="text" name="name" class="border rounded px-3 py-2" value="{{ $user->name }}" required>
+                  <input type="email" name="email" class="border rounded px-3 py-2" value="{{ $user->email }}" required>
+                  <input type="password" name="password" class="border rounded px-3 py-2"
+                    placeholder="Password baru (kosongkan jika tidak ganti)">
+                  
+                  <select name="role" class="border rounded px-3 py-2" required>
+                    <option disabled>-- Pilih Role --</option>
+                    <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
+                  </select>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                  <button type="button" @click="openEdit = null"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
+                  <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Simpan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </template>
 
         @empty
         <tr>
@@ -139,6 +145,28 @@
     </table>
   </div>
 </div>
+
+<!-- Modal Import -->
+<template x-if="openImport">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md relative border border-gray-300">
+      <button @click="openImport = false"
+        class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Import Data User & Pegawai</h2>
+      <form action="{{ route('superadmin.master_user.import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="file" accept=".xlsx,.xls" required
+          class="border w-full rounded px-3 py-2 mb-3">
+        <div class="mt-5 flex justify-end gap-2">
+          <button type="button" @click="openImport = false"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
+          <button type="submit"
+            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
 
 <!-- Modal Create -->
 <template x-if="openCreate">
@@ -157,7 +185,7 @@
           <select name="team_id" class="border rounded px-3 py-2" required>
             <option disabled selected>-- Pilih Tim --</option>
             @foreach($teams as $team)
-            <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
+              <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
             @endforeach
           </select>
 
@@ -182,16 +210,18 @@
     </div>
   </div>
 </template>
- <!-- Footer -->
-    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
-        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-    </footer>
+
+<!-- Footer -->
+<footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+</footer>
 
 <script>
   document.addEventListener('alpine:init', () => {
     Alpine.data('userModal', () => ({
       openCreate: false,
       openEdit: null,
+      openImport: false,
     }));
   });
 </script>
