@@ -87,14 +87,16 @@ class JenisPekerjaanController extends Controller
         {
             public function collection()
             {
-                return JenisPekerjaan::with('team')->get()->map(function ($item) {
+                $data = \App\Models\JenisPekerjaan::with('team')->get();
+
+                return $data->values()->map(function ($item, $index) {
                     return [
-                        'ID'                 => $item->id,
+                        'No'                 => $index + 1, // ✅ nomor urut manual
                         'Nama Pekerjaan'     => $item->nama_pekerjaan,
                         'Satuan'             => $item->satuan,
                         'Bobot'              => $item->bobot,
                         'Pemberi Pekerjaan'  => $item->pemberi_pekerjaan,
-                        'Tim'                => $item->team->nama_tim ?? '-'
+                        'Tim'                => $item->team->nama_tim ?? '-',
                     ];
                 });
             }
@@ -102,7 +104,7 @@ class JenisPekerjaanController extends Controller
             public function headings(): array
             {
                 return [
-                    'ID',
+                    'No',
                     'Nama Pekerjaan',
                     'Satuan',
                     'Bobot',
@@ -113,17 +115,32 @@ class JenisPekerjaanController extends Controller
 
             public function styles(Worksheet $sheet)
             {
-                return [
-                    1 => [
-                        'font' => ['bold' => true],
-                        'alignment' => ['horizontal' => 'center'],
-                        'borders' => [
-                            'allBorders' => [
-                                'borderStyle' => Border::BORDER_THIN,
-                            ]
+                // total baris (header + data)
+                $highestRow = $sheet->getHighestRow();
+                $highestColumn = $sheet->getHighestColumn();
+                $cellRange = 'A1:' . $highestColumn . $highestRow;
+
+                // style header
+                $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'alignment' => ['horizontal' => 'center'],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
                         ]
-                    ],
-                ];
+                    ]
+                ]);
+
+                // style data
+                $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ]
+                    ]
+                ]);
+
+                return [];
             }
         }, 'jenis_pekerjaan.xlsx');
     }
@@ -136,20 +153,24 @@ class JenisPekerjaanController extends Controller
         Excel::import(new class implements ToModel, WithHeadingRow {
             public function model(array $row)
             {
-                // cek apakah kolom tim ada
+                // skip jika nama_pekerjaan kosong
+                if (empty($row['nama_pekerjaan']) && empty($row['nama pekerjaan'])) {
+                    return null;
+                }
+
+                // cari tim berdasarkan kolom 'Tim' atau 'nama_tim'
                 $team = null;
-                if (!empty($row['tim'])) { // hasil heading 'Tim' dari export
+                if (!empty($row['tim'])) {
                     $team = \App\Models\Team::where('nama_tim', trim($row['tim']))->first();
                 } elseif (!empty($row['nama_tim'])) {
-                    // kalau user bikin sendiri header 'nama_tim'
                     $team = \App\Models\Team::where('nama_tim', trim($row['nama_tim']))->first();
                 }
 
                 return new \App\Models\JenisPekerjaan([
-                    'nama_pekerjaan'    => $row['nama_pekerjaan'] ?? null,
+                    'nama_pekerjaan'    => $row['nama_pekerjaan'] ?? $row['nama pekerjaan'] ?? null,
                     'satuan'            => $row['satuan'] ?? null,
-                    'bobot'             => $row['bobot'] ?? null,
-                    'pemberi_pekerjaan' => $row['pemberi_pekerjaan'] ?? null,
+                    'bobot'             => $row['bobot'] ?? 0, // default 0 biar aman
+                    'pemberi_pekerjaan' => $row['pemberi_pekerjaan'] ?? $row['pemberi pekerjaan'] ?? null,
                     'tim_id'            => $team?->id,
                 ]);
             }
