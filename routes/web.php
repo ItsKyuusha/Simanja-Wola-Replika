@@ -69,6 +69,9 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
     Route::post('user', [UserController::class, 'store'])->name('master_user.store');
     Route::put('user/{id}', [UserController::class, 'update'])->name('master_user.update');
     Route::delete('user/{id}', [UserController::class, 'destroy'])->name('master_user.destroy');
+    Route::get('user/export', [UserController::class, 'export'])->name('master_user.export');
+    Route::post('user/import', [UserController::class, 'import'])->name('master_user.import');
+
 
     // Jenis Pekerjaan Routes
     Route::get('jenis-pekerjaan', [JenisPekerjaanController::class, 'index'])->name('jenis-pekerjaan.index');
@@ -87,9 +90,14 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
     Route::post('jenis-tim', [JenisTimController::class, 'store'])->name('jenis-tim.store');
     Route::put('jenis-tim/{id}', [JenisTimController::class, 'update'])->name('jenis-tim.update');
     Route::delete('jenis-tim/{id}', [JenisTimController::class, 'destroy'])->name('jenis-tim.destroy');
+    Route::get('jenis-tim/export', [JenisTimController::class, 'export'])->name('jenis-tim.export');
+    Route::post('jenis-tim/import', [JenisTimController::class, 'import'])->name('jenis-tim.import');
+
+
 
     // Pegawai Routes
     Route::get('pegawai', [PegawaiController::class, 'index'])->name('master_pegawai.index');
+
 
     // Progress Routes
     Route::get('progress', [ProgressController::class, 'index'])->name('progress.index');
