@@ -6,50 +6,40 @@
   <h3 class="text-lg font-semibold mb-4">Daftar Tugas Anda</h3>
 
   <!-- Form Search -->
-  <!-- Form Search -->
-  <form method="GET" action="{{ route('user.pekerjaan.index') }}" class="flex flex-wrap gap-3 mb-6 items-center">
-    <!-- Cari Nama Tugas -->
-    <input type="text"
-      name="search"
-      value="{{ request('search') }}"
-      placeholder="Cari Nama Tugas..."
-      class="w-[300px] px-3 py-2 border rounded" />
+<form method="GET" action="{{ route('user.pekerjaan.index') }}" class="flex flex-wrap gap-4 mb-6 items-center max-w-full">
 
-    <!-- Cari Jenis Pekerjaan -->
-    <input type="text"
-      name="jenis_pekerjaan"
-      value="{{ request('jenis_pekerjaan') }}"
-      placeholder="Cari Jenis Pekerjaan..."
-      class="w-[300px] px-3 py-2 border rounded" />
+  <input type="text" name="search" value="{{ request('search') }}"
+    placeholder="Cari Nama Tugas..." 
+    class="flex-grow min-w-[150px] max-w-xs px-3 py-2 border rounded" />
 
-    <!-- Deadline (Tanggal Mulai & Akhir) -->
-    <div class="flex items-center gap-2">
-  <label for="deadline_start" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Mulai:</label>
-  <input type="date" id="deadline_start" name="deadline_start" value="{{ request('deadline_start') }}" class="w-[150px] px-3 py-2 border rounded" />
-</div>
+  <input type="text" name="jenis_pekerjaan" value="{{ request('jenis_pekerjaan') }}"
+    placeholder="Cari Jenis Pekerjaan..." 
+    class="flex-grow min-w-[150px] max-w-xs px-3 py-2 border rounded" />
 
-<div class="flex items-center gap-2 mt-2">
-  <label for="deadline_end" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Akhir:</label>
-  <input type="date" id="deadline_end" name="deadline_end" value="{{ request('deadline_end') }}" class="w-[150px] px-3 py-2 border rounded" />
-</div>
+  <div class="flex items-center gap-2 min-w-[180px]">
+    <label for="deadline_start" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Mulai:</label>
+    <input type="date" id="deadline_start" name="deadline_start" value="{{ request('deadline_start') }}"
+      class="flex-grow px-3 py-2 border rounded" />
+  </div>
 
+  <div class="flex items-center gap-2 min-w-[180px]">
+    <label for="deadline_end" class="font-semibold text-gray-700 whitespace-nowrap">Deadline Akhir:</label>
+    <input type="date" id="deadline_end" name="deadline_end" value="{{ request('deadline_end') }}"
+      class="flex-grow px-3 py-2 border rounded" />
+  </div>
 
+  <select name="status" class="min-w-[150px] max-w-xs px-3 py-2 border rounded">
+    <option value="">Pilih Status</option>
+    <option value="belum_dikerjakan" {{ request('status') == 'belum_dikerjakan' ? 'selected' : '' }}>Belum Dikerjakan</option>
+    <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+    <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+  </select>
 
-    <!-- Status -->
-    <select name="status" class="w-[150px] px-3 py-2 border rounded">
-      <option value="">Pilih Status</option>
-      <option value="belum_dikerjakan" {{ request('status') == 'belum_dikerjakan' ? 'selected' : '' }}>Belum Dikerjakan</option>
-      <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
-      <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-    </select>
+  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 whitespace-nowrap">
+    Cari
+  </button>
 
-    <!-- Tombol -->
-    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2">
-      Cari
-    </button>
-  </form>
-
-
+</form>
 
   @forelse($tugas as $t)
   <div class="border rounded-lg mb-4 overflow-hidden">

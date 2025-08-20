@@ -29,31 +29,29 @@
         </tr>
       </thead>
       <tbody>
-        @forelse($progress as $p)
-        @foreach($p->pegawai->tugas as $tugas)
+        @forelse($tugas as $t)
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-blue-50 border-b border-gray-200 transition-colors">
-          <td class="px-3 py-2">{{ $loop->parent->iteration }}</td>
-          <td class="text-left px-3 py-2 font-medium">{{ $p->pegawai->nama }}</td>
-          <td class="text-left px-3 py-2">{{ $tugas->nama_tugas }}</td>
-          <td class="px-3 py-2">{{ $tugas->jenisPekerjaan->bobot ?? 0 }}</td>
-          <td class="text-left px-3 py-2">{{ $tugas->asal ?? '-' }}</td>
-          <td class="px-3 py-2">{{ $tugas->target }}</td>
-          <td class="px-3 py-2">{{ $tugas->realisasi->realisasi ?? '-' }}</td>
-          <td class="px-3 py-2">{{ $tugas->satuan }}</td>
-          <td class="px-3 py-2 text-red-600">{{ \Carbon\Carbon::parse($tugas->deadline)->format('d M Y') }}</td>
-          <td class="px-3 py-2">{{ optional($tugas->realisasi)->tanggal_realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 text-green-600">{{ $tugas->realisasi->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 text-blue-600">{{ $tugas->realisasi->nilai_kuantitas ?? '-' }}</td>
-          <td class="text-left px-3 py-2 text-gray-500 italic">{{ $tugas->realisasi->catatan ?? '-' }}</td>
+          <td class="px-3 py-2">{{ $loop->iteration + ($tugas->currentPage()-1)*$tugas->perPage() }}</td>
+          <td class="text-left px-3 py-2 font-medium">{{ $t->pegawai->nama }}</td>
+          <td class="text-left px-3 py-2">{{ $t->nama_tugas }}</td>
+          <td class="px-3 py-2">{{ $t->jenisPekerjaan->bobot ?? 0 }}</td>
+          <td class="text-left px-3 py-2">{{ $t->asal ?? '-' }}</td>
+          <td class="px-3 py-2">{{ $t->target }}</td>
+          <td class="px-3 py-2">{{ $t->realisasi->realisasi ?? '-' }}</td>
+          <td class="px-3 py-2">{{ $t->satuan }}</td>
+          <td class="px-3 py-2 text-red-600">{{ \Carbon\Carbon::parse($t->deadline)->format('d M Y') }}</td>
+          <td class="px-3 py-2">{{ optional($t->realisasi)->tanggal_realisasi ?? '-' }}</td>
+          <td class="px-3 py-2 text-green-600">{{ $t->realisasi->nilai_kualitas ?? '-' }}</td>
+          <td class="px-3 py-2 text-blue-600">{{ $t->realisasi->nilai_kuantitas ?? '-' }}</td>
+          <td class="text-left px-3 py-2 text-gray-500 italic">{{ $t->realisasi->catatan ?? '-' }}</td>
           <td class="px-3 py-2">
-            @if($tugas->realisasi && $tugas->realisasi->file_bukti)
-            <a href="{{ asset('storage/' . $tugas->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
+            @if($t->realisasi && $t->realisasi->file_bukti)
+              <a href="{{ asset('storage/' . $t->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
             @else
-            <span class="text-gray-400">-</span>
+              <span class="text-gray-400">-</span>
             @endif
           </td>
         </tr>
-        @endforeach
         @empty
         <tr>
           <td colspan="14" class="text-center py-6 text-gray-500">Tidak ada data kinerja pegawai.</td>
@@ -61,11 +59,92 @@
         @endforelse
       </tbody>
     </table>
+</div>
+
+<!-- Paginasi -->
+@if ($tugas->hasPages())
+<div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
+  <!-- Mobile Previous/Next -->
+  <div class="flex flex-1 justify-between sm:hidden">
+    @if ($tugas->onFirstPage())
+      <span class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
+    @else
+      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Previous</a>
+    @endif
+
+    @if ($tugas->hasMorePages())
+      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Next</a>
+    @else
+      <span class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
+    @endif
   </div>
+
+  <!-- Desktop -->
+  <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm text-black">
+        Menampilkan
+        <span class="font-medium">{{ $tugas->firstItem() }}</span>
+        sampai
+        <span class="font-medium">{{ $tugas->lastItem() }}</span>
+        data dari
+        <span class="font-medium">{{ $tugas->total() }}</span>
+        data keseluruhan
+      </p>
+    </div>
+    <div>
+      <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
+        {{-- Tombol Previous --}}
+        @if ($tugas->onFirstPage())
+          <span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 cursor-not-allowed">
+            <span class="sr-only">Previous</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+            </svg>
+          </span>
+        @else
+          <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:bg-white/5">
+            <span class="sr-only">Previous</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+            </svg>
+          </a>
+        @endif
+
+        {{-- Nomor Halaman --}}
+        @foreach ($tugas->getUrlRange(1, $tugas->lastPage()) as $page => $url)
+          @if ($page == $tugas->currentPage())
+            <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
+          @else
+            <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
+          @endif
+        @endforeach
+
+        {{-- Tombol Next --}}
+        @if ($tugas->hasMorePages())
+          <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->nextPageUrl() }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 hover:bg-white/5">
+            <span class="sr-only">Next</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+            </svg>
+          </a>
+        @else
+          <span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 cursor-not-allowed">
+            <span class="sr-only">Next</span>
+            <svg viewBox="0 0 20 20" fill="CurrentColor" class="size-5">
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+            </svg>
+          </span>
+        @endif
+      </nav>
+    </div>
+  </div>
+</div>
+@endif
 </div>
 
 <!-- CARD: Tabel Nilai Akhir Pegawai -->
-<div class="bg-white rounded-2xl p-6 mb-16 border border-gray-200">
+ <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
   <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Nilai Akhir Pegawai</h3>
 
   <div class="overflow-x-auto rounded-md border border-gray-200">
@@ -82,7 +161,7 @@
       <tbody>
         @forelse($progress as $p)
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-blue-50 border-b border-gray-200 transition-colors">
-          <td class="px-4 py-2">{{ $loop->iteration }}</td>
+          <td class="px-4 py-2">{{ $loop->iteration + ($progress->currentPage()-1)*$progress->perPage() }}</td>
           <td class="text-left px-4 py-2 font-medium">{{ $p->pegawai->nama }}</td>
           <td class="px-4 py-2">{{ $p->pegawai->nip }}</td>
           <td class="px-4 py-2">{{ $p->total_bobot }}</td>
@@ -96,11 +175,91 @@
       </tbody>
     </table>
   </div>
-</div>
 
- <!-- Footer -->
-    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
-        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-    </footer>
+  <!-- Paginasi -->
+@if ($progress->hasPages())
+<div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
+  <!-- Mobile Previous/Next -->
+  <div class="flex flex-1 justify-between sm:hidden">
+    @if ($progress->onFirstPage())
+      <span class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
+    @else
+      <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Previous</a>
+    @endif
+
+    @if ($progress->hasMorePages())
+      <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Next</a>
+    @else
+      <span class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
+    @endif
+  </div>
+
+  <!-- Desktop -->
+  <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm text-black">
+        Menampilkan
+        <span class="font-medium">{{ $progress->firstItem() }}</span>
+        sampai
+        <span class="font-medium">{{ $progress->lastItem() }}</span>
+        data dari
+        <span class="font-medium">{{ $progress->total() }}</span>
+        data keseluruhan
+      </p>
+    </div>
+    <div>
+      <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
+        {{-- Tombol Previous --}}
+        @if ($progress->onFirstPage())
+          <span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 cursor-not-allowed">
+            <span class="sr-only">Previous</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+            </svg>
+          </span>
+        @else
+          <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:bg-white/5">
+            <span class="sr-only">Previous</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+            </svg>
+          </a>
+        @endif
+
+        {{-- Nomor Halaman --}}
+        @foreach ($progress->getUrlRange(1, $progress->lastPage()) as $page => $url)
+          @if ($page == $progress->currentPage())
+            <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
+          @else
+            <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
+          @endif
+        @endforeach
+
+        {{-- Tombol Next --}}
+        @if ($progress->hasMorePages())
+          <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->nextPageUrl() }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 hover:bg-white/5">
+            <span class="sr-only">Next</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+            </svg>
+          </a>
+        @else
+          <span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 cursor-not-allowed">
+            <span class="sr-only">Next</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+            </svg>
+          </span>
+        @endif
+      </nav>
+    </div>
+  </div>
+</div>
+@endif
+
+<!-- Footer -->
+<footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+</footer>
 
 @endsection

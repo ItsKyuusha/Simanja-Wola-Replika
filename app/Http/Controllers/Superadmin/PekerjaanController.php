@@ -45,16 +45,26 @@ class PekerjaanController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        // Execute the query
-        $tugas = $query->with(['jenisPekerjaan', 'realisasi'])->get();
+        // Ambil semua data untuk perhitungan
+$allTugas = $query->with(['jenisPekerjaan', 'realisasi'])->get();
 
-        // Calculate the summary data
-        $totalTugas = $tugas->count();
-        $tugasSelesai = $tugas->where('realisasi.realisasi', '>=', 100)->count();
-        $tugasOngoing = $tugas->where('realisasi.realisasi', '>', 0)->where('realisasi.realisasi', '<', 100)->count();
-        $tugasBelum = $totalTugas - $tugasSelesai - $tugasOngoing;
-        $persentaseSelesai = $totalTugas ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
+// Data untuk tabel (pagination)
+$tugas = $query->with(['jenisPekerjaan', 'realisasi'])->paginate(10)->withQueryString();
 
-        return view('superadmin.pekerjaan.index', compact('tugas', 'totalTugas', 'tugasSelesai', 'tugasOngoing', 'tugasBelum', 'persentaseSelesai'));
-    }
-}
+// Perhitungan progress pakai semua data
+$totalTugas = $allTugas->count();
+$tugasSelesai = $allTugas->where('realisasi.realisasi', '>=', 100)->count();
+$tugasOngoing = $allTugas->where('realisasi.realisasi', '>', 0)->where('realisasi.realisasi', '<', 100)->count();
+$tugasBelum = $totalTugas - $tugasSelesai - $tugasOngoing;
+$persentaseSelesai = $totalTugas ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
+
+return view('superadmin.pekerjaan.index', compact(
+    'tugas',
+    'totalTugas',
+    'tugasSelesai',
+    'tugasOngoing',
+    'tugasBelum',
+    'persentaseSelesai'
+));
+
+}}

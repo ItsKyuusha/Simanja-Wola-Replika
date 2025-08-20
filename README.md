@@ -14,3 +14,4 @@ Simanja berfungsi sebagai alat untuk mengukur, mengelola, dan meningkatkan kiner
 3. Konfigurasi `.env` sesuai database dan environment kamu
 4. Jalankan migrasi database dengan `php artisan migrate`
 5. Jalankan server dengan `php artisan serve`
+6. Jalankan untuk bisa melihat gambar upload bukti user`php artisan storage:link` 
