@@ -97,6 +97,7 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
 
     // Pegawai Routes
     Route::get('pegawai', [PegawaiController::class, 'index'])->name('master_pegawai.index');
+    Route::get('pegawai/export', [PegawaiController::class, 'export'])->name('master_pegawai.export');
 
 
     // Progress Routes
