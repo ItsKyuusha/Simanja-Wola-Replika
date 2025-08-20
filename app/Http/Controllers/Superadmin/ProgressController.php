@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use App\Models\Progress;
+use App\Models\Tugas;
 use Illuminate\Support\Facades\DB;
 
 class ProgressController extends Controller
 {
     public function index()
     {
-        // Ambil semua pegawai + tugas + realisasi + jenis pekerjaan
+        // Hitung dan simpan progress tiap pegawai
         $pegawais = Pegawai::with(['tugas.realisasi', 'tugas.jenisPekerjaan'])->get();
 
         foreach ($pegawais as $pegawai) {
@@ -40,10 +41,15 @@ class ProgressController extends Controller
             );
         }
 
-        // Ambil ulang semua progress dan pegawai setelah update
-        $progress = Progress::with(['pegawai.tugas.realisasi', 'pegawai.tugas.jenisPekerjaan'])->get();
+        // 🔹 Data Tabel Kinerja (paginate tugas langsung)
+        $tugas = Tugas::with(['pegawai', 'realisasi', 'jenisPekerjaan'])
+                    ->paginate(3, ['*'], 'tugas_page');
 
-        return view('superadmin.progress.index', compact('progress'));
+        // 🔹 Data Tabel Nilai Akhir (paginate progress)
+        $progress = Progress::with('pegawai')
+                    ->paginate(5, ['*'], 'progress_page');
+
+        return view('superadmin.progress.index', compact('tugas', 'progress'));
     }
 
     public function show($id)
@@ -52,4 +58,3 @@ class ProgressController extends Controller
         return view('superadmin.progress.detail', compact('pegawai'));
     }
 }
-
