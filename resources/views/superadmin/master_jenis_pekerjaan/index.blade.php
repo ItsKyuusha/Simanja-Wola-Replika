@@ -1,11 +1,9 @@
 @extends('layouts.app')
 
-
 @section('page-title', 'Master | Jenis Pekerjaan')
 
-
 @section('content')
-<div x-data="{ openCreate: false, openEdit: null }" class="p-6 bg-white shadow rounded-xl">
+<div x-data="{ openCreate: false, openEdit: null, openImport: false }" class="p-6 bg-white shadow rounded-xl">
 
   <!-- Header -->
   <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -20,6 +18,8 @@
 
       @if(auth()->user()?->role === 'superadmin')
         <a href="{{ route('superadmin.jenis-pekerjaan.export') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Export Excel</a>
+
+        <button @click="openImport = true" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">Import Excel</button>
       @endif
 
       <button @click="openCreate = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">+ Tambah Jenis Pekerjaan</button>
@@ -134,7 +134,26 @@
       </div>
     </div>
   </template>
+
+  <!-- Modal Import -->
+  <template x-if="openImport">
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
+         <button @click="openImport = false" class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+        <h3 class="text-lg font-semibold mb-4">Import Jenis Pekerjaan dari Excel</h3>
+        <form action="{{ route('superadmin.jenis-pekerjaan.import') }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <input type="file" name="file" accept=".xlsx,.xls" class="border rounded px-3 py-2 w-full" required>
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" @click="openImport = false" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
+            <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </template>
 </div>
+
  <!-- Footer -->
     <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
         © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
