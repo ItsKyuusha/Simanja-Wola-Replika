@@ -5,6 +5,15 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
+
 
 class PegawaiController extends Controller
 {
@@ -16,12 +25,73 @@ class PegawaiController extends Controller
 
         if ($search) {
             $query->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%")
-                  ->orWhere('jabatan', 'like', "%{$search}%");
+                ->orWhere('nip', 'like', "%{$search}%")
+                ->orWhere('jabatan', 'like', "%{$search}%");
         }
 
         $data = $query->get();
 
         return view('superadmin.master_pegawai.index', compact('data'));
+    }
+
+    public function export()
+    {
+        $export = new class implements FromCollection, WithHeadings, \Maatwebsite\Excel\Concerns\WithStyles, \Maatwebsite\Excel\Concerns\ShouldAutoSize {
+            public function collection()
+            {
+                $pegawai = Pegawai::with('team')->get();
+
+                return $pegawai->map(function ($item, $index) {
+                    return [
+                        'No'           => $index + 1,
+                        'Nama Pegawai' => $item->nama,
+                        'NIP'          => $item->nip,
+                        'Jabatan'      => $item->jabatan,
+                        'Tim'          => $item->team->nama_tim ?? '-',
+                    ];
+                });
+            }
+
+            public function headings(): array
+            {
+                return [
+                    'No',
+                    'Nama Pegawai',
+                    'NIP',
+                    'Jabatan',
+                    'Tim',
+                ];
+            }
+
+            public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+            {
+                $highestRow    = $sheet->getHighestRow();
+                $highestColumn = $sheet->getHighestColumn();
+
+                // Style header
+                $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    ]
+                ]);
+
+                // Style isi tabel
+                $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
+                    'alignment' => ['vertical' => 'center'],
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    ]
+                ]);
+
+                // Kolom No rata tengah
+                $sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal('center');
+
+                return [];
+            }
+        };
+
+        return \Maatwebsite\Excel\Facades\Excel::download($export, 'data_pegawai.xlsx');
     }
 }
