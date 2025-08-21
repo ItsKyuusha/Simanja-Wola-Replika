@@ -6,10 +6,17 @@
 
 <!-- CARD: Tabel Kinerja Pegawai -->
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Kinerja Pegawai</h3>
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-2xl font-semibold text-gray-700">Tabel Kinerja Pegawai</h3>
+    <!-- Tombol Export -->
+    <a href="{{ route('superadmin.progress.export.kinerja') }}"
+      class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+      Export Excel
+    </a>
+  </div>
 
   <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full text-sm text-gray-800">
+    <table class="min-w-full table-auto text-sm text-gray-700">
       <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr class="text-xs uppercase tracking-wide text-center">
           <th class="px-4 py-3">No.</th>
@@ -46,9 +53,9 @@
           <td class="text-left px-3 py-2 text-gray-500 italic">{{ $t->realisasi->catatan ?? '-' }}</td>
           <td class="px-3 py-2">
             @if($t->realisasi && $t->realisasi->file_bukti)
-              <a href="{{ asset('storage/' . $t->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
+            <a href="{{ asset('storage/' . $t->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
             @else
-              <span class="text-gray-400">-</span>
+            <span class="text-gray-400">-</span>
             @endif
           </td>
         </tr>
@@ -59,96 +66,103 @@
         @endforelse
       </tbody>
     </table>
-</div>
-
-<!-- Paginasi -->
-@if ($tugas->hasPages())
-<div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
-  <!-- Mobile Previous/Next -->
-  <div class="flex flex-1 justify-between sm:hidden">
-    @if ($tugas->onFirstPage())
-      <span class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
-    @else
-      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Previous</a>
-    @endif
-
-    @if ($tugas->hasMorePages())
-      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Next</a>
-    @else
-      <span class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
-    @endif
   </div>
 
-  <!-- Desktop -->
-  <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-    <div>
-      <p class="text-sm text-black">
-        Menampilkan
-        <span class="font-medium">{{ $tugas->firstItem() }}</span>
-        sampai
-        <span class="font-medium">{{ $tugas->lastItem() }}</span>
-        data dari
-        <span class="font-medium">{{ $tugas->total() }}</span>
-        data keseluruhan
-      </p>
+  <!-- Paginasi -->
+  @if ($tugas->hasPages())
+  <div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
+    <!-- Mobile Previous/Next -->
+    <div class="flex flex-1 justify-between sm:hidden">
+      @if ($tugas->onFirstPage())
+      <span class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
+      @else
+      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Previous</a>
+      @endif
+
+      @if ($tugas->hasMorePages())
+      <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Next</a>
+      @else
+      <span class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
+      @endif
     </div>
-    <div>
-      <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
-        {{-- Tombol Previous --}}
-        @if ($tugas->onFirstPage())
+
+    <!-- Desktop -->
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-black">
+          Menampilkan
+          <span class="font-medium">{{ $tugas->firstItem() }}</span>
+          sampai
+          <span class="font-medium">{{ $tugas->lastItem() }}</span>
+          data dari
+          <span class="font-medium">{{ $tugas->total() }}</span>
+          data keseluruhan
+        </p>
+      </div>
+      <div>
+        <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
+          {{-- Tombol Previous --}}
+          @if ($tugas->onFirstPage())
           <span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 cursor-not-allowed">
             <span class="sr-only">Previous</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" />
             </svg>
           </span>
-        @else
+          @else
           <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:bg-white/5">
             <span class="sr-only">Previous</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" />
             </svg>
           </a>
-        @endif
-
-        {{-- Nomor Halaman --}}
-        @foreach ($tugas->getUrlRange(1, $tugas->lastPage()) as $page => $url)
-          @if ($page == $tugas->currentPage())
-            <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
-          @else
-            <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
           @endif
-        @endforeach
 
-        {{-- Tombol Next --}}
-        @if ($tugas->hasMorePages())
+          {{-- Nomor Halaman --}}
+          @foreach ($tugas->getUrlRange(1, $tugas->lastPage()) as $page => $url)
+          @if ($page == $tugas->currentPage())
+          <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
+          @else
+          <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
+          @endif
+          @endforeach
+
+          {{-- Tombol Next --}}
+          @if ($tugas->hasMorePages())
           <a href="{{ $tugas->appends(['progress_page' => $progress->currentPage()])->nextPageUrl() }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 hover:bg-white/5">
             <span class="sr-only">Next</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" />
             </svg>
           </a>
-        @else
+          @else
           <span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 cursor-not-allowed">
             <span class="sr-only">Next</span>
             <svg viewBox="0 0 20 20" fill="CurrentColor" class="size-5">
-              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" />
             </svg>
           </span>
-        @endif
-      </nav>
+          @endif
+        </nav>
+      </div>
     </div>
   </div>
-</div>
-@endif
+  @endif
 </div>
 
 <!-- CARD: Tabel Nilai Akhir Pegawai -->
- <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
-  <h3 class="text-2xl font-semibold text-gray-700 mb-4">Tabel Nilai Akhir Pegawai</h3>
+<div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-2xl font-semibold text-gray-700">Tabel Nilai Akhir Pegawai</h3>
+    <!-- Tombol Export -->
+    <a href="{{ route('superadmin.progress.export.nilaiAkhir') }}"
+      class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+      Export Excel
+    </a>
+  </div>
 
   <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full text-sm text-gray-800">
+    <table class="min-w-full table-autotext-sm text-gray-800">
       <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr class="text-xs uppercase tracking-wide text-center">
           <th class="px-4 py-3">No.</th>
@@ -177,89 +191,89 @@
   </div>
 
   <!-- Paginasi -->
-@if ($progress->hasPages())
-<div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
-  <!-- Mobile Previous/Next -->
-  <div class="flex flex-1 justify-between sm:hidden">
-    @if ($progress->onFirstPage())
+  @if ($progress->hasPages())
+  <div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
+    <!-- Mobile Previous/Next -->
+    <div class="flex flex-1 justify-between sm:hidden">
+      @if ($progress->onFirstPage())
       <span class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
-    @else
+      @else
       <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Previous</a>
-    @endif
+      @endif
 
-    @if ($progress->hasMorePages())
+      @if ($progress->hasMorePages())
       <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10">Next</a>
-    @else
+      @else
       <span class="relative ml-3 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
-    @endif
-  </div>
-
-  <!-- Desktop -->
-  <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-    <div>
-      <p class="text-sm text-black">
-        Menampilkan
-        <span class="font-medium">{{ $progress->firstItem() }}</span>
-        sampai
-        <span class="font-medium">{{ $progress->lastItem() }}</span>
-        data dari
-        <span class="font-medium">{{ $progress->total() }}</span>
-        data keseluruhan
-      </p>
+      @endif
     </div>
-    <div>
-      <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
-        {{-- Tombol Previous --}}
-        @if ($progress->onFirstPage())
+
+    <!-- Desktop -->
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-black">
+          Menampilkan
+          <span class="font-medium">{{ $progress->firstItem() }}</span>
+          sampai
+          <span class="font-medium">{{ $progress->lastItem() }}</span>
+          data dari
+          <span class="font-medium">{{ $progress->total() }}</span>
+          data keseluruhan
+        </p>
+      </div>
+      <div>
+        <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md">
+          {{-- Tombol Previous --}}
+          @if ($progress->onFirstPage())
           <span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 cursor-not-allowed">
             <span class="sr-only">Previous</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" />
             </svg>
           </span>
-        @else
+          @else
           <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->previousPageUrl() }}" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:bg-white/5">
             <span class="sr-only">Previous</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"/>
+              <path d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" />
             </svg>
           </a>
-        @endif
-
-        {{-- Nomor Halaman --}}
-        @foreach ($progress->getUrlRange(1, $progress->lastPage()) as $page => $url)
-          @if ($page == $progress->currentPage())
-            <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
-          @else
-            <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
           @endif
-        @endforeach
 
-        {{-- Tombol Next --}}
-        @if ($progress->hasMorePages())
+          {{-- Nomor Halaman --}}
+          @foreach ($progress->getUrlRange(1, $progress->lastPage()) as $page => $url)
+          @if ($page == $progress->currentPage())
+          <span aria-current="page" class="relative z-10 inline-flex items-center bg-blue-700 px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
+          @else
+          <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-white/5">{{ $page }}</a>
+          @endif
+          @endforeach
+
+          {{-- Tombol Next --}}
+          @if ($progress->hasMorePages())
           <a href="{{ $progress->appends(['tugas_page' => $tugas->currentPage()])->nextPageUrl() }}" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 hover:bg-white/5">
             <span class="sr-only">Next</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" />
             </svg>
           </a>
-        @else
+          @else
           <span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 cursor-not-allowed">
             <span class="sr-only">Next</span>
             <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"/>
+              <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" />
             </svg>
           </span>
-        @endif
-      </nav>
+          @endif
+        </nav>
+      </div>
     </div>
   </div>
-</div>
-@endif
+  @endif
 
-<!-- Footer -->
-<footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
-  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-</footer>
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+    © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+  </footer>
 
-@endsection
+  @endsection
