@@ -103,6 +103,8 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
     // Progress Routes
     Route::get('progress', [ProgressController::class, 'index'])->name('progress.index');
     Route::get('progress/{id}', [ProgressController::class, 'show'])->name('progress.show');
+    Route::get('/progress/export/kinerja', [ProgressController::class, 'exportKinerja'])->name('progress.export.kinerja');
+    Route::get('/progress/export/nilai-akhir', [ProgressController::class, 'exportNilaiAkhir'])->name('progress.export.nilaiAkhir');
 
     // Pekerjaan Routes
     Route::get('pekerjaan', [PekerjaanController::class, 'index'])->name('pekerjaan.index');
