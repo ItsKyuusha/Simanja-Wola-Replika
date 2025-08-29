@@ -4,31 +4,40 @@
 
 
 @section('content')
-<div class="bg-white rounded-2xl shadow p-6 mb-12 border border-gray-200">
-<!-- Judul dan Form Pencarian sejajar -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-  <h3 class="text-2xl font-semibold text-gray-700">Tabel Pegawai</h3>
+<div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
+  <!-- Judul dan Form Pencarian sejajar -->
 
-  <!-- Form & Export sejajar -->
-  <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-    <!-- Form Pencarian -->
-    <form method="GET" action="{{ route('superadmin.master_pegawai.index') }}" class="flex gap-2 w-full sm:w-auto">
-      <input type="text" name="search"
-        class="w-full sm:w-72 border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200"
-        placeholder="Cari nama pegawai ..." value="{{ request('search') }}">
-      <button type="submit"
-        class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-700 border border-gray-300">
-        Cari
-      </button>
-    </form>
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
+    <h2 class="text-2xl font-semibold text-blue-600">Tabel Pegawai</h2>
 
-    <!-- Tombol Export -->
-    <a href="{{ route('superadmin.master_pegawai.export') }}"
-      class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow text-center">
-      Export Excel
-    </a>
+    <!-- Form & Export sejajar -->
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <!-- Form Pencarian -->
+      <form method="GET" action="{{ route('superadmin.master_pegawai.index') }}" class="flex gap-3 w-full sm:w-auto">
+        <input type="text" name="search" value="{{ request('search') }}"
+          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
+             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+             bg-white/50 backdrop-blur-sm placeholder-gray-500"
+          placeholder="Cari nama pegawai, NIP, email...">
+        <button type="submit"
+          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
+             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
+             transition duration-200 ease-in-out transform hover:scale-105">
+          <i class="fas fa-search mr-1"></i> Cari
+        </button>
+      </form>
+
+      <!-- Tombol Export -->
+
+      <a href="{{ route('superadmin.master_pegawai.export') }}"
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
+           bg-green-200/20 backdrop-blur-sm shadow-sm 
+           hover:bg-green-300/30 hover:border-green-500 hover:text-green-700
+           transition duration-200 ease-in-out transform hover:scale-105">
+        <i class="fas fa-file-excel mr-2"></i> Export Tabel
+      </a>
+    </div>
   </div>
-</div>
 
 
 
@@ -40,15 +49,15 @@
   @endif
 
   <!-- Tabel Pegawai -->
-  <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full text-sm text-gray-800 border-collapse">
-      <thead class="bg-blue-100 text-center text-sm text-gray-700">
-        <tr class="text-center text-xs uppercase tracking-wide">
-          <th class="px-4 py-3 border">No.</th>
-          <th class="px-4 py-3 border">Nama Pegawai</th>
-          <th class="px-4 py-3 border">NIP</th>
-          <th class="px-4 py-3 border">Jabatan</th>
-          <th class="px-4 py-3 border">Tim</th>
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+    <table class="w-full table-auto text-sm text-gray-700">
+      <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
+        <tr>
+          <th class="p-3 border">No.</th>
+          <th class="p-3 border">Nama Pegawai</th>
+          <th class="p-3 border">NIP</th>
+          <th class="p-3 border">Jabatan</th>
+          <th class="p-3 border">Tim</th>
         </tr>
       </thead>
       <tbody>

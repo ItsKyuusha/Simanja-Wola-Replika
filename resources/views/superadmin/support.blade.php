@@ -3,14 +3,14 @@
 @section('page-title', 'Support')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-3 py-1">
-  <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-    
+
+  <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
+
     <div class="px-8 py-10 space-y-14">
 
       <!-- Support & Resources Section -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-        
+
         <!-- Kontak Support -->
         <div class="flex flex-col items-center text-center">
           <img src="/support1.png" alt="Support" class="w-64 h-auto rounded-lg shadow-md">
@@ -29,7 +29,7 @@
 
         <!-- Video & Dokumentasi -->
         <div class="space-y-6">
-          
+
           <!-- Video Card -->
           <div class="bg-gray-50 hover:bg-gray-100 transition duration-200 p-5 rounded-lg flex items-center gap-5 shadow-sm border border-gray-200">
             <img src="/support2.png" alt="Video Tutorial" class="w-16 h-16 object-cover rounded">
@@ -81,11 +81,11 @@
 
     </div>
   </div>
-</div>
- <!-- Footer -->
-    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
-        © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-    </footer>
+
+<!-- Footer -->
+<footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
+  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+</footer>
 @endsection
 
 @push('styles')

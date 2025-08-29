@@ -3,55 +3,69 @@
 @section('page-title', 'Master | User')
 
 @section('content')
-<div class="bg-white rounded-xl p-6 border border-gray-200">
+<div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
   <!-- Header & Action -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
-    <h2 class="text-2xl font-semibold text-gray-800">Manajemen User & Pegawai</h2>
+    <h2 class="text-2xl font-semibold text-blue-600">Manajemen User & Pegawai</h2>
 
     <div class="flex flex-col sm:flex-row items-center gap-3">
       <!-- Form Search -->
-      <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="flex gap-3">
+      <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="flex gap-3 w-full sm:w-auto">
         <input type="text" name="search" value="{{ request('search') }}"
-          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
+             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+             bg-white/50 backdrop-blur-sm placeholder-gray-500"
           placeholder="Cari nama pegawai, NIP, email...">
         <button type="submit"
-          class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-gray-700 border border-gray-300">
-          Cari
+          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
+             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
+             transition duration-200 ease-in-out transform hover:scale-105">
+          <i class="fas fa-search mr-1"></i> Cari
         </button>
       </form>
 
       <!-- Tombol Export -->
       <a href="{{ route('superadmin.master_user.export') }}"
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-        Export Excel
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
+           bg-green-200/20 backdrop-blur-sm shadow-sm 
+           hover:bg-green-300/30 hover:border-green-500 hover:text-green-700
+           transition duration-200 ease-in-out transform hover:scale-105">
+        <i class="fas fa-file-excel mr-2"></i> Export Tabel
       </a>
 
       <!-- Tombol Import -->
       <button @click="openImport = true"
-        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">
-        Import Excel
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium
+           bg-purple-200/20 backdrop-blur-sm shadow-sm 
+           hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700
+           transition duration-200 ease-in-out transform hover:scale-105">
+        <i class="fas fa-file-upload mr-2"></i> Upload Data
       </button>
 
       <!-- Tombol Tambah User -->
       <button @click="openCreate = true"
-        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-        + Tambah User
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium
+           bg-blue-200/20 backdrop-blur-sm shadow-sm 
+           hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700
+           transition duration-200 ease-in-out transform hover:scale-105">
+        <i class="fas fa-user-plus mr-2"></i> Tambah User
       </button>
     </div>
+
   </div>
 
   <!-- Pesan Sukses -->
   @if(session('success'))
-    <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
-      {{ session('success') }}
-    </div>
+  <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
+    {{ session('success') }}
+  </div>
   @endif
 
   <!-- Tabel -->
-  <div class="overflow-x-auto rounded-md border border-gray-200">
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
     <table class="w-full table-auto text-sm text-gray-700">
-      <thead class="bg-blue-100 text-center text-sm text-gray-700">
+      <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
         <tr>
           <th class="p-3 border">No.</th>
           <th class="p-3 border text-left">Nama Pegawai</th>
@@ -65,7 +79,7 @@
       </thead>
       <tbody>
         @forelse($users as $user)
-        <tr class="even:bg-gray-50 hover:bg-gray-100 transition">
+        <tr class="even:bg-gray-50 hover:bg-blue-50 transition">
           <td class="p-3 border text-center">{{ $loop->iteration }}</td>
           <td class="p-3 border">{{ $user->pegawai->nama ?? '-' }}</td>
           <td class="p-3 border text-center">{{ $user->pegawai->nip ?? '-' }}</td>
@@ -75,16 +89,21 @@
           <td class="p-3 border text-center capitalize">{{ $user->role }}</td>
           <td class="p-3 border">
             <div class="flex justify-center gap-2">
+              <!-- Tombol Edit -->
               <button @click="openEdit = {{ $user->id }}"
-                class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition text-xs">
-                Edit
+                class="px-3 py-1 rounded-lg border border-yellow-400 text-yellow-600 bg-yellow-100/40 backdrop-blur-sm text-xs
+                     hover:bg-yellow-200 hover:text-yellow-700 transition">
+                <i class="fas fa-edit mr-1"></i> Edit
               </button>
+
+              <!-- Tombol Hapus -->
               <form action="{{ route('superadmin.master_user.destroy', $user->id) }}" method="POST"
                 onsubmit="return confirm('Hapus user ini?')">
                 @csrf @method('DELETE')
                 <button type="submit"
-                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition text-xs">
-                  Hapus
+                  class="px-3 py-1 rounded-lg border border-red-500 text-red-600 bg-red-100/40 backdrop-blur-sm text-xs
+                       hover:bg-red-200 hover:text-red-700 transition">
+                  <i class="fas fa-trash mr-1"></i> Hapus
                 </button>
               </form>
             </div>
@@ -93,33 +112,32 @@
 
         <!-- Modal Edit -->
         <template x-if="openEdit === {{ $user->id }}">
-          <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-xl w-full max-w-md relative border border-gray-300">
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
               <button @click="openEdit = null"
-                class="absolute top-2 right-2 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+                class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
               <h3 class="text-lg font-semibold mb-4 text-gray-700">Edit Data User</h3>
               <form action="{{ route('superadmin.master_user.update', $user->id) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 gap-3">
-                  <input name="nama" class="border rounded px-3 py-2" value="{{ $user->pegawai->nama ?? '' }}" required>
-                  <input name="nip" class="border rounded px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}" required>
-                  <input name="jabatan" class="border rounded px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}" required>
+                  <input name="nama" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->nama ?? '' }}" required>
+                  <input name="nip" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}" required>
+                  <input name="jabatan" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}" required>
 
-                  <select name="team_id" class="border rounded px-3 py-2" required>
+                  <select name="team_id" class="border rounded-lg px-3 py-2" required>
                     <option value="">-- Pilih Tim --</option>
                     @foreach($teams as $team)
-                      <option value="{{ $team->id }}" {{ optional($user->pegawai->team)->id == $team->id ? 'selected' : '' }}>
-                        {{ $team->nama_tim }}
-                      </option>
+                    <option value="{{ $team->id }}" {{ optional($user->pegawai->team)->id == $team->id ? 'selected' : '' }}>
+                      {{ $team->nama_tim }}
+                    </option>
                     @endforeach
                   </select>
 
-                  <input type="text" name="name" class="border rounded px-3 py-2" value="{{ $user->name }}" required>
-                  <input type="email" name="email" class="border rounded px-3 py-2" value="{{ $user->email }}" required>
-                  <input type="password" name="password" class="border rounded px-3 py-2"
+                  <input type="text" name="name" class="border rounded-lg px-3 py-2" value="{{ $user->name }}" required>
+                  <input type="email" name="email" class="border rounded-lg px-3 py-2" value="{{ $user->email }}" required>
+                  <input type="password" name="password" class="border rounded-lg px-3 py-2"
                     placeholder="Password baru (kosongkan jika tidak ganti)">
-                  
-                  <select name="role" class="border rounded px-3 py-2" required>
+                  <select name="role" class="border rounded-lg px-3 py-2" required>
                     <option disabled>-- Pilih Role --</option>
                     <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                     <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
@@ -128,8 +146,13 @@
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
                   <button type="button" @click="openEdit = null"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
-                  <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Simpan</button>
+                    class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
+                    Batal
+                  </button>
+                  <button
+                    class="px-4 py-2 rounded-lg border border-green-500 bg-green-100/60 text-green-700 hover:bg-green-200 transition">
+                    Simpan
+                  </button>
                 </div>
               </form>
             </div>
@@ -144,24 +167,29 @@
       </tbody>
     </table>
   </div>
+
 </div>
 
 <!-- Modal Import -->
 <template x-if="openImport">
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md relative border border-gray-300">
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
       <button @click="openImport = false"
         class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Import Data User & Pegawai</h2>
+      <h2 class="text-lg font-semibold mb-4 text-gray-700">Import Data User & Pegawai</h2>
       <form action="{{ route('superadmin.master_user.import') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="file" name="file" accept=".xlsx,.xls" required
-          class="border w-full rounded px-3 py-2 mb-3">
-        <div class="mt-5 flex justify-end gap-2">
+        <input type="file" name="file" accept=".xlsx,.xls"
+          class="border rounded-lg w-full px-3 py-2 mb-4" required>
+        <div class="flex justify-end gap-2">
           <button type="button" @click="openImport = false"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
+            class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
+            Batal
+          </button>
           <button type="submit"
-            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Upload</button>
+            class="px-4 py-2 rounded-lg border border-purple-500 bg-purple-100/60 text-purple-700 hover:bg-purple-200 transition">
+            Upload
+          </button>
         </div>
       </form>
     </div>
@@ -170,46 +198,53 @@
 
 <!-- Modal Create -->
 <template x-if="openCreate">
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-xl relative border border-gray-300">
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-xl relative border border-gray-200 shadow-xl">
       <button @click="openCreate = false"
         class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Tambah User & Pegawai</h2>
+      <h2 class="text-lg font-semibold mb-4 text-gray-700">Tambah User & Pegawai</h2>
       <form action="{{ route('superadmin.master_user.store') }}" method="POST">
         @csrf
         <div class="grid grid-cols-1 gap-3">
-          <input type="text" name="nama" class="border rounded px-3 py-2" placeholder="Nama Pegawai" required>
-          <input type="text" name="nip" class="border rounded px-3 py-2" placeholder="NIP" required>
-          <input type="text" name="jabatan" class="border rounded px-3 py-2" placeholder="Jabatan" required>
+          <input type="text" name="nama" class="border rounded-lg px-3 py-2" placeholder="Nama Pegawai" required>
+          <input type="text" name="nip" class="border rounded-lg px-3 py-2" placeholder="NIP" required>
+          <input type="text" name="jabatan" class="border rounded-lg px-3 py-2" placeholder="Jabatan" required>
 
-          <select name="team_id" class="border rounded px-3 py-2" required>
+          <select name="team_id" class="border rounded-lg px-3 py-2" required>
             <option disabled selected>-- Pilih Tim --</option>
             @foreach($teams as $team)
-              <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
+            <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
             @endforeach
           </select>
 
-          <input type="text" name="name" class="border rounded px-3 py-2" placeholder="Nama User" required>
-          <input type="email" name="email" class="border rounded px-3 py-2" placeholder="Email" required>
-          <input type="password" name="password" class="border rounded px-3 py-2" placeholder="Password" required>
+          <input type="text" name="name" class="border rounded-lg px-3 py-2" placeholder="Nama User" required>
+          <input type="email" name="email" class="border rounded-lg px-3 py-2" placeholder="Email" required>
+          <input type="password" name="password" class="border rounded-lg px-3 py-2" placeholder="Password" required minlength="6">
+          <small class="text-xs text-gray-500">Password minimal 6 karakter</small>
 
-          <select name="role" class="border rounded px-3 py-2" required>
+
+          <select name="role" class="border rounded-lg px-3 py-2" required>
             <option disabled selected>-- Pilih Role --</option>
             <option value="superadmin">Superadmin</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
           </select>
         </div>
-        <div class="mt-5 flex justify-end gap-2">
+        <div class="mt-4 flex justify-end gap-2">
           <button type="button" @click="openCreate = false"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Batal</button>
+            class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
+            Batal
+          </button>
           <button type="submit"
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Simpan</button>
+            class="px-4 py-2 rounded-lg border border-blue-500 bg-blue-100/60 text-blue-700 hover:bg-blue-200 transition">
+            Simpan
+          </button>
         </div>
       </form>
     </div>
   </div>
 </template>
+
 
 <!-- Footer -->
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">

@@ -7,32 +7,36 @@
 <!-- CARD: Tabel Kinerja Pegawai -->
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
   <div class="flex items-center justify-between mb-4">
-    <h3 class="text-2xl font-semibold text-gray-700">Tabel Kinerja Pegawai</h3>
+    <h2 class="text-2xl font-semibold text-blue-600">Tabel Kinerja Pegawai</h2>
     <!-- Tombol Export -->
     <a href="{{ route('superadmin.progress.export.kinerja') }}"
-      class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-      Export Excel
+      class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
+          rounded-lg backdrop-blur-sm bg-white/30 hover:bg-green-50 hover:text-green-700 
+          transition duration-200 ease-in-out transform hover:scale-105 shadow-sm">
+      <i class="fas fa-file-excel text-lg mr-2"></i>
+      Export Tabel
     </a>
+
   </div>
 
-  <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full table-auto text-sm text-gray-700">
-      <thead class="bg-blue-100 text-center text-sm text-gray-700">
-        <tr class="text-xs uppercase tracking-wide text-center">
-          <th class="px-4 py-3">No.</th>
-          <th class="px-4 py-3 text-left">Nama Pegawai</th>
-          <th class="px-4 py-3 text-left">Nama Tugas</th>
-          <th class="px-4 py-3">Bobot</th>
-          <th class="px-4 py-3 text-left">Asal</th>
-          <th class="px-4 py-3">Target</th>
-          <th class="px-4 py-3">Realisasi</th>
-          <th class="px-4 py-3">Satuan</th>
-          <th class="px-4 py-3 text-red-500">Deadline</th>
-          <th class="px-4 py-3">Tgl Realisasi</th>
-          <th class="px-4 py-3">Nilai Kualitas</th>
-          <th class="px-4 py-3">Nilai Kuantitas</th>
-          <th class="px-4 py-3 text-left">Catatan</th>
-          <th class="px-4 py-3">Bukti</th>
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+    <table class="w-full table-auto text-sm text-gray-700">
+      <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
+        <tr>
+          <th class="p-3 border">No.</th>
+          <th class="p-3 border text-left">Nama Pegawai</th>
+          <th class="p-3 border text-left">Nama Tugas</th>
+          <th class="p-3 border">Bobot</th>
+          <th class="p-3 border text-left">Asal</th>
+          <th class="p-3 border">Target</th>
+          <th class="p-3 border">Realisasi</th>
+          <th class="p-3 border">Satuan</th>
+          <th class="p-3 border text-red-500">Deadline</th>
+          <th class="p-3 border">Tgl Realisasi</th>
+          <th class="p-3 border">Nilai Kualitas</th>
+          <th class="p-3 border">Nilai Kuantitas</th>
+          <th class="p-3 border text-left">Catatan</th>
+          <th class="p-3 border">Bukti</th>
         </tr>
       </thead>
       <tbody>
@@ -153,23 +157,26 @@
 <!-- CARD: Tabel Nilai Akhir Pegawai -->
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
   <div class="flex items-center justify-between mb-4">
-    <h3 class="text-2xl font-semibold text-gray-700">Tabel Nilai Akhir Pegawai</h3>
+    <h2 class="text-2xl font-semibold text-blue-600">Tabel Nilai Akhir Pegawai</h2>
     <!-- Tombol Export -->
     <a href="{{ route('superadmin.progress.export.nilaiAkhir') }}"
-      class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-      Export Excel
+      class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
+          rounded-lg backdrop-blur-sm bg-white/30 hover:bg-green-50 hover:text-green-700 
+          transition duration-200 ease-in-out transform hover:scale-105 shadow-sm">
+      <i class="fas fa-file-excel text-lg mr-2"></i>
+      Export Tabel
     </a>
   </div>
 
-  <div class="overflow-x-auto rounded-md border border-gray-200">
-    <table class="min-w-full table-autotext-sm text-gray-800">
-      <thead class="bg-blue-100 text-center text-sm text-gray-700">
-        <tr class="text-xs uppercase tracking-wide text-center">
-          <th class="px-4 py-3">No.</th>
-          <th class="px-4 py-3 text-left">Nama Pegawai</th>
-          <th class="px-4 py-3">NIP</th>
-          <th class="px-4 py-3">Total Bobot</th>
-          <th class="px-4 py-3">Nilai Akhir</th>
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+    <table class="w-full table-auto text-sm text-gray-700">
+      <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
+        <tr>
+          <th class="p-3 border">No.</th>
+          <th class="p-3 border text-left">Nama Pegawai</th>
+          <th class="p-3 border">NIP</th>
+          <th class="p-3 border">Total Bobot</th>
+          <th class="p-3 border">Nilai Akhir</th>
         </tr>
       </thead>
       <tbody>

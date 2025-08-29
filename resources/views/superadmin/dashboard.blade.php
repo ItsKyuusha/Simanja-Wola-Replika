@@ -3,7 +3,7 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<div x-data="{ tab: 'kegiatan' }" class="container mx-auto px-4 py-6">
+<div x-data="{ tab: 'kegiatan' }" class="space-y-6">
 
     <!-- Statistik Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
