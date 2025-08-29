@@ -164,7 +164,6 @@
                     <canvas id="kegiatanChart" height="100"></canvas>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -361,10 +360,7 @@
 </div>
 @endsection
 
-<!-- Tambahkan CDN Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
+<!-- Script Grafik -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const toggleChartBtn = document.getElementById('toggleChartBtn');
