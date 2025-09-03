@@ -316,6 +316,14 @@
                         <i class="fas fa-chart-bar mr-1"></i> Tampilkan Grafik
                     </button>
                 </div>
+
+                <!-- Search -->
+                <form method="GET" action="{{ route('superadmin.dashboard') }}" class="relative">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama pegawai..."
+                        class="border border-gray-300 px-3 py-1 rounded text-sm placeholder-black" />
+                    <input type="hidden" name="bulan" value="{{ request('bulan') }}">
+                    <input type="hidden" name="tahun" value="{{ request('tahun') }}">
+                </form>
             </div>
 
             <!-- Tabel -->

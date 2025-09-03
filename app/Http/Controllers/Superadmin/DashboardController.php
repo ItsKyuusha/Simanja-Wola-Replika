@@ -36,6 +36,12 @@ class DashboardController extends Controller
             $labelBulanTahun = 'Semua Bulan & Tahun';
         }
 
+        // === Search & Keywords ===
+        $search = trim((string) request('search', ''));
+        $keywords = $search === ''
+        ? []
+        : array_values(array_filter(array_map('trim', explode(',', $search))));
+
         // Data ringkasan
         $totalProject = Tugas::when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
                              ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
@@ -53,12 +59,14 @@ class DashboardController extends Controller
             ->first();
 
         // Jumlah Kegiatan Pegawai
-        $search = request('search');
-
         $jumlahKegiatan = Pegawai::select('id', 'nama')
-            ->when($search, function ($query) use ($search) {
-                $query->where('nama', 'like', '%' . $search . '%');
-            })
+            ->when($keywords, function ($query) use ($keywords) {
+        $query->where(function ($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->orWhere('nama', 'like', '%' . $word . '%');
+            }
+         });
+        })
             ->withCount(['tugas' => function ($query) use ($bulan, $tahun) {
                 $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
                       ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
@@ -68,6 +76,13 @@ class DashboardController extends Controller
 
         // Total Bobot per Pegawai
         $bobotPerPegawai = Pegawai::select('pegawais.id', 'pegawais.nama', DB::raw('COALESCE(SUM(jp.bobot),0) as total_bobot'))
+             ->when($keywords, function ($query) use ($keywords) {
+        $query->where(function ($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->orWhere('pegawais.nama', 'like', '%' . $word . '%');
+            }
+         });
+        })
             ->leftJoin('tugas as t', 'pegawais.id', '=', 't.pegawai_id')
             ->leftJoin('jenis_pekerjaans as jp', 't.jenis_pekerjaan_id', '=', 'jp.id')
             ->when($bulan, fn($q) => $q->whereMonth('t.created_at', $bulan))
@@ -78,6 +93,15 @@ class DashboardController extends Controller
 
         // Nilai Kinerja Pegawai
         $nilaiKinerja = Progress::with('pegawai')
+            ->whereHas('pegawai', function ($q) use ($keywords) {
+        if (!empty($keywords)) {
+            $q->where(function ($sub) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $sub->orWhere('nama', 'like', "%{$word}%");
+                    }
+                });
+            }
+        })
             ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
             ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
             ->orderByDesc('nilai_akhir')
@@ -90,6 +114,13 @@ class DashboardController extends Controller
                 DB::raw('COUNT(rt.id) as tugas_selesai'),
                 DB::raw('ROUND(COUNT(rt.id) / NULLIF(COUNT(t.id), 0) * 100, 2) as persen_selesai')
             )
+            ->when(!empty($keywords), function ($query) use ($keywords) {
+        $query->where(function ($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->orWhere('pegawais.nama', 'like', "%{$word}%");
+            }
+         });
+        })
             ->leftJoin('tugas as t', 'pegawais.id', '=', 't.pegawai_id')
             ->leftJoin('realisasi_tugas as rt', 't.id', '=', 'rt.tugas_id')
             ->when($bulan, fn($q) => $q->whereMonth('t.created_at', $bulan))

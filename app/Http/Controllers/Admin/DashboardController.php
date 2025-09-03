@@ -39,6 +39,12 @@ class DashboardController extends Controller
             $labelBulanTahun = 'Semua Bulan & Tahun';
         }
 
+        // === Search & Keywords ===
+        $search = trim((string) request('search', ''));
+        $keywords = $search === ''
+        ? []
+        : array_values(array_filter(array_map('trim', explode(',', $search))));
+
         // Total Tugas untuk tim ini
         $totalTugas = Tugas::whereHas('pegawai', fn($q) => $q->where('team_id', $teamId))
             ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
@@ -59,44 +65,74 @@ class DashboardController extends Controller
 
         // Tabel Grafik Jumlah kegiatan per pegawai (untuk tab "kegiatan")
         $jumlahKegiatan = Pegawai::where('team_id', $teamId)
+            ->when($keywords, function ($query) use ($keywords) {
+        $query->where(function ($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->orWhere('nama', 'like', '%' . $word . '%');
+            }
+         });
+        })
             ->withCount(['tugas' => function ($query) use ($bulan, $tahun) {
-                $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                    ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
-            }])
-            ->get();
-        
+        $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
+              ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
+        }])
+        ->get();
         
         // Total Bobot per Pegawai (untuk tab "bobot")
         $bobotPerPegawai = Pegawai::where('team_id', $teamId)
+            ->when($keywords, function ($query) use ($keywords) {
+        $query->where(function ($q) use ($keywords) {
+            foreach ($keywords as $word) {
+                $q->orWhere('nama', 'like', '%' . $word . '%');
+            }
+         });
+        })
             ->withSum(['tugas as total_bobot' => function ($query) use ($bulan, $tahun) {
-                $query->select(\DB::raw('COALESCE(SUM(jenis_pekerjaans.bobot), 0)'))
-              ->join('jenis_pekerjaans', 'tugas.jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
-              ->when($bulan, fn($q) => $q->whereMonth('tugas.created_at', $bulan))
-              ->when($tahun, fn($q) => $q->whereYear('tugas.created_at', $tahun));
+        $query->select(DB::raw('COALESCE(SUM(jenis_pekerjaans.bobot), 0)'))
+            ->join('jenis_pekerjaans', 'tugas.jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
+            ->when($bulan, fn($q) => $q->whereMonth('tugas.created_at', $bulan))
+            ->when($tahun, fn($q) => $q->whereYear('tugas.created_at', $tahun));
         }], 'bobot')
             ->orderByDesc('total_bobot')
             ->get();
 
         // Nilai Kinerja Pegawai (khusus anggota tim admin)
         $nilaiKinerja = Progress::with('pegawai')
-            ->whereHas('pegawai', fn($q) => $q->where('team_id', $teamId)) // ⬅️ filter tim admin
+            ->whereHas('pegawai', function ($q) use ($teamId, $keywords) {
+        $q->where('team_id', $teamId)
+          ->when($keywords, function ($qq) use ($keywords) {
+              $qq->where(function ($sub) use ($keywords) {
+                  foreach ($keywords as $word) {
+                      $sub->orWhere('nama', 'like', '%' . $word . '%');
+                  }
+              });
+          });
+        })
             ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
             ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
             ->orderByDesc('nilai_akhir')
-             ->get();
+            ->get();
 
         // Persentase Tugas Selesai (khusus anggota tim admin)
         $persentaseSelesai = Pegawai::select(
-                'pegawais.id', 'pegawais.nama',
-                DB::raw('COUNT(t.id) as total_tugas'),
-                DB::raw('COUNT(rt.id) as tugas_selesai'),
-                DB::raw('ROUND(COUNT(rt.id) / NULLIF(COUNT(t.id), 0) * 100, 2) as persen_selesai')
-            )
+        'pegawais.id', 
+        'pegawais.nama',
+        DB::raw('COUNT(t.id) as total_tugas'),
+        DB::raw('COUNT(rt.id) as tugas_selesai'),
+        DB::raw('ROUND(COUNT(rt.id) / NULLIF(COUNT(t.id), 0) * 100, 2) as persen_selesai')
+        )
             ->leftJoin('tugas as t', 'pegawais.id', '=', 't.pegawai_id')
             ->leftJoin('realisasi_tugas as rt', 't.id', '=', 'rt.tugas_id')
+            ->where('pegawais.team_id', $teamId) // ⬅️ tetap filter berdasarkan tim
+            ->when($keywords, function ($query) use ($keywords) {
+                $query->where(function ($sub) use ($keywords) {
+            foreach ($keywords as $word) {
+                $sub->orWhere('pegawais.nama', 'like', '%' . $word . '%');
+            }
+         });
+        })
             ->when($bulan, fn($q) => $q->whereMonth('t.created_at', $bulan))
             ->when($tahun, fn($q) => $q->whereYear('t.created_at', $tahun))
-            ->where('pegawais.team_id', $teamId) // ⬅️ filter tim admin
             ->groupBy('pegawais.id', 'pegawais.nama')
             ->orderByDesc('persen_selesai')
             ->get();
