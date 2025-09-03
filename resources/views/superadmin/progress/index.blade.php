@@ -8,15 +8,31 @@
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-2xl font-semibold text-blue-600">Tabel Kinerja Pegawai</h2>
-    <!-- Tombol Export -->
-    <a href="{{ route('superadmin.progress.export.kinerja') }}"
-      class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
+
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+      <form method="GET" action="{{ route('superadmin.progress.index') }}" class="flex gap-3 w-full sm:w-auto">
+        <input type="text" name="search_tugas" value="{{ request('search_tugas') }}"
+          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
+             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+             bg-white/50 backdrop-blur-sm placeholder-gray-500"
+          placeholder="Cari tugas / pegawai...">
+        <button type="submit"
+          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
+             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
+             transition duration-200 ease-in-out transform hover:scale-105">
+          <i class="fas fa-search mr-1"></i> Cari
+        </button>
+      </form>
+
+      <!-- Tombol Export -->
+      <a href="{{ route('superadmin.progress.export.kinerja') }}"
+        class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
           rounded-lg backdrop-blur-sm bg-white/30 hover:bg-green-50 hover:text-green-700 
           transition duration-200 ease-in-out transform hover:scale-105 shadow-sm">
-      <i class="fas fa-file-excel text-lg mr-2"></i>
-      Export Tabel
-    </a>
-
+        <i class="fas fa-file-excel text-lg mr-2"></i>
+        Export Tabel
+      </a>
+    </div>
   </div>
 
   <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
@@ -158,14 +174,31 @@
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-2xl font-semibold text-blue-600">Tabel Nilai Akhir Pegawai</h2>
-    <!-- Tombol Export -->
-    <a href="{{ route('superadmin.progress.export.nilaiAkhir') }}"
-      class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
+
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+      <form method="GET" action="{{ route('superadmin.progress.index') }}" class="flex gap-3 w-full sm:w-auto">
+        <input type="text" name="search_progress" value="{{ request('search_progress') }}"
+          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
+             focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400
+             bg-white/50 backdrop-blur-sm placeholder-gray-500"
+          placeholder="Cari pegawai / NIP...">
+        <button type="submit"
+          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
+             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
+             transition duration-200 ease-in-out transform hover:scale-105">
+          <i class="fas fa-search mr-1"></i> Cari
+        </button>
+      </form>
+
+      <!-- Tombol Export -->
+      <a href="{{ route('superadmin.progress.export.nilaiAkhir') }}"
+        class="inline-flex items-center px-4 py-2 border border-green-500 text-green-600 font-medium 
           rounded-lg backdrop-blur-sm bg-white/30 hover:bg-green-50 hover:text-green-700 
           transition duration-200 ease-in-out transform hover:scale-105 shadow-sm">
-      <i class="fas fa-file-excel text-lg mr-2"></i>
-      Export Tabel
-    </a>
+        <i class="fas fa-file-excel text-lg mr-2"></i>
+        Export Tabel
+      </a>
+    </div>
   </div>
 
   <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">

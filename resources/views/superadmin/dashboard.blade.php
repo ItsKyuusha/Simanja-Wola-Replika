@@ -361,126 +361,132 @@
 @endsection
 
 <!-- Script Grafik -->
+<!-- Tambahkan SheetJS -->
+<!-- ExcelJS + FileSaver -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleChartBtn = document.getElementById('toggleChartBtn');
-        const chartContainer = document.getElementById('chartContainer');
-        const tableContainer = document.querySelector('.overflow-auto');
-        const exportBtn = document.getElementById('exportBtn');
-        let chartVisible = false;
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleChartBtn = document.getElementById('toggleChartBtn');
+    const chartContainer = document.getElementById('chartContainer');
+    const tableContainer = document.querySelector('.overflow-auto');
+    const exportBtn = document.getElementById('exportBtn');
+    const canvas = document.getElementById('kegiatanChart');
+    let chartVisible = false;
 
-        toggleChartBtn.addEventListener('click', () => {
-            chartVisible = !chartVisible;
+    // Data dari Blade
+    const chartData = @json($jumlahKegiatan);
+    const labelBulanTahun = @json($labelBulanTahun ?? "Semua Bulan & Tahun");
 
-            if (chartVisible) {
-                chartContainer.classList.remove('hidden');
-                tableContainer.classList.add('hidden');
-                toggleChartBtn.innerHTML = '<i class="fas fa-table mr-1"></i> Tampilkan Tabel';
-                exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Grafik';
-            } else {
-                chartContainer.classList.add('hidden');
-                tableContainer.classList.remove('hidden');
-                toggleChartBtn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Tampilkan Grafik';
-                exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Tabel';
-            }
-        });
+    const labels = chartData.map(item => item.nama);
+    const dataPoints = chartData.map(item => item.tugas_count);
 
-        // Ambil data dari Blade
-        const chartData = @json($jumlahKegiatan);
-        const labelBulanTahun = @json($labelBulanTahun ?? "Semua Bulan & Tahun");
+    if (chartData.length > 30) {
+        canvas.width = chartData.length * 40;
+    }
 
-        const labels = chartData.map(item => item.nama);
-        const dataPoints = chartData.map(item => item.tugas_count);
-
-        const canvas = document.getElementById('kegiatanChart');
-        if (chartData.length > 30) {
-            canvas.width = chartData.length * 40;
-        }
-
-        const ctx = canvas.getContext('2d');
-        const kegiatanChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Jumlah Kegiatan',
-                    data: dataPoints,
-                    backgroundColor: 'rgba(37, 99, 235, 0.6)',
-                    borderColor: 'rgba(37, 99, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Grafik Jumlah Kegiatan Pegawai (${labelBulanTahun})`
-                    },
-                    legend: {
-                        display: false
-                    }
+    // Chart.js
+    const ctx = canvas.getContext('2d');
+    const kegiatanChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Jumlah Kegiatan',
+                data: dataPoints,
+                backgroundColor: 'rgba(37, 99, 235, 0.6)',
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Grafik Jumlah Kegiatan Pegawai (${labelBulanTahun})`
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Jumlah Kegiatan'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            autoSkip: false,
-                            maxRotation: 60,
-                            minRotation: 45,
-                        },
-                        title: {
-                            display: true,
-                            text: 'Pegawai'
-                        }
-                    }
-                }
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Jumlah Kegiatan' }},
+                x: { ticks: { autoSkip: false, maxRotation: 60, minRotation: 45 }, title: { display: true, text: 'Pegawai' }}
             }
-        });
-
-
-        // Fungsi Export
-        exportBtn.addEventListener('click', () => {
-            if (chartVisible) {
-                // Export grafik sebagai gambar PNG
-                const link = document.createElement('a');
-                link.download = 'grafik-kegiatan.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } else {
-                // Export tabel sebagai CSV
-                const table = document.getElementById('tabelKegiatan');
-                let csvContent = "";
-                const rows = table.querySelectorAll('tr');
-
-                rows.forEach(row => {
-                    let rowData = [];
-                    row.querySelectorAll('th, td').forEach(cell => {
-                        let cellText = cell.innerText.replace(/"/g, '""'); // Escape quote
-                        rowData.push(`"${cellText}"`);
-                    });
-                    csvContent += rowData.join(",") + "\r\n";
-                });
-
-                const blob = new Blob([csvContent], {
-                    type: 'text/csv;charset=utf-8;'
-                });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', 'jumlah-kegiatan-pegawai.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
+        }
     });
+
+    // Toggle Chart / Tabel
+    toggleChartBtn.addEventListener('click', () => {
+        chartVisible = !chartVisible;
+
+        if (chartVisible) {
+            chartContainer.classList.remove('hidden');
+            tableContainer.classList.add('hidden');
+            toggleChartBtn.innerHTML = '<i class="fas fa-table mr-1"></i> Tampilkan Tabel';
+            exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Grafik';
+        } else {
+            chartContainer.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            toggleChartBtn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Tampilkan Grafik';
+            exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Tabel';
+        }
+    });
+
+    // Export ExcelJS
+    exportBtn.addEventListener('click', async () => {
+        const workbook = new ExcelJS.Workbook();
+
+        // ===== SHEET 1: Data Tabel =====
+        const sheet1 = workbook.addWorksheet("Data Kegiatan");
+
+        // Header
+        sheet1.addRow(["Nama Pegawai", "Jumlah Kegiatan"]);
+        chartData.forEach(item => {
+            sheet1.addRow([item.nama, item.tugas_count]);
+        });
+
+        // Tambahkan border ke semua cell
+        sheet1.eachRow((row) => {
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            });
+        });
+
+        if (chartVisible) {
+            // ===== SHEET 2: Grafik =====
+            const sheet2 = workbook.addWorksheet("Grafik");
+
+            // Ambil grafik sebagai base64 PNG
+            const imgBase64 = canvas.toDataURL("image/png");
+            const imgId = workbook.addImage({
+                base64: imgBase64,
+                extension: 'png',
+            });
+
+            // Tambahkan gambar ke worksheet
+            sheet2.addImage(imgId, {
+                tl: { col: 0, row: 0 }, // top-left
+                ext: { width: 800, height: 400 } // ukuran
+            });
+
+            // Simpan file
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), "grafik-dan-data.xlsx");
+        } else {
+            // Simpan file hanya tabel
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), "jumlah-kegiatan-pegawai.xlsx");
+        }
+    });
+});
 </script>
 
 <script>

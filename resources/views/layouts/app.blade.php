@@ -110,6 +110,10 @@
                     <i class="fas fa-user w-5"></i>
                     <span class="ml-3">Pegawai</span>
                 </a>
+                <a href="{{ route('admin.support') }}" class="{{ request()->routeIs('admin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                    <i class="fas fa-life-ring w-5"></i>
+                    <span class="ml-3">Support</span>
+                </a>
 
                 @elseif(Auth::user()->role === 'user')
                 {{-- Menu User --}}

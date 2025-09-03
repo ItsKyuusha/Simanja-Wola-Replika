@@ -14,7 +14,7 @@ class ProgressController extends Controller
 {
     public function index()
     {
-        // Hitung dan simpan progress tiap pegawai
+        // 🔹 Hitung dan simpan progress tiap pegawai
         $pegawais = Pegawai::with(['tugas.realisasi', 'tugas.jenisPekerjaan'])->get();
 
         foreach ($pegawais as $pegawai) {
@@ -24,8 +24,8 @@ class ProgressController extends Controller
 
             foreach ($pegawai->tugas as $tugas) {
                 if ($tugas->realisasi) {
-                    $bobot = $tugas->jenisPekerjaan->bobot ?? 0;
-                    $kualitas = $tugas->realisasi->nilai_kualitas ?? 0;
+                    $bobot     = $tugas->jenisPekerjaan->bobot ?? 0;
+                    $kualitas  = $tugas->realisasi->nilai_kualitas ?? 0;
                     $kuantitas = $tugas->realisasi->nilai_kuantitas ?? 0;
 
                     $nilai = ($kualitas + $kuantitas) / 2;
@@ -44,16 +44,33 @@ class ProgressController extends Controller
             );
         }
 
-        // 🔹 Data Tabel Kinerja (paginate tugas langsung)
+        // 🔹 Search untuk tabel Tugas
         $tugas = Tugas::with(['pegawai', 'realisasi', 'jenisPekerjaan'])
+            ->when(request('search_tugas'), function ($query, $search) {
+                $query->where('nama_tugas', 'like', "%{$search}%")
+                    ->orWhereHas('pegawai', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%")
+                            ->orWhere('nip', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('jenisPekerjaan', function ($q) use ($search) {
+                        $q->where('nama_pekerjaan', 'like', "%{$search}%");
+                    });
+            })
             ->paginate(3, ['*'], 'tugas_page');
 
-        // 🔹 Data Tabel Nilai Akhir (paginate progress)
+        // 🔹 Search untuk tabel Progress
         $progress = Progress::with('pegawai')
+            ->when(request('search_progress'), function ($query, $search) {
+                $query->whereHas('pegawai', function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nip', 'like', "%{$search}%");
+                });
+            })
             ->paginate(5, ['*'], 'progress_page');
 
         return view('superadmin.progress.index', compact('tugas', 'progress'));
     }
+
 
     public function show($id)
     {
@@ -74,15 +91,17 @@ class ProgressController extends Controller
                     return [
                         'No'              => $index + 1,
                         'Nama Pegawai'    => $tugas->pegawai->nama ?? '-',
-                        'Nama Tugas'      => $tugas->nama ?? '-',
+                        'Nama Tugas'      => $tugas->nama_tugas ?? '-', // periksa kalau field di DB "nama_tugas"
                         'Bobot'           => $tugas->jenisPekerjaan->bobot ?? 0,
                         'Asal'            => $tugas->asal ?? '-',
                         'Target'          => $tugas->target ?? 0,
                         'Realisasi'       => $tugas->realisasi->realisasi ?? 0,
                         'Satuan'          => $tugas->satuan ?? '-',
-                        'Deadline'        => $tugas->deadline ? date('Y-m-d', strtotime($tugas->deadline)) : '-',
-                        'Tgl Realisasi'   => $tugas->realisasi?->tanggal_realisasi
-                            ? date('Y-m-d', strtotime($tugas->realisasi->tanggal_realisasi))
+                        'Deadline'        => $tugas->deadline
+                            ? date('d-m-Y', strtotime($tugas->deadline))
+                            : '-',
+                        'Tanggal Realisasi' => $tugas->realisasi && $tugas->realisasi->tanggal_realisasi
+                            ? date('d-m-Y', strtotime($tugas->realisasi->tanggal_realisasi))
                             : '-',
                         'Nilai Kualitas'  => $tugas->realisasi->nilai_kualitas ?? '-',
                         'Nilai Kuantitas' => $tugas->realisasi->nilai_kuantitas ?? '-',

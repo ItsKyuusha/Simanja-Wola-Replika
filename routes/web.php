@@ -44,12 +44,16 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('pegawai', [AdminPegawaiController::class, 'index'])->name('pegawai.index');
+    Route::get('pegawai/export', [AdminPegawaiController::class, 'exportExcel'])->name('pegawai.export');
     Route::get('pekerjaan', [AdminPekerjaanController::class, 'index'])->name('pekerjaan.index');
     Route::get('pekerjaan/create', [AdminPekerjaanController::class, 'create'])->name('pekerjaan.create');
     Route::post('pekerjaan', [AdminPekerjaanController::class, 'store'])->name('pekerjaan.store');
     Route::put('pekerjaan/{id}', [AdminPekerjaanController::class, 'update'])->name('pekerjaan.update');
     Route::delete('pekerjaan{id}', [AdminPekerjaanController::class, 'destroy'])->name('pekerjaan.destroy');
+    Route::get('pekerjaan/export', [AdminPekerjaanController::class, 'export'])->name('pekerjaan.export');
+    Route::post('pekerjaan/import', [AdminPekerjaanController::class, 'import'])->name('pekerjaan.import');
     Route::get('progress', [AdminProgressController::class, 'index'])->name('progress.index');
+    Route::get('progress/export', [AdminProgressController::class, 'export'])->name('progress.export');
     Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
 });
 
