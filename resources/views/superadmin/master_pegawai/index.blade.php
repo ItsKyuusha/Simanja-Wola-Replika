@@ -2,15 +2,12 @@
 
 @section('page-title', 'Master | Pegawai')
 
-
 @section('content')
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
-  <!-- Judul dan Form Pencarian sejajar -->
-
+  <!-- Judul dan Form Pencarian -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-blue-600">Tabel Pegawai</h2>
 
-    <!-- Form & Export sejajar -->
     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
       <!-- Form Pencarian -->
       <form method="GET" action="{{ route('superadmin.master_pegawai.index') }}" class="flex gap-3 w-full sm:w-auto">
@@ -28,7 +25,6 @@
       </form>
 
       <!-- Tombol Export -->
-
       <a href="{{ route('superadmin.master_pegawai.export') }}"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
            bg-green-200/20 backdrop-blur-sm shadow-sm 
@@ -38,8 +34,6 @@
       </a>
     </div>
   </div>
-
-
 
   <!-- Alert Sukses -->
   @if(session('success'))
@@ -67,7 +61,20 @@
           <td class="text-left px-4 py-2 border font-medium">{{ $pegawai->nama }}</td>
           <td class="px-4 py-2 border">{{ $pegawai->nip }}</td>
           <td class="text-left px-4 py-2 border">{{ $pegawai->jabatan }}</td>
-          <td class="text-left px-4 py-2 border">{{ $pegawai->team->nama_tim ?? '-' }}</td>
+          <td class="text-left px-4 py-2 border">
+            @if($pegawai->teams->count())
+            @foreach($pegawai->teams as $team)
+            <span class="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs m-0.5">
+              {{ $team->nama_tim }}
+              @if($team->pivot->is_leader)
+              <strong>(Ketua)</strong>
+              @endif
+            </span>
+            @endforeach
+            @else
+            -
+            @endif
+          </td>
         </tr>
         @empty
         <tr>
@@ -78,6 +85,7 @@
     </table>
   </div>
 </div>
+
 <!-- Footer -->
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
   © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.

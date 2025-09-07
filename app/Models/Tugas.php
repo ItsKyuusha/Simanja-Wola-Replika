@@ -6,7 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tugas extends Model
 {
-    protected $fillable = ['nama_tugas', 'jenis_pekerjaan_id', 'pegawai_id', 'target', 'asal', 'satuan', 'deadline'];
+    protected $fillable = [
+        'nama_tugas',
+        'jenis_pekerjaan_id',
+        'pegawai_id',
+        'target',
+        'asal',
+        'satuan',
+        'deadline'
+    ];
 
     public function jenisPekerjaan()
     {
@@ -18,8 +26,21 @@ class Tugas extends Model
         return $this->belongsTo(Pegawai::class);
     }
 
+    // Relasi default (satu realisasi terakhir / utama)
     public function realisasi()
     {
         return $this->hasOne(RealisasiTugas::class);
+    }
+
+    // Relasi banyak realisasi
+    public function semuaRealisasi()
+    {
+        return $this->hasMany(RealisasiTugas::class);
+    }
+
+    // Relasi realisasi yang sudah di-approve admin
+    public function realisasiApproved()
+    {
+        return $this->hasMany(RealisasiTugas::class)->where('is_approved', true);
     }
 }

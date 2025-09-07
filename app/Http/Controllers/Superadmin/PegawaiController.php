@@ -21,7 +21,8 @@ class PegawaiController extends Controller
     {
         $search = $request->input('search');
 
-        $query = Pegawai::with('team');
+        // Gunakan 'teams' plural
+        $query = Pegawai::with('teams');
 
         if ($search) {
             $query->where('nama', 'like', "%{$search}%")
@@ -39,7 +40,7 @@ class PegawaiController extends Controller
         $export = new class implements FromCollection, WithHeadings, \Maatwebsite\Excel\Concerns\WithStyles, \Maatwebsite\Excel\Concerns\ShouldAutoSize {
             public function collection()
             {
-                $pegawai = Pegawai::with('team')->get();
+                $pegawai = Pegawai::with('teams')->get();
 
                 return $pegawai->map(function ($item, $index) {
                     return [
@@ -47,7 +48,7 @@ class PegawaiController extends Controller
                         'Nama Pegawai' => $item->nama,
                         'NIP'          => $item->nip,
                         'Jabatan'      => $item->jabatan,
-                        'Tim'          => $item->team->nama_tim ?? '-',
+                        'Tim'          => $item->teams->pluck('nama_tim')->implode(', ') ?: '-',
                     ];
                 });
             }
@@ -63,7 +64,7 @@ class PegawaiController extends Controller
                 ];
             }
 
-            public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+            public function styles(Worksheet $sheet)
             {
                 $highestRow    = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
@@ -72,17 +73,13 @@ class PegawaiController extends Controller
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-                    'borders' => [
-                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
                 ]);
 
                 // Style isi tabel
                 $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
                     'alignment' => ['vertical' => 'center'],
-                    'borders' => [
-                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
                 ]);
 
                 // Kolom No rata tengah
@@ -92,6 +89,6 @@ class PegawaiController extends Controller
             }
         };
 
-        return \Maatwebsite\Excel\Facades\Excel::download($export, 'data_pegawai.xlsx');
+        return Excel::download($export, 'data_pegawai.xlsx');
     }
 }

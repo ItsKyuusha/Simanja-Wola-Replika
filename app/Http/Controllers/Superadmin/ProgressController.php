@@ -18,20 +18,21 @@ class ProgressController extends Controller
         $pegawais = Pegawai::with(['tugas.realisasi', 'tugas.jenisPekerjaan'])->get();
 
         foreach ($pegawais as $pegawai) {
-            $totalBobot = 0;
-            $totalNilai = 0;
-            $jumlahTugas = 0;
+            $totalBobot   = 0;
+            $totalNilai   = 0;
+            $jumlahTugas  = 0;
 
             foreach ($pegawai->tugas as $tugas) {
-                if ($tugas->realisasi) {
+                // ✅ hanya hitung realisasi yang sudah di-approve
+                if ($tugas->realisasi && $tugas->realisasi->is_approved) {
                     $bobot     = $tugas->jenisPekerjaan->bobot ?? 0;
                     $kualitas  = $tugas->realisasi->nilai_kualitas ?? 0;
                     $kuantitas = $tugas->realisasi->nilai_kuantitas ?? 0;
 
                     $nilai = ($kualitas + $kuantitas) / 2;
 
-                    $totalBobot += $bobot;
-                    $totalNilai += $nilai;
+                    $totalBobot  += $bobot;
+                    $totalNilai  += $nilai;
                     $jumlahTugas++;
                 }
             }
@@ -71,7 +72,6 @@ class ProgressController extends Controller
         return view('superadmin.progress.index', compact('tugas', 'progress'));
     }
 
-
     public function show($id)
     {
         $pegawai = Pegawai::with(['tugas.realisasi', 'tugas.jenisPekerjaan', 'progress'])
@@ -89,24 +89,25 @@ class ProgressController extends Controller
 
                 return $tugas->map(function ($tugas, $index) {
                     return [
-                        'No'              => $index + 1,
-                        'Nama Pegawai'    => $tugas->pegawai->nama ?? '-',
-                        'Nama Tugas'      => $tugas->nama_tugas ?? '-', // periksa kalau field di DB "nama_tugas"
-                        'Bobot'           => $tugas->jenisPekerjaan->bobot ?? 0,
-                        'Asal'            => $tugas->asal ?? '-',
-                        'Target'          => $tugas->target ?? 0,
-                        'Realisasi'       => $tugas->realisasi->realisasi ?? 0,
-                        'Satuan'          => $tugas->satuan ?? '-',
-                        'Deadline'        => $tugas->deadline
-                            ? date('d-m-Y', strtotime($tugas->deadline))
-                            : '-',
-                        'Tanggal Realisasi' => $tugas->realisasi && $tugas->realisasi->tanggal_realisasi
-                            ? date('d-m-Y', strtotime($tugas->realisasi->tanggal_realisasi))
-                            : '-',
-                        'Nilai Kualitas'  => $tugas->realisasi->nilai_kualitas ?? '-',
-                        'Nilai Kuantitas' => $tugas->realisasi->nilai_kuantitas ?? '-',
-                        'Catatan'         => $tugas->realisasi->catatan ?? '-',
-                        'Bukti'           => $tugas->realisasi->bukti ?? '-',
+                        'No'                => $index + 1,
+                        'Nama Pegawai'      => $tugas->pegawai->nama ?? '-',
+                        'Nama Tugas'        => $tugas->nama_tugas ?? '-',
+                        'Bobot'             => $tugas->jenisPekerjaan->bobot ?? 0,
+                        'Asal'              => $tugas->asal ?? '-',
+                        'Target'            => $tugas->target ?? 0,
+                        'Realisasi'         => ($tugas->realisasi && $tugas->realisasi->is_approved)
+                            ? $tugas->realisasi->realisasi : 0,
+                        'Satuan'            => $tugas->satuan ?? '-',
+                        'Deadline'          => $tugas->deadline
+                            ? date('d-m-Y', strtotime($tugas->deadline)) : '-',
+                        'Tanggal Realisasi' => ($tugas->realisasi && $tugas->realisasi->is_approved && $tugas->realisasi->tanggal_realisasi)
+                            ? date('d-m-Y', strtotime($tugas->realisasi->tanggal_realisasi)) : '-',
+                        'Nilai Kualitas'    => ($tugas->realisasi && $tugas->realisasi->is_approved)
+                            ? $tugas->realisasi->nilai_kualitas : '-',
+                        'Nilai Kuantitas'   => ($tugas->realisasi && $tugas->realisasi->is_approved)
+                            ? $tugas->realisasi->nilai_kuantitas : '-',
+                        'Catatan'           => $tugas->realisasi->catatan ?? '-',
+                        'Bukti'             => $tugas->realisasi->file_bukti ?? '-',
                     ];
                 });
             }

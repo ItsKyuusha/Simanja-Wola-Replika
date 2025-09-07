@@ -6,25 +6,41 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pegawai extends Model
 {
-    protected $fillable = ['nama', 'nip', 'jabatan', 'team_id'];
+    protected $fillable = ['nama', 'nip', 'jabatan'];
 
+    /**
+     * Relasi ke User (1 Pegawai = 1 User)
+     */
     public function user()
     {
         return $this->hasOne(User::class);
     }
 
-    public function team()
+    /**
+     * Relasi ke Team (Many-to-Many)
+     * pivot: pegawai_team
+     * kolom tambahan: is_leader
+     */
+    public function teams()
     {
-        return $this->belongsTo(Team::class);
+        return $this->belongsToMany(Team::class, 'pegawai_team', 'pegawai_id', 'team_id')
+                    ->withPivot('is_leader')
+                    ->withTimestamps();
     }
 
+    /**
+     * Relasi ke Tugas (1 Pegawai = banyak tugas)
+     */
     public function tugas()
     {
-        return $this->hasMany(Tugas::class);
+        return $this->hasMany(Tugas::class, 'pegawai_id');
     }
 
+    /**
+     * Relasi ke Progress (1 Pegawai = 1 Progress)
+     */
     public function progress()
     {
-        return $this->hasOne(Progress::class);
+        return $this->hasOne(Progress::class, 'pegawai_id');
     }
 }

@@ -12,12 +12,12 @@
 
   <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
-    {{-- Judul dan Tombol Tambah --}}
+    {{-- Judul dan Tombol --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
       <h2 class="text-2xl font-semibold text-blue-600">Daftar Tugas Tim</h2>
 
       <div class="flex flex-col sm:flex-row items-center gap-3">
-        <!-- Form Search -->
+        {{-- Search --}}
         <form method="GET" action="{{ route('admin.pekerjaan.index') }}" class="flex gap-3 w-full sm:w-auto">
           <input type="text" name="search" value="{{ request('search') }}"
             class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
@@ -32,7 +32,7 @@
           </button>
         </form>
 
-        <!-- Tombol Export -->
+        {{-- Export --}}
         <a href="{{ route('admin.pekerjaan.export') }}"
           class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
            bg-green-200/20 backdrop-blur-sm shadow-sm 
@@ -41,7 +41,7 @@
           <i class="fas fa-file-excel mr-2"></i> Export Tabel
         </a>
 
-        <!-- Tombol Import -->
+        {{-- Import --}}
         <button @click="openImport = true"
           class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium
            bg-purple-200/20 backdrop-blur-sm shadow-sm 
@@ -50,7 +50,7 @@
           <i class="fas fa-file-upload mr-2"></i> Upload Data
         </button>
 
-        <!--Tambah Tugas-->
+        {{-- Tambah --}}
         <button @click="tambahModal = true"
           class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium
                  bg-blue-200/20 backdrop-blur-sm shadow-sm 
@@ -61,14 +61,14 @@
       </div>
     </div>
 
-    {{-- Pesan Sukses --}}
+    {{-- Pesan sukses --}}
     @if(session('success'))
     <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
       {{ session('success') }}
     </div>
     @endif
 
-    {{-- Table --}}
+    {{-- Tabel --}}
     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
       <table class="w-full table-auto text-sm text-gray-700">
         <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
@@ -78,6 +78,7 @@
             <th class="p-3 border">Pegawai</th>
             <th class="p-3 border">Jenis</th>
             <th class="p-3 border">Target</th>
+            <th class="p-3 border">Pemberi Pekerjaan</th>
             <th class="p-3 border">Deadline</th>
             <th class="p-3 border">Status</th>
             <th class="p-3 border">Aksi</th>
@@ -91,6 +92,7 @@
             <td class="p-3 border">{{ $t->pegawai->nama }}</td>
             <td class="p-3 border">{{ $t->jenisPekerjaan->nama_pekerjaan }}</td>
             <td class="p-3 border">{{ $t->target }} {{ $t->satuan }}</td>
+            <td class="p-3 border">{{ $t->asal ?? '-' }}</td>
             <td class="p-3 border">{{ \Carbon\Carbon::parse($t->deadline)->format('d M Y') }}</td>
             <td class="p-3 border">
               @if (!$t->realisasi)
@@ -178,10 +180,15 @@
                       value="{{ $t->satuan }}" readonly required>
                   </div>
                   <div>
-                    <label class="block mb-1">Asal Instruksi</label>
-                    <input type="text" name="asal" class="w-full border rounded px-3 py-2"
-                      value="{{ auth()->user()->pegawai->team->nama ?? '' }}" readonly>
+                    <label class="block mb-1">Pemberi Pekerjaan</label>
+                    <input
+                      type="text"
+                      name="asal"
+                      class="w-full border rounded px-3 py-2"
+                      value="{{ old('asal', $t->asal ?? (auth()->user()->pegawai->nama ?? auth()->user()->name)) }}"
+                      readonly>
                   </div>
+
                   <div>
                     <label class="block mb-1">Deadline</label>
                     <input type="date" name="deadline" class="w-full border rounded px-3 py-2"
@@ -198,7 +205,7 @@
           </div>
           @empty
           <tr>
-            <td colspan="8" class="text-center border px-4 py-6 text-gray-500">
+            <td colspan="9" class="text-center border px-4 py-6 text-gray-500">
               Belum ada tugas yang ditambahkan.
             </td>
           </tr>
@@ -208,8 +215,7 @@
     </div>
   </div>
 
-
-  <!-- Modal Import -->
+  {{-- Modal Import --}}
   <template x-if="openImport">
     <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
       <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
@@ -281,10 +287,15 @@
               class="w-full border rounded px-3 py-2" readonly required>
           </div>
           <div>
-            <label class="block mb-1">Asal</label>
-            <input type="text" name="asal" class="w-full border rounded px-3 py-2"
-              value="{{ auth()->user()->pegawai->team->nama_tim ?? '' }}" readonly>
+            <label class="block mb-1">Pemberi Pekerjaan</label>
+            <input
+              type="text"
+              name="asal"
+              class="w-full border rounded px-3 py-2"
+              value="{{ old('asal', auth()->user()->pegawai->nama ?? auth()->user()->name) }}"
+              required>
           </div>
+
           <div>
             <label class="block mb-1">Deadline</label>
             <input type="date" name="deadline" class="w-full border rounded px-3 py-2" required>
@@ -308,11 +319,13 @@
 </footer>
 
 <script>
+  // set satuan otomatis saat pilih jenis (Tambah)
   document.getElementById('jenisTambah')?.addEventListener('change', function() {
     const satuan = this.options[this.selectedIndex].getAttribute('data-satuan');
     document.getElementById('satuanTambah').value = satuan ?? '';
   });
 
+  // set satuan otomatis saat pilih jenis (Edit)
   @foreach($tugas as $t)
   document.getElementById('jenisEdit{{ $t->id }}')?.addEventListener('change', function() {
     const satuan = this.options[this.selectedIndex].getAttribute('data-satuan');

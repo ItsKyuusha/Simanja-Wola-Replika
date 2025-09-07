@@ -15,14 +15,14 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-
 class JenisTimController extends Controller
 {
     public function index(Request $request)
     {
         $search = $request->input('search');
 
-        $query = Team::query();
+        // Load relasi pegawais
+        $query = Team::with('pegawais');
 
         if ($search) {
             $query->where('nama_tim', 'like', "%{$search}%");
@@ -32,17 +32,18 @@ class JenisTimController extends Controller
 
         return view('superadmin.jenis_tim.index', compact('data'));
     }
-    
+
+
     public function store(Request $request)
     {
-        $request->validate(['nama_tim' => 'required']);
-        Team::create($request->all());
+        $request->validate(['nama_tim' => 'required|string|max:255']);
+        Team::create($request->only('nama_tim'));
         return back()->with('success', 'Tim berhasil ditambahkan.');
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate(['nama_tim' => 'required']);
+        $request->validate(['nama_tim' => 'required|string|max:255']);
         $team = Team::findOrFail($id);
         $team->update($request->only('nama_tim'));
 
@@ -52,26 +53,31 @@ class JenisTimController extends Controller
     public function destroy($id)
     {
         Team::findOrFail($id)->delete();
-        return back()->with('success', 'tim berhasil dihapus.');
+        return back()->with('success', 'Tim berhasil dihapus.');
     }
+
     public function export()
     {
         return Excel::download(new class implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles {
             public function collection()
             {
-                $data = Team::all();
+                $data = Team::with('pegawai')->get(); // Load pegawai juga saat export
 
                 return $data->values()->map(function ($team, $index) {
+                    // Ambil ketua tim jika ada
+                    $ketua = $team->pegawai?->where('pivot.is_leader', 1)->pluck('nama')->join(', ') ?: '-';
+
                     return [
-                        'No'        => $index + 1,
-                        'Nama Tim'  => $team->nama_tim,
+                        'No'       => $index + 1,
+                        'Nama Tim' => $team->nama_tim,
+                        'Ketua'    => $ketua,
                     ];
                 });
             }
 
             public function headings(): array
             {
-                return ['No', 'Nama Tim'];
+                return ['No', 'Nama Tim', 'Ketua'];
             }
 
             public function styles(Worksheet $sheet)
@@ -79,7 +85,7 @@ class JenisTimController extends Controller
                 $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
 
-                // style header
+                // Style header
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['horizontal' => 'center'],
@@ -88,7 +94,7 @@ class JenisTimController extends Controller
                     ]
                 ]);
 
-                // style data
+                // Style data
                 $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => ['borderStyle' => Border::BORDER_THIN]
@@ -100,30 +106,21 @@ class JenisTimController extends Controller
         }, 'teams.xlsx');
     }
 
-    /**
-     * Import Data Tim dari Excel
-     */
     public function import(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
-        ]);
+        $request->validate(['file' => 'required|mimes:xlsx,xls']);
 
         Excel::import(new class implements ToModel, WithHeadingRow {
             public function model(array $row)
             {
                 if (empty($row['nama_tim'])) {
-                    return null; // skip kalau kosong
+                    return null;
                 }
 
-                return new Team([
-                    'nama_tim' => $row['nama_tim'],
-                ]);
+                return new Team(['nama_tim' => $row['nama_tim']]);
             }
         }, $request->file('file'));
 
         return back()->with('success', 'Data Tim berhasil diimport.');
-    }   
+    }
 }
-
-

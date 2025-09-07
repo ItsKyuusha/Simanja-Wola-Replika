@@ -94,26 +94,49 @@
 
                 @elseif(Auth::user()->role === 'admin')
                 {{-- Menu Admin --}}
-                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="{{ request()->routeIs('admin.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-home w-5"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
-                <a href="{{ route('admin.progress.index') }}" class="{{ request()->routeIs('admin.progress.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                <a href="{{ route('admin.progress.index') }}"
+                    class="{{ request()->routeIs('admin.progress.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-chart-line w-5"></i>
                     <span class="ml-3">Progress</span>
                 </a>
-                <a href="{{ route('admin.pekerjaan.index') }}" class="{{ request()->routeIs('admin.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                <a href="{{ route('admin.pekerjaan.index') }}"
+                    class="{{ request()->routeIs('admin.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-briefcase w-5"></i>
                     <span class="ml-3">Pekerjaan</span>
                 </a>
-                <a href="{{ route('admin.pegawai.index') }}" class="{{ request()->routeIs('admin.pegawai.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                <a href="{{ route('admin.pegawai.index') }}"
+                    class="{{ request()->routeIs('admin.pegawai.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-user w-5"></i>
                     <span class="ml-3">Pegawai</span>
                 </a>
-                <a href="{{ route('admin.support') }}" class="{{ request()->routeIs('admin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                <a href="{{ route('admin.support') }}"
+                    class="{{ request()->routeIs('admin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-life-ring w-5"></i>
                     <span class="ml-3">Support</span>
                 </a>
+
+                {{-- Jika admin juga anggota tim, tampilkan menu tambahan --}}
+                @if(Auth::user()->pegawai && Auth::user()->pegawai->teams->isNotEmpty())
+                <hr class="my-3 border-blue-600">
+                <p class="text-xs uppercase tracking-wide text-blue-200 font-semibold px-4">Menu Tim</p>
+                <a href="{{ route('user.dashboard') }}"
+                    class="{{ request()->routeIs('user.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="ml-3">Dashboard Tim</span>
+                </a>
+                <a href="{{ route('user.pekerjaan.index') }}"
+                    class="{{ request()->routeIs('user.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                    <i class="fas fa-briefcase w-5"></i>
+                    <span class="ml-3">Pekerjaan Tim</span>
+                </a>
+                @endif
+
+
 
                 @elseif(Auth::user()->role === 'user')
                 {{-- Menu User --}}
@@ -167,12 +190,33 @@
         <div class="flex-1 flex flex-col ml-60">
             <!-- Navbar -->
             <header class="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                <h2 class="text-xl font-semibold text-blue-800">@yield('page-title', 'WOLA - Workload Application')</h2>
+                <h2 class="text-xl font-semibold text-blue-800">
+                    @yield('page-title', 'WOLA - Workload Application')
+                </h2>
+
                 <div class="flex flex-col items-end text-gray-600 font-medium leading-tight">
-                    <div class="text-base">{{ ucfirst(Auth::user()->name ?? 'User') }}</div>
-                    <div class="text-sm text-gray-500">{{ ucfirst(Auth::user()->role ?? 'Guest') }}</div>
+                    <div class="text-base">
+                        {{ ucfirst(Auth::user()->name ?? 'User') }}
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        @php
+                        $role = ucfirst(Auth::user()->role ?? 'Guest');
+
+                        $leaderTeams = Auth::user()?->teams
+                        ?->filter(fn($t) => $t->pivot->is_leader)
+                        ->pluck('nama_tim')
+                        ->toArray() ?? [];
+                        @endphp
+
+                        @if(count($leaderTeams) > 0)
+                        {{ $role }} (Ketua Tim {{ implode(', ', $leaderTeams) }})
+                        @else
+                        {{ $role }}
+                        @endif
+                    </div>
                 </div>
             </header>
+
 
             <!-- Page Content -->
             <main class="flex-1 overflow-y-auto p-6 bg-gray-100">

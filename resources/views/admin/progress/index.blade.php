@@ -4,7 +4,6 @@
 @section('content')
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
-
   {{-- Judul dan Form Search --}}
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-blue-600">Rekap Tugas Tim</h2>
@@ -22,7 +21,7 @@
           <i class="fas fa-search mr-1"></i> Cari
         </button>
       </form>
-      <!--Tombol Export-->
+      <!-- Tombol Export -->
       <a href="{{ route('admin.progress.export') }}"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
            bg-green-200/20 backdrop-blur-sm shadow-sm 
@@ -32,7 +31,6 @@
       </a>
     </div>
   </div>
-
 
   {{-- Table --}}
   <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
@@ -51,20 +49,61 @@
       </thead>
       <tbody>
         @forelse($tugas as $t)
+        @php
+        $realisasi = $t->realisasi;
+        $isApproved = $realisasi?->is_approved ?? false;
+
+        $userPegawai = auth()->user()->pegawai;
+        $isLeaderInSameTeam = false;
+
+        if ($userPegawai && $t->pegawai) {
+        // ambil tim di mana user adalah leader
+        $leaderTeamIds = $userPegawai->teams()
+        ->wherePivot('is_leader', 1)
+        ->pluck('teams.id')
+        ->toArray();
+
+        // ambil semua tim milik pegawai pemilik tugas
+        $tugasTeamIds = $t->pegawai->teams->pluck('id')->toArray();
+
+        // cek irisan tim
+        $isLeaderInSameTeam = count(array_intersect($leaderTeamIds, $tugasTeamIds)) > 0;
+        }
+        @endphp
         <tr class="text-center hover:bg-gray-50">
           <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
-          <td class="px-3 py-2 border">{{ $t->pegawai->nama }}</td>
+          <td class="px-3 py-2 border">{{ $t->pegawai->nama ?? '-' }}</td>
           <td class="px-3 py-2 border">{{ $t->nama_tugas }}</td>
           <td class="px-3 py-2 border">{{ $t->target }} {{ $t->satuan }}</td>
-          <td class="px-3 py-2 border">{{ $t->realisasi->realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 border">{{ $t->realisasi->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 border">{{ $t->realisasi->nilai_kuantitas ?? '-' }}</td>
           <td class="px-3 py-2 border">
-            @if (!$t->realisasi)
+            @if ($realisasi)
+            {{ $realisasi->realisasi }}
+            @unless($isApproved)
+            <span class="text-xs text-yellow-600">(menunggu approve)</span>
+            @endunless
+            @else
+            -
+            @endif
+          </td>
+          <td class="px-3 py-2 border">{{ $realisasi->nilai_kualitas ?? '-' }}</td>
+          <td class="px-3 py-2 border">{{ $realisasi->nilai_kuantitas ?? '-' }}</td>
+          <td class="px-3 py-2 border">
+            @if (!$realisasi)
             <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded">
               Belum Dikerjakan
             </span>
-            @elseif ($t->realisasi->realisasi < $t->target)
+            @elseif (!$isApproved)
+            <span class="inline-block px-2 py-1 text-xs font-semibold text-black bg-yellow-300 rounded">
+              Menunggu Persetujuan
+            </span>
+            @if(auth()->user()->pegawai && $t->asal === auth()->user()->pegawai->nama)
+            <form method="POST" action="{{ route('admin.progress.approve', $realisasi->id) }}" class="inline">
+              @csrf
+              @method('PATCH')
+              <button type="submit" class="ml-2 text-green-600 hover:underline text-xs">Approve</button>
+            </form>
+            @endif
+            @elseif ($realisasi->realisasi < $t->target)
               <span class="inline-block px-2 py-1 text-xs font-semibold text-black bg-yellow-300 rounded">
                 Ongoing
               </span>
@@ -74,7 +113,6 @@
               </span>
               @endif
           </td>
-
         </tr>
         @empty
         <tr>
@@ -85,6 +123,7 @@
     </table>
   </div>
 </div>
+
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
   © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
 </footer>

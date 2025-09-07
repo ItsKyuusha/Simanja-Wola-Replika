@@ -13,55 +13,48 @@
       <!-- Form Search -->
       <form method="GET" action="{{ route('superadmin.master_user.index') }}" class="flex gap-3 w-full sm:w-auto">
         <input type="text" name="search" value="{{ request('search') }}"
-          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
-             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
-             bg-white/50 backdrop-blur-sm placeholder-gray-500"
+          class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white/50 backdrop-blur-sm placeholder-gray-500"
           placeholder="Cari nama pegawai, NIP, email...">
         <button type="submit"
-          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
-             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
-             transition duration-200 ease-in-out transform hover:scale-105">
+          class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700 transition duration-200 ease-in-out transform hover:scale-105">
           <i class="fas fa-search mr-1"></i> Cari
         </button>
       </form>
 
       <!-- Tombol Export -->
       <a href="{{ route('superadmin.master_user.export') }}"
-        class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
-           bg-green-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-green-300/30 hover:border-green-500 hover:text-green-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium bg-green-200/20 backdrop-blur-sm shadow-sm hover:bg-green-300/30 hover:border-green-500 hover:text-green-700 transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-file-excel mr-2"></i> Export Tabel
       </a>
 
       <!-- Tombol Import -->
       <button @click="openImport = true"
-        class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium
-           bg-purple-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium bg-purple-200/20 backdrop-blur-sm shadow-sm hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700 transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-file-upload mr-2"></i> Upload Data
       </button>
 
       <!-- Tombol Tambah User -->
       <button @click="openCreate = true"
-        class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium
-           bg-blue-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+        class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium bg-blue-200/20 backdrop-blur-sm shadow-sm hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700 transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-user-plus mr-2"></i> Tambah User
       </button>
     </div>
   </div>
 
-  <!-- Pesan Sukses -->
+  <!-- Pesan Sukses / Error -->
   @if(session('success'))
   <div class="mb-4 bg-green-50 text-green-700 px-4 py-2 rounded-md border border-green-200">
     {{ session('success') }}
   </div>
   @endif
 
-  <!-- Tabel -->
+  @if(session('error'))
+  <div class="mb-4 bg-red-50 text-red-700 px-4 py-2 rounded-md border border-red-200">
+    {!! session('error') !!}
+  </div>
+  @endif
+
+  <!-- Tabel User -->
   <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
     <table class="w-full table-auto text-sm text-gray-700">
       <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
@@ -70,6 +63,7 @@
           <th class="p-3 border text-left">Nama Pegawai</th>
           <th class="p-3 border">NIP</th>
           <th class="p-3 border">Tim</th>
+          <th class="p-3 border">Tim Yang Dipimpin</th>
           <th class="p-3 border">Jabatan</th>
           <th class="p-3 border">Email</th>
           <th class="p-3 border">Role</th>
@@ -82,16 +76,42 @@
           <td class="p-3 border text-center">{{ $loop->iteration }}</td>
           <td class="p-3 border">{{ $user->pegawai->nama ?? '-' }}</td>
           <td class="p-3 border text-center">{{ $user->pegawai->nip ?? '-' }}</td>
-          <td class="p-3 border text-center">{{ $user->pegawai->team->nama_tim ?? '-' }}</td>
+
+          <!-- Tim (semua tim) -->
+          <td class="p-3 border text-center">
+            @if($user->pegawai && $user->pegawai->teams->count() > 0)
+            @foreach($user->pegawai->teams as $team)
+            <span class="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs m-0.5">
+              {{ $team->nama_tim }}
+            </span>
+            @endforeach
+            @else
+            -
+            @endif
+          </td>
+
+
+          <!-- Tim Yang Dipimpin -->
+          <td class="p-3 border text-center">
+            @if($user->pegawai && $user->pegawai->teams->where('pivot.is_leader', true)->count() > 0)
+            @foreach($user->pegawai->teams->where('pivot.is_leader', true) as $team)
+            <span class="inline-block bg-green-100 text-green-600 px-2 py-1 rounded text-xs m-0.5">
+              <strong>{{ $team->nama_tim }}</strong>
+            </span>
+            @endforeach
+            @else
+            -
+            @endif
+          </td>
+
           <td class="p-3 border text-center">{{ $user->pegawai->jabatan ?? '-' }}</td>
           <td class="p-3 border">{{ $user->email }}</td>
           <td class="p-3 border text-center capitalize">{{ $user->role }}</td>
           <td class="p-3 border">
             <div class="flex justify-center gap-2">
               <!-- Tombol Edit -->
-              <button @click="openEdit = {{ $user->id }}"
-                class="px-3 py-1 rounded-lg border border-yellow-400 text-yellow-600 bg-yellow-100/40 backdrop-blur-sm text-xs
-                     hover:bg-yellow-200 hover:text-yellow-700 transition">
+              <button @click="openEdit = {{ $user->id }}; role='{{ $user->role }}'"
+                class="px-3 py-1 rounded-lg border border-yellow-400 text-yellow-600 bg-yellow-100/40 backdrop-blur-sm text-xs hover:bg-yellow-200 hover:text-yellow-700 transition">
                 <i class="fas fa-edit mr-1"></i> Edit
               </button>
 
@@ -100,8 +120,7 @@
                 onsubmit="return confirm('Hapus user ini?')">
                 @csrf @method('DELETE')
                 <button type="submit"
-                  class="px-3 py-1 rounded-lg border border-red-500 text-red-600 bg-red-100/40 backdrop-blur-sm text-xs
-                       hover:bg-red-200 hover:text-red-700 transition">
+                  class="px-3 py-1 rounded-lg border border-red-500 text-red-600 bg-red-100/40 backdrop-blur-sm text-xs hover:bg-red-200 hover:text-red-700 transition">
                   <i class="fas fa-trash mr-1"></i> Hapus
                 </button>
               </form>
@@ -109,12 +128,11 @@
           </td>
         </tr>
 
-        <!-- Modal Edit -->
+        <!-- Modal Edit User -->
         <template x-if="openEdit === {{ $user->id }}">
           <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
             <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
-              <button @click="openEdit = null"
-                class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+              <button @click="openEdit = null" class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
               <h3 class="text-lg font-semibold mb-4 text-gray-700">Edit Data User</h3>
               <form action="{{ route('superadmin.master_user.update', $user->id) }}" method="POST">
                 @csrf @method('PUT')
@@ -123,36 +141,68 @@
                   <input name="nip" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}" required>
                   <input name="jabatan" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}" required>
 
-                  <select name="team_id" class="border rounded-lg px-3 py-2" required>
-                    <option value="">-- Pilih Tim --</option>
+                  <!-- Pilih Tim -->
+                  <label class="font-medium">Pilih Tim</label>
+                  <div class="flex flex-wrap gap-2">
                     @foreach($teams as $team)
-                    <option value="{{ $team->id }}" {{ optional($user->pegawai->team)->id == $team->id ? 'selected' : '' }}>
-                      {{ $team->nama_tim }}
-                    </option>
+                    @php
+                    $currentLeader = $team->pegawais->firstWhere('pivot.is_leader', true);
+                    $isDisabled = $currentLeader && (!$user->pegawai || $user->pegawai->teams->find($team->id)?->pivot->is_leader === false);
+                    @endphp
+                    <label class="inline-flex items-center gap-1 {{ $isDisabled ? 'text-gray-400' : '' }}">
+                      <input type="checkbox" name="teams[]" value="{{ $team->id }}"
+                        @if($user->pegawai && $user->pegawai->teams->contains($team->id)) checked @endif
+                      @if($isDisabled) disabled @endif
+                      class="form-checkbox text-blue-600">
+                      <span>{{ $team->nama_tim }}</span>
+                    </label>
                     @endforeach
-                  </select>
+                  </div>
 
+                  <!-- Nama & Email User -->
                   <input type="text" name="name" class="border rounded-lg px-3 py-2" value="{{ $user->name }}" required>
                   <input type="email" name="email" class="border rounded-lg px-3 py-2" value="{{ $user->email }}" required>
-                  <input type="password" name="password" class="border rounded-lg px-3 py-2"
-                    placeholder="Password baru (kosongkan jika tidak ganti)">
-                  <select name="role" class="border rounded-lg px-3 py-2" required>
+                  <input type="password" name="password" class="border rounded-lg px-3 py-2" placeholder="Password baru (kosongkan jika tidak ganti)">
+
+                  <!-- Pilih Role -->
+                  <select name="role" x-model="role" class="border rounded-lg px-3 py-2" required>
                     <option disabled>-- Pilih Role --</option>
                     <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                     <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
                   </select>
-                </div>
-                <div class="mt-4 flex justify-end gap-2">
-                  <button type="button" @click="openEdit = null"
-                    class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
-                    Batal
-                  </button>
-                  <button
-                    class="px-4 py-2 rounded-lg border border-green-500 bg-green-100/60 text-green-700 hover:bg-green-200 transition">
-                    Simpan
-                  </button>
-                </div>
+
+                  <div x-show="role === 'admin'" class="mt-3">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Ketua Tim</label>
+                    <div class="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2">
+                      @foreach($teams as $team)
+                      @php
+                      // Tim yang sudah punya ketua lain
+                      $currentLeader = $team->pegawais->firstWhere('pivot.is_leader', true);
+
+                      // Jika tim sudah ada ketua dan bukan user ini sendiri → disable
+                      $isDisabled = $currentLeader && ($currentLeader->id ?? 0) !== ($user->pegawai->id ?? 0);
+
+                      // Jika user ini ketua tim ini → checked
+                      $isChecked = $currentLeader && ($currentLeader->id ?? 0) === ($user->pegawai->id ?? 0);
+                      @endphp
+                      <label class="flex items-center gap-2 {{ $isDisabled ? 'text-gray-400' : '' }}">
+                        <input type="radio" name="leader[]" value="{{ $team->id }}"
+                          @if($isDisabled) disabled @endif
+                          @if($isChecked) checked @endif
+                          class="form-radio {{ $isDisabled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600' }}">
+                        <span>{{ $team->nama_tim }}</span>
+                      </label>
+                      @endforeach
+                    </div>
+                    <small class="text-xs text-gray-500">Hanya bisa memilih satu ketua tim. Jika tim sudah ada ketua lain, radio akan abu-abu dan tidak bisa dipilih.</small>
+                  </div>
+
+
+                  <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" @click="openEdit = null" class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg border border-green-500 bg-green-100/60 text-green-700 hover:bg-green-200 transition">Simpan</button>
+                  </div>
               </form>
             </div>
           </div>
@@ -166,29 +216,20 @@
       </tbody>
     </table>
   </div>
-
 </div>
 
 <!-- Modal Import -->
 <template x-if="openImport">
   <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
-      <button @click="openImport = false"
-        class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+      <button @click="openImport = false" class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
       <h2 class="text-lg font-semibold mb-4 text-gray-700">Import Data User & Pegawai</h2>
       <form action="{{ route('superadmin.master_user.import') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="file" name="file" accept=".xlsx,.xls"
-          class="border rounded-lg w-full px-3 py-2 mb-4" required>
+        <input type="file" name="file" accept=".xlsx,.xls" class="border rounded-lg w-full px-3 py-2 mb-4" required>
         <div class="flex justify-end gap-2">
-          <button type="button" @click="openImport = false"
-            class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
-            Batal
-          </button>
-          <button type="submit"
-            class="px-4 py-2 rounded-lg border border-purple-500 bg-purple-100/60 text-purple-700 hover:bg-purple-200 transition">
-            Upload
-          </button>
+          <button type="button" @click="openImport = false" class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-lg border border-purple-500 bg-purple-100/60 text-purple-700 hover:bg-purple-200 transition">Upload</button>
         </div>
       </form>
     </div>
@@ -198,9 +239,8 @@
 <!-- Modal Create -->
 <template x-if="openCreate">
   <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-xl relative border border-gray-200 shadow-xl">
-      <button @click="openCreate = false"
-        class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
+    <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
+      <button @click="openCreate = false" class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
       <h2 class="text-lg font-semibold mb-4 text-gray-700">Tambah User & Pegawai</h2>
       <form action="{{ route('superadmin.master_user.store') }}" method="POST">
         @csrf
@@ -209,35 +249,55 @@
           <input type="text" name="nip" class="border rounded-lg px-3 py-2" placeholder="NIP" required>
           <input type="text" name="jabatan" class="border rounded-lg px-3 py-2" placeholder="Jabatan" required>
 
-          <select name="team_id" class="border rounded-lg px-3 py-2" required>
-            <option disabled selected>-- Pilih Tim --</option>
+          <!-- Pilih Tim -->
+          <!-- Pilih Tim -->
+          <label class="font-medium">Pilih Tim</label>
+          <div class="flex flex-wrap gap-2">
             @foreach($teams as $team)
-            <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>
+            <label class="inline-flex items-center gap-1">
+              <input type="checkbox" name="teams[]" value="{{ $team->id }}"
+                class="form-checkbox text-blue-600">
+              <span>{{ $team->nama_tim }}</span>
+            </label>
             @endforeach
-          </select>
+          </div>
 
           <input type="text" name="name" class="border rounded-lg px-3 py-2" placeholder="Nama User" required>
           <input type="email" name="email" class="border rounded-lg px-3 py-2" placeholder="Email" required>
           <input type="password" name="password" class="border rounded-lg px-3 py-2" placeholder="Password" required minlength="6">
           <small class="text-xs text-gray-500">Password minimal 6 karakter</small>
 
-
-          <select name="role" class="border rounded-lg px-3 py-2" required>
+          <select name="role" x-model="role" class="border rounded-lg px-3 py-2" required>
             <option disabled selected>-- Pilih Role --</option>
             <option value="superadmin">Superadmin</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
           </select>
+
+          <!-- Radio Ketua Tim -->
+          <div x-show="role === 'admin'" class="mt-3">
+            <label class="block text-sm font-medium text-gray-600 mb-2">Ketua Tim</label>
+            <div class="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2">
+              @foreach($teams as $team)
+              @php
+              $currentLeader = $team->pegawais->firstWhere('pivot.is_leader', true);
+              $isDisabled = $currentLeader;
+              @endphp
+              <label class="flex items-center gap-2 {{ $isDisabled ? 'text-gray-400' : '' }}">
+                <input type="radio" name="leader[]" value="{{ $team->id }}"
+                  @if($isDisabled) disabled @endif
+                  class="form-radio {{ $isDisabled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600' }}">
+                <span>{{ $team->nama_tim }}</span>
+              </label>
+              @endforeach
+            </div>
+            <small class="text-xs text-gray-500">Hanya bisa memilih satu ketua tim. Jika tim sudah ada ketua lain, radio akan abu-abu dan tidak bisa dipilih.</small>
+          </div>
         </div>
+
         <div class="mt-4 flex justify-end gap-2">
-          <button type="button" @click="openCreate = false"
-            class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">
-            Batal
-          </button>
-          <button type="submit"
-            class="px-4 py-2 rounded-lg border border-blue-500 bg-blue-100/60 text-blue-700 hover:bg-blue-200 transition">
-            Simpan
-          </button>
+          <button type="button" @click="openCreate = false" class="px-4 py-2 rounded-lg border border-gray-400 bg-gray-100/60 text-gray-700 hover:bg-gray-200 transition">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-lg border border-blue-500 bg-blue-100/60 text-blue-700 hover:bg-blue-200 transition">Simpan</button>
         </div>
       </form>
     </div>
@@ -256,6 +316,7 @@
       openCreate: false,
       openEdit: null,
       openImport: false,
+      role: 'user',
     }));
   });
 </script>

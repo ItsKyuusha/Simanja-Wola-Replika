@@ -55,6 +55,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('progress', [AdminProgressController::class, 'index'])->name('progress.index');
     Route::get('progress/export', [AdminProgressController::class, 'export'])->name('progress.export');
     Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+    Route::patch('/progress/{id}/approve', [AdminProgressController::class, 'approve'])->name('progress.approve');
 });
 
 
@@ -120,7 +121,8 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
 // =========================
 // USER PANEL ROUTES
 // =========================
-Route::prefix('user')->name('user.')->middleware(['auth', 'role:user'])->group(function () {
+// USER PANEL ROUTES (admin juga bisa akses)
+Route::prefix('user')->name('user.')->middleware(['auth', 'role:user,admin'])->group(function () {
     Route::get('dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('pekerjaan', [UserPekerjaanController::class, 'index'])->name('pekerjaan.index');

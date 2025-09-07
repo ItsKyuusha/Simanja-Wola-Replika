@@ -104,29 +104,59 @@
     </div>
 
     <!-- Tabel Pegawai Global -->
-    <div class="overflow-x-auto rounded-xl border border-gray-200">
-      <table class="min-w-full table-auto text-sm text-gray-700">
-        <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-700">
+    <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+      <table class="w-full table-auto text-sm text-gray-700">
+        <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-700 text-center">
           <tr>
-            <th class="px-3 py-2 border w-12 text-center whitespace-nowrap">No.</th>
-            <th class="px-4 py-2 border">Nama</th>
-            <th class="px-4 py-2 border">NIP</th>
-            <th class="px-4 py-2 border">Tim</th>
-            <th class="px-4 py-2 border">Jabatan</th>
+            <th class="p-3 border w-12">No.</th>
+            <th class="p-3 border text-left">Nama</th>
+            <th class="p-3 border">NIP</th>
+            <th class="p-3 border">Tim</th>
+            <th class="p-3 border">Tim Yang Dipimpin</th>
+            <th class="p-3 border">Jabatan</th>
           </tr>
         </thead>
         <tbody>
           @forelse($pegawaiGlobal as $pg)
-          <tr class="hover:bg-gray-50 transition">
-            <td class="px-3 py-2 border text-center">{{ $loop->iteration }}</td>
-            <td class="px-4 py-2 border">{{ $pg->nama }}</td>
-            <td class="px-4 py-2 border">{{ $pg->nip }}</td>
-            <td class="px-4 py-2 border">{{ $pg->team->nama_tim ?? '-' }}</td>
-            <td class="px-4 py-2 border">{{ $pg->jabatan }}</td>
+          <tr class="even:bg-gray-50 hover:bg-blue-50 transition">
+            <td class="p-3 border text-center">{{ $loop->iteration }}</td>
+            <td class="p-3 border">{{ $pg->nama }}</td>
+            <td class="p-3 border text-center">{{ $pg->nip }}</td>
+
+            <!-- Kolom Tim -->
+            <td class="p-3 border text-center">
+              @if($pg->teams->isNotEmpty())
+              @foreach($pg->teams as $team)
+              <span class="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs m-0.5">
+                {{ $team->nama_tim }}
+              </span>
+              @endforeach
+              @else
+              -
+              @endif
+            </td>
+
+            <!-- Kolom Tim Yang Dipimpin -->
+            <td class="p-3 border text-center">
+              @php
+              $timKetua = $pg->teams->filter(fn($t) => $t->pivot->is_leader);
+              @endphp
+              @if($timKetua->isNotEmpty())
+              @foreach($timKetua as $tk)
+              <span class="inline-block bg-green-100 text-green-600 px-2 py-1 rounded text-xs m-0.5">
+                <strong>{{ $tk->nama_tim }}</strong>
+              </span>
+              @endforeach
+              @else
+              -
+              @endif
+            </td>
+
+            <td class="p-3 border text-center">{{ $pg->jabatan }}</td>
           </tr>
           @empty
           <tr>
-            <td colspan="5" class="px-4 py-4 border text-center text-gray-500">
+            <td colspan="6" class="text-center py-6 text-gray-500">
               Tidak ada pegawai di sistem.
             </td>
           </tr>
@@ -134,12 +164,10 @@
         </tbody>
       </table>
     </div>
-  </div>
 
-</div>
 
-{{-- Footer --}}
-<footer class="text-center text-sm text-gray-500 py-4 border-t mt-10">
-  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-</footer>
-@endsection
+    {{-- Footer --}}
+    <footer class="text-center text-sm text-gray-500 py-4 border-t mt-10">
+      © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer>
+    @endsection

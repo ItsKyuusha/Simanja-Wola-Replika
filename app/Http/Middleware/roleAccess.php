@@ -4,29 +4,43 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
-class roleAccess
+class RoleAccess
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  mixed  ...$roles
+     * @return \Illuminate\Http\Response
      */
-    public function handle(Request $request, Closure $next, ...$roles): Response
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         $user = Auth::user();
 
+        // Jika belum login
         if (!$user) {
-            return response('Unauthenticated', 401);
+            // Bisa redirect ke login atau kembalikan JSON
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+            return redirect()->route('login');
         }
 
         $userRole = strtolower($user->role);
         $allowedRoles = array_map('strtolower', $roles);
 
+        // Jika role tidak sesuai
         if (!in_array($userRole, $allowedRoles)) {
-            return response('Unauthorized access', 403);
+            // Bisa redirect ke halaman dashboard sesuai role
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized access'], 403);
+            }
+
+            // Redirect default
+            return redirect()->route('unauthorized'); // buat route /unauthorized
         }
 
         return $next($request);

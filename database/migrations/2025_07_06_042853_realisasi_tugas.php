@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('file_bukti')->nullable();
             $table->integer('nilai_kualitas')->nullable();
             $table->integer('nilai_kuantitas')->nullable();
+            $table->boolean('is_approved')->default(false); // << tambahan
             $table->timestamps();
 
             $table->foreign('tugas_id')->references('id')->on('tugas')->onDelete('cascade');
