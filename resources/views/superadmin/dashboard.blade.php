@@ -84,10 +84,7 @@
             class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
             Jumlah Kegiatan Pegawai
         </button>
-        <button @click="tab = 'bobot'" :class="tab === 'bobot' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
-            class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
-            Jumlah Bobot Pekerjaan Pegawai
-        </button>
+
         <button @click="tab = 'kinerja'" :class="tab === 'kinerja' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border border-blue-600'"
             class="px-4 py-1 rounded-full text-sm font-medium shadow-sm transition">
             Nilai Kinerja Pegawai
@@ -167,70 +164,6 @@
         </div>
     </div>
 
-    <!-- Tab: Jumlah Bobot -->
-    <div x-show="tab === 'bobot'" x-transition>
-        <div class="bg-white rounded shadow p-4 border">
-            <h5 class="font-bold text-blue-700 mb-3 text-lg">
-                Jumlah Bobot Pegawai
-                @if($labelBulanTahun)
-                <span class="text-lg font-bold text-blue-600 ml-2">({{ $labelBulanTahun }})</span>
-                @endif
-            </h5>
-
-            <div class="flex justify-between items-center flex-wrap gap-2 mb-3">
-                <div class="flex gap-2">
-                    <!-- Tombol Export -->
-                    <button id="exportBtnBobot" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded text-sm">
-                        <i class="fas fa-file-export mr-1"></i> Export Tabel
-                    </button>
-
-                    <!-- Toggle Grafik -->
-                    <button id="toggleChartBtnBobot" class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded text-sm">
-                        <i class="fas fa-chart-bar mr-1"></i> Tampilkan Grafik
-                    </button>
-                </div>
-
-                <!-- Search -->
-                <form method="GET" action="{{ route('superadmin.dashboard') }}" class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama pegawai..."
-                        class="border border-gray-300 px-3 py-1 rounded text-sm placeholder-black" />
-                    <input type="hidden" name="bulan" value="{{ request('bulan') }}">
-                    <input type="hidden" name="tahun" value="{{ request('tahun') }}">
-                </form>
-            </div>
-
-            <!-- TABEL -->
-            <div id="tableContainerBobot" class="overflow-auto">
-                <table id="tabelBobot" class="table-auto w-full text-sm border border-gray-200">
-                    <thead class="bg-blue-100 text-center text-sm text-gray-700">
-                        <tr>
-                            <th class="px-4 py-2 border">Nama Pegawai</th>
-                            <th class="px-4 py-2 border">Total Bobot</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($bobotPerPegawai as $item)
-                        <tr class="text-center">
-                            <td class="px-4 py-2 border text-left">{{ $item->nama }}</td>
-                            <td class="px-4 py-2 border">{{ $item->total_bobot }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="2" class="text-center text-gray-500 py-3">Tidak ada data.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- GRAFIK -->
-            <div id="chartContainerBobot" class="hidden mt-4 overflow-x-auto">
-                <div class="min-w-full">
-                    <canvas id="bobotChart" height="100"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Tab: Nilai Kinerja -->
     <div x-show="tab === 'kinerja'" x-transition>
@@ -497,122 +430,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleChartBtn = document.getElementById('toggleChartBtnBobot');
-        const chartContainer = document.getElementById('chartContainerBobot');
-        const tableContainer = document.getElementById('tableContainerBobot');
-        const exportBtn = document.getElementById('exportBtnBobot');
-        let chartVisible = false;
-
-        toggleChartBtn.addEventListener('click', () => {
-            chartVisible = !chartVisible;
-
-            if (chartVisible) {
-                chartContainer.classList.remove('hidden');
-                tableContainer.classList.add('hidden');
-                toggleChartBtn.innerHTML = '<i class="fas fa-table mr-1"></i> Tampilkan Tabel';
-                exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Grafik';
-            } else {
-                chartContainer.classList.add('hidden');
-                tableContainer.classList.remove('hidden');
-                toggleChartBtn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Tampilkan Grafik';
-                exportBtn.innerHTML = '<i class="fas fa-file-export mr-1"></i> Export Tabel';
-            }
-        });
-
-        const chartData = @json($bobotPerPegawai);
-        const labelBulanTahun = @json($labelBulanTahun ?? "Semua Bulan & Tahun");
-
-        const labels = chartData.map(item => item.nama);
-        const dataPoints = chartData.map(item => item.total_bobot);
-
-        const canvas = document.getElementById('bobotChart');
-        if (chartData.length > 30) {
-            canvas.width = chartData.length * 40;
-        }
-
-        const ctx = canvas.getContext('2d');
-        const bobotChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Total Bobot',
-                    data: dataPoints,
-                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                    borderColor: 'rgba(5, 150, 105, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Grafik Jumlah Bobot Pegawai (${labelBulanTahun})`
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Bobot'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            autoSkip: false,
-                            maxRotation: 60,
-                            minRotation: 45,
-                        },
-                        title: {
-                            display: true,
-                            text: 'Pegawai'
-                        }
-                    }
-                }
-            }
-        });
-
-        exportBtn.addEventListener('click', () => {
-            if (chartVisible) {
-                const link = document.createElement('a');
-                link.download = 'grafik-bobot.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } else {
-                const table = document.getElementById('tabelBobot');
-                let csvContent = "";
-                const rows = table.querySelectorAll('tr');
-
-                rows.forEach(row => {
-                    let rowData = [];
-                    row.querySelectorAll('th, td').forEach(cell => {
-                        let cellText = cell.innerText.replace(/"/g, '""');
-                        rowData.push(`"${cellText}"`);
-                    });
-                    csvContent += rowData.join(",") + "\r\n";
-                });
-
-                const blob = new Blob([csvContent], {
-                    type: 'text/csv;charset=utf-8;'
-                });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', 'jumlah-bobot-pegawai.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
-    });
-</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

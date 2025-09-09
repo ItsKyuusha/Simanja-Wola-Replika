@@ -3,7 +3,9 @@
 @section('page-title', 'Master | Jenis Pekerjaan')
 
 @section('content')
-<div x-data="{ openCreate: false, openEdit: null, openImport: false }" class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
+
+<div x-data="{ openCreate: false, openEdit: null, openImport: false }"
+  class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
   <!-- Header -->
   <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -14,13 +16,13 @@
       <form method="GET" action="{{ route('superadmin.jenis-pekerjaan.index') }}" class="flex gap-3 w-full sm:w-auto">
         <input type="text" name="search" value="{{ request('search') }}"
           class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg 
-             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
-             bg-white/50 backdrop-blur-sm placeholder-gray-500"
+                 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                 bg-white/50 backdrop-blur-sm placeholder-gray-500"
           placeholder="Cari nama pekerjaan...">
         <button type="submit"
           class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium 
-             bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
-             transition duration-200 ease-in-out transform hover:scale-105">
+                 bg-white/40 backdrop-blur-sm hover:bg-gray-100 hover:text-gray-700
+                 transition duration-200 ease-in-out transform hover:scale-105">
           <i class="fas fa-search mr-1"></i> Cari
         </button>
       </form>
@@ -28,17 +30,17 @@
       @if(auth()->user()?->role === 'superadmin')
       <a href="{{ route('superadmin.jenis-pekerjaan.export') }}"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
-           bg-green-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-green-300/30 hover:border-green-500 hover:text-green-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+               bg-green-200/20 backdrop-blur-sm shadow-sm 
+               hover:bg-green-300/30 hover:border-green-500 hover:text-green-700
+               transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-file-excel mr-2"></i> Export Tabel
       </a>
 
       <button @click="openImport = true"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium
-           bg-purple-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+               bg-purple-200/20 backdrop-blur-sm shadow-sm 
+               hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700
+               transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-file-upload mr-2"></i> Upload Data
       </button>
       @endif
@@ -46,9 +48,9 @@
       <!-- Tombol Tambah Jenis Pekerjaan -->
       <button @click="openCreate = true"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium
-           bg-blue-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+               bg-blue-200/20 backdrop-blur-sm shadow-sm 
+               hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700
+               transition duration-200 ease-in-out transform hover:scale-105">
         <i class="fas fa-user-plus mr-2"></i> Tambah Jenis Pekerjaan
       </button>
     </div>
@@ -77,7 +79,7 @@
           <th class="p-3 border">No.</th>
           <th class="p-3 border">Nama</th>
           <th class="p-3 border">Satuan</th>
-          <th class="p-3 border">Bobot</th>
+          <th class="p-3 border">Volume</th>
           <th class="p-3 border">Tim</th>
           <th class="p-3 border">Aksi</th>
         </tr>
@@ -88,23 +90,23 @@
           <td class="p-3 border text-center">{{ $loop->iteration }}</td>
           <td class="p-3 border">{{ $item->nama_pekerjaan }}</td>
           <td class="p-3 border text-center">{{ $item->satuan }}</td>
-          <td class="p-3 border text-center">{{ $item->bobot }}</td>
+          <td class="p-3 border text-center">{{ $item->volume }}</td>
           <td class="p-3 border">{{ $item->team->nama_tim ?? '-' }}</td>
-          <td class="p-3 border text-center space-x-2">
+          <td class="p-3 border text-center">
             <div class="flex justify-center gap-2">
-              <!--Tombol Edit-->
+              <!-- Tombol Edit -->
               <button @click="openEdit = {{ $item->id }}"
                 class="px-3 py-1 rounded-lg border border-yellow-400 text-yellow-600 bg-yellow-100/40 backdrop-blur-sm text-xs
-                     hover:bg-yellow-200 hover:text-yellow-700 transition">
+                       hover:bg-yellow-200 hover:text-yellow-700 transition">
                 <i class="fas fa-edit mr-1"></i> Edit
               </button>
 
               <form action="{{ route('superadmin.jenis-pekerjaan.destroy', $item->id) }}" method="POST"
-                onsubmit="return confirm('Hapus user ini?')">
+                onsubmit="return confirm('Hapus data ini?')">
                 @csrf @method('DELETE')
                 <button type="submit"
                   class="px-3 py-1 rounded-lg border border-red-500 text-red-600 bg-red-100/40 backdrop-blur-sm text-xs
-                       hover:bg-red-200 hover:text-red-700 transition">
+                         hover:bg-red-200 hover:text-red-700 transition">
                   <i class="fas fa-trash mr-1"></i> Hapus
                 </button>
               </form>
@@ -124,11 +126,13 @@
                 <div class="grid grid-cols-1 gap-3">
                   <input name="nama_pekerjaan" class="border rounded px-3 py-2" value="{{ $item->nama_pekerjaan }}" required>
                   <input name="satuan" class="border rounded px-3 py-2" value="{{ $item->satuan }}" required>
-                  <input name="bobot" type="number" step="any" class="border rounded px-3 py-2" value="{{ $item->bobot }}" required>
+                  <input name="volume" type="number" step="any" class="border rounded px-3 py-2" value="{{ $item->volume }}" required>
                   <select name="tim_id" class="border rounded px-3 py-2" required>
                     <option value="">-- Pilih Tim --</option>
                     @foreach($teams as $team)
-                    <option value="{{ $team->id }}" {{ $item->tim_id == $team->id ? 'selected' : '' }}>{{ $team->nama_tim }}</option>
+                    <option value="{{ $team->id }}" {{ $item->tim_id == $team->id ? 'selected' : '' }}>
+                      {{ $team->nama_tim }}
+                    </option>
                     @endforeach
                   </select>
                 </div>
@@ -142,7 +146,7 @@
         </template>
         @empty
         <tr>
-          <td colspan="8" class="text-center py-6 text-gray-500">Tidak ada data jenis pekerjaan.</td>
+          <td colspan="7" class="text-center py-6 text-gray-500">Tidak ada data jenis pekerjaan.</td>
         </tr>
         @endforelse
       </tbody>
@@ -161,7 +165,7 @@
           <div class="grid grid-cols-1 gap-3">
             <input name="nama_pekerjaan" class="border rounded px-3 py-2" placeholder="Nama Pekerjaan" required>
             <input name="satuan" class="border rounded px-3 py-2" placeholder="Satuan" required>
-            <input name="bobot" type="number" step="any" class="border rounded px-3 py-2" placeholder="Bobot" required>
+            <input name="volume" type="number" step="any" class="border rounded px-3 py-2" placeholder="Volume" required>
             <select name="tim_id" class="border rounded px-3 py-2" required>
               <option value="">-- Pilih Tim --</option>
               @foreach($teams as $team)
@@ -190,7 +194,7 @@
       <div class="bg-white/90 backdrop-blur-md p-6 rounded-2xl w-full max-w-md relative border border-gray-200 shadow-xl">
         <button @click="openImport = false"
           class="absolute top-3 right-4 text-gray-400 text-2xl hover:text-red-500">&times;</button>
-        <h2 class="text-lg font-semibold mb-4 text-gray-700">Import Data User & Pegawai</h2>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Import Data Jenis Pekerjaan</h2>
         <form action="{{ route('superadmin.jenis-pekerjaan.import') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <input type="file" name="file" accept=".xlsx,.xls"
@@ -209,7 +213,6 @@
       </div>
     </div>
   </template>
-
 </div>
 
 <!-- Footer -->
@@ -217,6 +220,5 @@
   © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
 </footer>
 
-@endsection
 
-@section('body-attrs', 'x-data')
+@endsection

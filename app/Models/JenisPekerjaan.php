@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class JenisPekerjaan extends Model
 {
-    protected $fillable = ['nama_pekerjaan', 'satuan', 'bobot', 'pemberi_pekerjaan', 'tim_id'];
+    protected $fillable = [
+        'nama_pekerjaan',
+        'satuan',
+        'volume',            // ✅ ganti bobot → volume
+        'pemberi_pekerjaan',
+        'tim_id',
+    ];
 
     public function tugas()
     {
@@ -17,5 +23,4 @@ class JenisPekerjaan extends Model
     {
         return $this->belongsTo(Team::class, 'tim_id');
     }
-
 }

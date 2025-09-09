@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_pekerjaan');
             $table->string('satuan');
-            $table->integer('bobot');
+            $table->integer('volume')->default(0); // ✅ Tambahan kolom volume
             $table->string('pemberi_pekerjaan')->nullable();
             $table->foreignId('tim_id')->nullable()->constrained('teams')->onDelete('set null');
             $table->timestamps();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('jenis_pekerjaans');
     }
 };

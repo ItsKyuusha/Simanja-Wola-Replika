@@ -23,57 +23,77 @@ class PekerjaanController extends Controller
         $user = auth()->user();
         $pegawai = $user->pegawai;
 
+        $teams = $pegawai?->teams ?? collect();
+        $teamIds = $teams->pluck('id');
+
         $tugas = Tugas::with(['pegawai', 'jenisPekerjaan', 'realisasi'])
-            ->where(function ($query) use ($pegawai, $user) {
-                // filter berdasarkan asal sesuai pegawai / user login
-                $query->where('asal', $pegawai->nama ?? $user->name);
-            })
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama_tugas', 'like', "%{$search}%")
-                        ->orWhereHas('pegawai', function ($q2) use ($search) {
-                            $q2->where('nama', 'like', "%{$search}%")
-                                ->orWhere('nip', 'like', "%{$search}%");
-                        });
-                });
-            })
+            ->where('asal', $pegawai->nama ?? $user->name)
+            ->whereHas('jenisPekerjaan', fn($q) => $q->whereIn('tim_id', $teamIds))
+            ->when($search, fn($query) => $query->where(function ($q) use ($search) {
+                $q->where('nama_tugas', 'like', "%{$search}%")
+                    ->orWhereHas('pegawai', fn($q2) => $q2->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nip', 'like', "%{$search}%"));
+            }))
             ->get();
 
         $pegawaiList = Pegawai::all();
-        $jenisPekerjaan = JenisPekerjaan::all();
+
+        $jenisPekerjaanModal = JenisPekerjaan::whereHas('team.pegawais', function ($q) use ($pegawai) {
+            $q->where('pegawai_team.is_leader', 1)
+                ->where('pegawai_team.pegawai_id', $pegawai->id);
+        })->whereIn('tim_id', $teamIds)->get();
+
+        // Hitung sisa volume untuk setiap jenis pekerjaan
+        $volumeTersisa = [];
+        foreach ($jenisPekerjaanModal as $jp) {
+            $totalTarget = $tugas->where('jenis_pekerjaan_id', $jp->id)->sum('target');
+            $volumeTersisa[$jp->id] = max($jp->volume - $totalTarget, 0);
+        }
 
         return view('admin.pekerjaan.index', [
             'tugas' => $tugas,
             'pegawai' => $pegawaiList,
-            'jenisPekerjaan' => $jenisPekerjaan
+            'jenisPekerjaanModal' => $jenisPekerjaanModal,
+            'volumeTersisa' => $volumeTersisa, // Kirim ke Blade
         ]);
     }
+
 
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_tugas'         => 'required',
-            'pegawai_id'         => 'required|exists:pegawais,id',
+            'nama_tugas' => 'required|string',
+            'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
-            'target'             => 'required|numeric',
-            'satuan'             => 'required|string',
-            'deadline'           => 'required|date',
+            'target' => 'required|numeric',
+            'satuan' => 'required|string',
+            'deadline' => 'required|date',
         ]);
 
-        // nama pemberi (pegawai login / user)
-        $pemberi = auth()->user()->pegawai->nama
-            ?? auth()->user()->name
-            ?? 'Tidak diketahui';
+        $pegawai = auth()->user()->pegawai;
+        $teams = $pegawai?->teams ?? collect();
+        $teamIds = $teams->pluck('id');
+
+        // Validasi: pastikan jenis pekerjaan milik tim user
+        $validJenis = JenisPekerjaan::whereIn('tim_id', $teamIds)
+            ->pluck('id')
+            ->toArray();
+
+        if (!in_array($request->jenis_pekerjaan_id, $validJenis)) {
+            return back()->withErrors(['jenis_pekerjaan_id' => 'Jenis pekerjaan tidak valid untuk tim Anda.']);
+        }
+
+        $pemberi = $pegawai->nama ?? auth()->user()->name ?? 'Tidak diketahui';
 
         Tugas::create([
-            'nama_tugas'         => $request->nama_tugas,
-            'pegawai_id'         => $request->pegawai_id,
+            'nama_tugas' => $request->nama_tugas,
+            'pegawai_id' => $request->pegawai_id,
             'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
-            'target'             => $request->target,
-            'satuan'             => $request->satuan,
-            'asal'               => $pemberi,
-            'deadline'           => $request->deadline,
+            'target' => $request->target,
+            'satuan' => $request->satuan,
+            'asal' => $pemberi,
+            'deadline' => $request->deadline,
         ]);
 
         return redirect()->route('admin.pekerjaan.index')->with('success', 'Tugas berhasil ditambahkan.');
@@ -82,27 +102,38 @@ class PekerjaanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_tugas'         => 'required',
-            'pegawai_id'         => 'required|exists:pegawais,id',
+            'nama_tugas' => 'required|string',
+            'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
-            'target'             => 'required|numeric',
-            'satuan'             => 'required|string',
-            'deadline'           => 'required|date',
+            'target' => 'required|numeric',
+            'satuan' => 'required|string',
+            'deadline' => 'required|date',
         ]);
 
         $tugas = Tugas::findOrFail($id);
+        $pegawai = auth()->user()->pegawai;
+        $teams = $pegawai?->teams ?? collect();
+        $teamIds = $teams->pluck('id');
 
-        // kalau user punya banyak tim, ambil nama semua tim → join pakai koma
-        $asalInstruksi = auth()->user()->teams->pluck('nama_tim')->join(', ') ?: 'Tidak diketahui';
+        // Validasi: pastikan jenis pekerjaan milik tim user
+        $validJenis = JenisPekerjaan::whereIn('tim_id', $teamIds)
+            ->pluck('id')
+            ->toArray();
+
+        if (!in_array($request->jenis_pekerjaan_id, $validJenis)) {
+            return back()->withErrors(['jenis_pekerjaan_id' => 'Jenis pekerjaan tidak valid untuk tim Anda.']);
+        }
+
+        $asalInstruksi = $teams->pluck('nama_tim')->join(', ') ?: 'Tidak diketahui';
 
         $tugas->update([
-            'nama_tugas'         => $request->nama_tugas,
-            'pegawai_id'         => $request->pegawai_id,
+            'nama_tugas' => $request->nama_tugas,
+            'pegawai_id' => $request->pegawai_id,
             'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
-            'target'             => $request->target,
-            'satuan'             => $request->satuan,
-            'asal'               => $asalInstruksi,
-            'deadline'           => $request->deadline,
+            'target' => $request->target,
+            'satuan' => $request->satuan,
+            'asal' => $asalInstruksi,
+            'deadline' => $request->deadline,
         ]);
 
         return redirect()->route('admin.pekerjaan.index')->with('success', 'Tugas berhasil diperbarui.');
@@ -130,22 +161,18 @@ class PekerjaanController extends Controller
             public function collection()
             {
                 return Tugas::with(['pegawai.teams', 'jenisPekerjaan'])
-                    ->whereHas('pegawai.teams', function ($q) {
-                        $q->whereIn('teams.id', $this->teamIds);
-                    })
+                    ->whereHas('pegawai.teams', fn($q) => $q->whereIn('teams.id', $this->teamIds))
                     ->get()
-                    ->map(function ($tugas, $index) {
-                        return [
-                            'No'              => $index + 1,
-                            'Nama Tugas'      => $tugas->nama_tugas,
-                            'Pegawai'         => $tugas->pegawai->nama ?? '-',
-                            'Jenis Pekerjaan' => $tugas->jenisPekerjaan->nama_pekerjaan ?? '-',
-                            'Target'          => $tugas->target,
-                            'Satuan'          => $tugas->satuan,
-                            'Asal Instruksi'  => $tugas->asal,
-                            'Deadline'        => $tugas->deadline ? Carbon::parse($tugas->deadline)->format('d-m-Y') : '-',
-                        ];
-                    });
+                    ->map(fn($tugas, $index) => [
+                        'No' => $index + 1,
+                        'Nama Tugas' => $tugas->nama_tugas,
+                        'Pegawai' => $tugas->pegawai->nama ?? '-',
+                        'Jenis Pekerjaan' => $tugas->jenisPekerjaan->nama_pekerjaan ?? '-',
+                        'Target' => $tugas->target,
+                        'Satuan' => $tugas->satuan,
+                        'Asal Instruksi' => $tugas->asal,
+                        'Deadline' => $tugas->deadline ? Carbon::parse($tugas->deadline)->format('d-m-Y') : '-',
+                    ]);
             }
 
             public function headings(): array
@@ -158,36 +185,30 @@ class PekerjaanController extends Controller
                     'Target',
                     'Satuan',
                     'Asal Instruksi',
-                    'Deadline',
+                    'Deadline'
                 ];
             }
 
             public function styles(Worksheet $sheet)
             {
-                $highestRow    = $sheet->getHighestRow();
+                $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
 
                 // Header
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['horizontal' => 'center'],
-                    'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN]
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
                 ]);
 
                 // Data
                 $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
                     'alignment' => ['horizontal' => 'left'],
-                    'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN]
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
                 ]);
 
-                // Kolom "No" rata tengah
-                $sheet->getStyle('A2:A' . $highestRow)->applyFromArray([
-                    'alignment' => ['horizontal' => 'center'],
-                ]);
+                // Kolom No rata tengah
+                $sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal('center');
 
                 return [];
             }
@@ -225,25 +246,23 @@ class PekerjaanController extends Controller
                 }
 
                 $pegawaiId = Pegawai::where('nama', $row['pegawai'])
-                    ->whereHas('teams', function ($q) {
-                        $q->whereIn('teams.id', $this->teamIds);
-                    })
+                    ->whereHas('teams', fn($q) => $q->whereIn('teams.id', $this->teamIds))
                     ->value('id');
 
-                $jenisId = JenisPekerjaan::where('nama_pekerjaan', $row['jenis_pekerjaan'])->value('id');
+                $jenisId = JenisPekerjaan::where('nama_pekerjaan', $row['jenis_pekerjaan'])
+                    ->whereIn('tim_id', $this->teamIds)
+                    ->value('id');
 
-                if (!$pegawaiId || !$jenisId) {
-                    return null;
-                }
+                if (!$pegawaiId || !$jenisId) return null;
 
                 return new Tugas([
-                    'nama_tugas'         => $row['nama_tugas'] ?? '-',
-                    'pegawai_id'         => $pegawaiId,
+                    'nama_tugas' => $row['nama_tugas'] ?? '-',
+                    'pegawai_id' => $pegawaiId,
                     'jenis_pekerjaan_id' => $jenisId,
-                    'target'             => $row['target'] ?? 0,
-                    'satuan'             => $row['satuan'] ?? '-',
-                    'asal'               => $row['asal_instruksi'] ?? '-',
-                    'deadline'           => $deadline,
+                    'target' => $row['target'] ?? 0,
+                    'satuan' => $row['satuan'] ?? '-',
+                    'asal' => $row['asal_instruksi'] ?? '-',
+                    'deadline' => $deadline,
                 ]);
             }
         }, $request->file('file'));

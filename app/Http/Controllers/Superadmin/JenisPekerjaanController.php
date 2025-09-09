@@ -12,25 +12,27 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-
 class JenisPekerjaanController extends Controller
 {
     public function index(Request $request)
     {
-        $teams = Team::all(); // Untuk dropdown Tim
+        // Ambil tim yang memiliki leader
+        $teams = Team::whereHas('pegawais', function ($q) {
+            $q->where('pegawai_team.is_leader', 1); // gunakan kolom pivot yang asli
+        })->get();
 
-        // Query awal
+        // Query awal jenis pekerjaan
         $query = JenisPekerjaan::with('team');
 
         // Filter pencarian
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_pekerjaan', 'like', '%' . $search . '%')
-                    ->orWhere('satuan', 'like', '%' . $search . '%')
-                    ->orWhereHas('team', function ($query) use ($search) {
-                        $query->where('nama_tim', 'like', '%' . $search . '%');
-                    });
+                  ->orWhere('satuan', 'like', '%' . $search . '%')
+                  ->orWhereHas('team', function ($query) use ($search) {
+                      $query->where('nama_tim', 'like', '%' . $search . '%');
+                  });
             });
         }
 
@@ -42,13 +44,25 @@ class JenisPekerjaanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_pekerjaan' => 'required',
-            'satuan' => 'required',
-            'bobot' => 'required|numeric',
-            'tim_id' => 'required|exists:teams,id'
+            'nama_pekerjaan'    => 'required|string',
+            'satuan'            => 'required|string',
+            'volume'            => 'required|numeric|min:0',
+            'tim_id'            => [
+                'required',
+                'exists:teams,id',
+                function ($attribute, $value, $fail) {
+                    // pastikan tim yang dipilih ada leader
+                    $team = Team::find($value);
+                    if (!$team || !$team->pegawais()->where('pegawai_team.is_leader', 1)->exists()) {
+                        $fail('Tim yang dipilih harus memiliki leader.');
+                    }
+                }
+            ],
+            'pemberi_pekerjaan' => 'nullable|string',
         ]);
 
         JenisPekerjaan::create($request->all());
+
         return back()->with('success', 'Jenis pekerjaan berhasil ditambahkan.');
     }
 
@@ -57,10 +71,12 @@ class JenisPekerjaanController extends Controller
         $item = JenisPekerjaan::findOrFail($id);
 
         $request->validate([
-            'nama_pekerjaan' => 'required',
-            'satuan' => 'required',
-            'bobot' => 'required|numeric',
-            'tim_id' => 'required|exists:teams,id'
+            'nama_pekerjaan'    => 'required|string',
+            'satuan'            => 'required|string',
+            'bobot'             => 'required|numeric|min:0',
+            'volume'            => 'required|numeric|min:0',
+            'tim_id'            => 'required|exists:teams,id',
+            'pemberi_pekerjaan' => 'nullable|string',
         ]);
 
         $item->update($request->all());
@@ -87,14 +103,15 @@ class JenisPekerjaanController extends Controller
         {
             public function collection()
             {
-                $data = \App\Models\JenisPekerjaan::with('team')->get();
+                $data = JenisPekerjaan::with('team')->get();
 
                 return $data->values()->map(function ($item, $index) {
                     return [
-                        'No'                 => $index + 1, // ✅ nomor urut manual
+                        'No'                 => $index + 1,
                         'Nama Pekerjaan'     => $item->nama_pekerjaan,
                         'Satuan'             => $item->satuan,
                         'Bobot'              => $item->bobot,
+                        'Volume'             => $item->volume,
                         'Pemberi Pekerjaan'  => $item->pemberi_pekerjaan,
                         'Tim'                => $item->team->nama_tim ?? '-',
                     ];
@@ -108,6 +125,7 @@ class JenisPekerjaanController extends Controller
                     'Nama Pekerjaan',
                     'Satuan',
                     'Bobot',
+                    'Volume',
                     'Pemberi Pekerjaan',
                     'Tim'
                 ];
@@ -115,10 +133,8 @@ class JenisPekerjaanController extends Controller
 
             public function styles(Worksheet $sheet)
             {
-                // total baris (header + data)
                 $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
-                $cellRange = 'A1:' . $highestColumn . $highestRow;
 
                 // style header
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
@@ -144,6 +160,7 @@ class JenisPekerjaanController extends Controller
             }
         }, 'jenis_pekerjaan.xlsx');
     }
+
     public function import(Request $request)
     {
         $request->validate([
@@ -153,7 +170,6 @@ class JenisPekerjaanController extends Controller
         Excel::import(new class implements ToModel, WithHeadingRow {
             public function model(array $row)
             {
-                // skip jika nama_pekerjaan kosong
                 if (empty($row['nama_pekerjaan']) && empty($row['nama pekerjaan'])) {
                     return null;
                 }
@@ -161,15 +177,16 @@ class JenisPekerjaanController extends Controller
                 // cari tim berdasarkan kolom 'Tim' atau 'nama_tim'
                 $team = null;
                 if (!empty($row['tim'])) {
-                    $team = \App\Models\Team::where('nama_tim', trim($row['tim']))->first();
+                    $team = Team::where('nama_tim', trim($row['tim']))->first();
                 } elseif (!empty($row['nama_tim'])) {
-                    $team = \App\Models\Team::where('nama_tim', trim($row['nama_tim']))->first();
+                    $team = Team::where('nama_tim', trim($row['nama_tim']))->first();
                 }
 
-                return new \App\Models\JenisPekerjaan([
+                return new JenisPekerjaan([
                     'nama_pekerjaan'    => $row['nama_pekerjaan'] ?? $row['nama pekerjaan'] ?? null,
                     'satuan'            => $row['satuan'] ?? null,
-                    'bobot'             => $row['bobot'] ?? 0, // default 0 biar aman
+                    'bobot'             => $row['bobot'] ?? 0,
+                    'volume'            => $row['volume'] ?? 0,
                     'pemberi_pekerjaan' => $row['pemberi_pekerjaan'] ?? $row['pemberi pekerjaan'] ?? null,
                     'tim_id'            => $team?->id,
                 ]);

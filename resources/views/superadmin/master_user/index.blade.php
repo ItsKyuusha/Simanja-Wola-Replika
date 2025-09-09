@@ -137,27 +137,34 @@
               <form action="{{ route('superadmin.master_user.update', $user->id) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 gap-3">
-                  <input name="nama" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->nama ?? '' }}" required>
-                  <input name="nip" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->nip ?? '' }}" required>
-                  <input name="jabatan" class="border rounded-lg px-3 py-2" value="{{ $user->pegawai->jabatan ?? '' }}" required>
+                  <input type="text" name="nama" class="border rounded-lg px-3 py-2" placeholder="Nama Pegawai" required>
+                  @error('nama')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                  @enderror
+
+                  <input type="text" name="nip" class="border rounded-lg px-3 py-2" placeholder="NIP" required>
+                  @error('nip')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                  @enderror
+
+                  <input type="text" name="jabatan" class="border rounded-lg px-3 py-2" placeholder="Jabatan" required>
+                  @error('jabatan')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                  @enderror
 
                   <!-- Pilih Tim -->
                   <label class="font-medium">Pilih Tim</label>
                   <div class="flex flex-wrap gap-2">
                     @foreach($teams as $team)
-                    @php
-                    $currentLeader = $team->pegawais->firstWhere('pivot.is_leader', true);
-                    $isDisabled = $currentLeader && (!$user->pegawai || $user->pegawai->teams->find($team->id)?->pivot->is_leader === false);
-                    @endphp
-                    <label class="inline-flex items-center gap-1 {{ $isDisabled ? 'text-gray-400' : '' }}">
-                      <input type="checkbox" name="teams[]" value="{{ $team->id }}"
-                        @if($user->pegawai && $user->pegawai->teams->contains($team->id)) checked @endif
-                      @if($isDisabled) disabled @endif
-                      class="form-checkbox text-blue-600">
+                    <label class="inline-flex items-center gap-1">
+                      <input type="checkbox" name="teams[]" value="{{ $team->id }}" class="form-checkbox text-blue-600">
                       <span>{{ $team->nama_tim }}</span>
                     </label>
                     @endforeach
                   </div>
+                  @error('teams')
+                  <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                  @enderror
 
                   <!-- Nama & Email User -->
                   <input type="text" name="name" class="border rounded-lg px-3 py-2" value="{{ $user->name }}" required>
@@ -246,21 +253,34 @@
         @csrf
         <div class="grid grid-cols-1 gap-3">
           <input type="text" name="nama" class="border rounded-lg px-3 py-2" placeholder="Nama Pegawai" required>
-          <input type="text" name="nip" class="border rounded-lg px-3 py-2" placeholder="NIP" required>
-          <input type="text" name="jabatan" class="border rounded-lg px-3 py-2" placeholder="Jabatan" required>
+          @error('nama')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+          @enderror
 
-          <!-- Pilih Tim -->
+          <input type="text" name="nip" class="border rounded-lg px-3 py-2" placeholder="NIP" required>
+          @error('nip')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+
+          <input type="text" name="jabatan" class="border rounded-lg px-3 py-2" placeholder="Jabatan" required>
+          @error('jabatan')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+
           <!-- Pilih Tim -->
           <label class="font-medium">Pilih Tim</label>
           <div class="flex flex-wrap gap-2">
             @foreach($teams as $team)
             <label class="inline-flex items-center gap-1">
-              <input type="checkbox" name="teams[]" value="{{ $team->id }}"
-                class="form-checkbox text-blue-600">
+              <input type="checkbox" name="teams[]" value="{{ $team->id }}" class="form-checkbox text-blue-600">
               <span>{{ $team->nama_tim }}</span>
             </label>
             @endforeach
           </div>
+          @error('teams')
+          <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+          @enderror
+
 
           <input type="text" name="name" class="border rounded-lg px-3 py-2" placeholder="Nama User" required>
           <input type="email" name="email" class="border rounded-lg px-3 py-2" placeholder="Email" required>
