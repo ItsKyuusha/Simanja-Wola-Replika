@@ -61,11 +61,11 @@ class JenisTimController extends Controller
         return Excel::download(new class implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles {
             public function collection()
             {
-                $data = Team::with('pegawai')->get(); // Load pegawai juga saat export
+                $data = Team::with('pegawais')->get(); // Load pegawai juga saat export
 
                 return $data->values()->map(function ($team, $index) {
                     // Ambil ketua tim jika ada
-                    $ketua = $team->pegawai?->where('pivot.is_leader', 1)->pluck('nama')->join(', ') ?: '-';
+                    $ketua = $team->pegawais?->where('pivot.is_leader', 1)->pluck('nama')->join(', ') ?: '-';
 
                     return [
                         'No'       => $index + 1,
