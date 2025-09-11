@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('progress', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('pegawai_id');
-            $table->integer('total_bobot')->default(0);
             $table->float('nilai_akhir')->default(0);
             $table->timestamps();
-
             $table->foreign('pegawai_id')->references('id')->on('pegawais')->onDelete('cascade');
         });
     }

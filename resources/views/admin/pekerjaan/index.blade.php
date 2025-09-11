@@ -19,7 +19,7 @@
       <form method="GET" action="{{ route('admin.pekerjaan.index') }}" class="flex gap-3 w-full sm:w-auto">
         <input type="text" name="search" value="{{ request('search') }}"
           class="px-4 py-2 w-full sm:w-64 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 placeholder-gray-500"
-          placeholder="Cari nama tugas...">
+          placeholder="Cari nama pegawai...">
         <button type="submit" class="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 font-medium bg-white/40 hover:bg-gray-100 hover:text-gray-700 transition duration-200 transform hover:scale-105">
           <i class="fas fa-search mr-1"></i> Cari
         </button>
@@ -62,7 +62,7 @@
           <th class="p-3 border">Pegawai</th>
           <th class="p-3 border">Jenis</th>
           <th class="p-3 border">Target</th>
-          <th class="p-3 border">Pemberi</th>
+          <th class="p-3 border">Pemberi Pekerjaan</th>
           <th class="p-3 border">Deadline</th>
           <th class="p-3 border">Status</th>
           <th class="p-3 border">Aksi</th>
@@ -73,8 +73,8 @@
         <tr class="text-center hover:bg-gray-50">
           <td class="p-3 border">{{ $loop->iteration }}</td>
           <td class="p-3 border">{{ $t->nama_tugas }}</td>
-          <td class="p-3 border">{{ $t->pegawai->nama ?? '-' }}</td>
-          <td class="p-3 border">{{ $t->jenisPekerjaan->nama_pekerjaan ?? '-' }}</td>
+          <td class="p-3 border">{{ $t->pegawai->nama }}</td>
+          <td class="p-3 border">{{ $t->jenisPekerjaan->nama_pekerjaan }}</td>
           <td class="p-3 border">{{ $t->target }} {{ $t->satuan }}</td>
           <td class="p-3 border">{{ $t->asal ?? '-' }}</td>
           <td class="p-3 border">{{ \Carbon\Carbon::parse($t->deadline)->format('d M Y') }}</td>
@@ -84,7 +84,7 @@
             @elseif ($t->realisasi->realisasi < $t->target)
               <span class="inline-block px-2 py-1 text-xs font-semibold text-black bg-yellow-300 rounded">Ongoing</span>
             @else
-              <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-green-600 rounded">Selesai</span>
+              <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-green-600 rounded">Selesai Dikerjakan</span>
             @endif
           </td>
           <td class="p-3 border space-x-1">

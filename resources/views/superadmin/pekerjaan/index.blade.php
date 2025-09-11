@@ -4,13 +4,11 @@
 
 @section('content')
 <div class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
-
   <h2 class="text-2xl font-semibold text-blue-600">Data Progres Pekerjaan</h2>
 
   <!-- Progress Bar -->
   <div class="w-full bg-gray-200 rounded-full h-5 mb-4 overflow-hidden">
-    <div
-      class="bg-green-500 h-5 text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
+    <div class="bg-green-500 h-5 text-white text-xs sm:text-sm flex items-center justify-center transition-all duration-300"
       style="width: {{ $persentaseSelesai }}%;">
       {{ $persentaseSelesai }}%
     </div>
@@ -47,7 +45,8 @@
 
   <!-- Filter Form -->
   <form method="GET" action="{{ route('superadmin.pekerjaan.index') }}" class="grid grid-cols-1 sm:grid-cols-6 gap-3 text-sm mb-6">
-    <input type="text" name="search" class="border border-gray-300 rounded-md px-3 py-2" placeholder="Cari Nama Tugas" value="{{ request('search') }}">
+    <input type="text" name="search" class="border border-gray-300 rounded-md px-3 py-2"
+      placeholder="Cari Nama Pekerjaan" value="{{ request('search') }}">
     <select name="deadline_month" class="border border-gray-300 rounded-md px-3 py-2">
       <option value="">Bulan Deadline</option>
       @for($i = 1; $i <= 12; $i++)
@@ -77,9 +76,7 @@
         @endfor
     </select>
     <button type="submit" class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium
-           bg-blue-200/20 backdrop-blur-sm shadow-sm 
-           hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700
-           transition duration-200 ease-in-out transform hover:scale-105">
+           bg-blue-200/20 hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700 transition duration-200 ease-in-out transform hover:scale-105">
       Filter
     </button>
   </form>
@@ -90,8 +87,8 @@
       <thead class="bg-blue-100 text-center text-sm text-gray-700">
         <tr>
           <th class="px-3 py-3 border">No.</th>
-          <th class="px-3 py-3 border text-left">Nama Tugas</th>
-          <th class="px-3 py-3 border">Bobot</th>
+          <th class="px-3 py-3 border text-left">Nama Pekerjaan</th>
+          <th class="px-3 py-3 border text-left">Nama Tim</th>
           <th class="px-3 py-3 border text-left">Asal</th>
           <th class="px-3 py-3 border">Target</th>
           <th class="px-3 py-3 border">Realisasi</th>
@@ -106,22 +103,29 @@
       </thead>
       <tbody>
         @forelse($tugas as $item)
+        @php
+        // Ambil realisasi terakhir yang sudah approved
+        $approvedRealisasi = $item->semuaRealisasi->last();
+        @endphp
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100">
           <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
-          <td class="text-left px-3 py-2 border">{{ $item->nama_tugas }}</td>
-          <td class="px-3 py-2 border text-purple-600">{{ $item->jenisPekerjaan->bobot ?? 0 }}</td>
+          <td class="text-left px-3 py-2 border">{{ $item->jenisPekerjaan->nama_pekerjaan ?? '-' }}</td>
+          <td class="text-left px-3 py-2 border">{{ $item->jenisPekerjaan->team->nama_tim ?? '-' }}</td>
           <td class="text-left px-3 py-2 border">{{ $item->asal ?? '-' }}</td>
           <td class="px-3 py-2 border">{{ $item->target }}</td>
-          <td class="px-3 py-2 border">{{ $item->realisasi->realisasi ?? '-' }}</td>
+          <td class="px-3 py-2 border">{{ $approvedRealisasi->realisasi ?? '-' }}</td>
           <td class="px-3 py-2 border">{{ $item->satuan }}</td>
-          <td class="px-3 py-2 border text-red-500 font-medium">{{ \Carbon\Carbon::parse($item->deadline)->format('d M Y') }}</td>
-          <td class="px-3 py-2 border">{{ optional($item->realisasi)->tanggal_realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 border text-green-600">{{ $item->realisasi->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 border text-yellow-600">{{ $item->realisasi->nilai_kuantitas ?? '-' }}</td>
-          <td class="text-left px-3 py-2 border italic text-gray-600">{{ $item->realisasi->catatan ?? '-' }}</td>
+          <td class="px-3 py-2 border text-red-500 font-medium">
+            {{ \Carbon\Carbon::parse($item->deadline)->format('d M Y') }}
+          </td>
+          <td class="px-3 py-2 border">{{ optional($approvedRealisasi)->tanggal_realisasi ?? '-' }}</td>
+          <td class="px-3 py-2 border text-green-600">{{ $approvedRealisasi->nilai_kualitas ?? '-' }}</td>
+          <td class="px-3 py-2 border text-yellow-600">{{ $approvedRealisasi->nilai_kuantitas ?? '-' }}</td>
+          <td class="text-left px-3 py-2 border italic text-gray-600">{{ $approvedRealisasi->catatan ?? '-' }}</td>
           <td class="px-3 py-2 border">
-            @if($item->realisasi && $item->realisasi->file_bukti)
-            <a href="{{ asset('storage/' . $item->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline font-semibold">Lihat</a>
+            @if($approvedRealisasi && $approvedRealisasi->file_bukti)
+            <a href="{{ asset('storage/' . $approvedRealisasi->file_bukti) }}" target="_blank"
+              class="text-blue-600 hover:underline font-semibold">Lihat</a>
             @else
             <span class="text-gray-400">-</span>
             @endif
@@ -132,13 +136,11 @@
           <td colspan="13" class="text-center py-5 text-gray-500">Tidak ada data pekerjaan yang tersedia.</td>
         </tr>
         @endforelse
-
       </tbody>
     </table>
   </div>
 </div>
-
-<!-- Footer -->
+<!-- Footer Pagination -->
 @if ($tugas->hasPages())
 <div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
   <!-- Mobile Previous/Next -->

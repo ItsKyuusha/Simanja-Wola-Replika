@@ -16,23 +16,20 @@ class JenisPekerjaanController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil tim yang memiliki leader
         $teams = Team::whereHas('pegawais', function ($q) {
-            $q->where('pegawai_team.is_leader', 1); // gunakan kolom pivot yang asli
+            $q->where('pegawai_team.is_leader', 1);
         })->get();
 
-        // Query awal jenis pekerjaan
         $query = JenisPekerjaan::with('team');
 
-        // Filter pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama_pekerjaan', 'like', '%' . $search . '%')
-                  ->orWhere('satuan', 'like', '%' . $search . '%')
-                  ->orWhereHas('team', function ($query) use ($search) {
-                      $query->where('nama_tim', 'like', '%' . $search . '%');
-                  });
+                $q->where('nama_pekerjaan', 'like', "%$search%")
+                    ->orWhere('satuan', 'like', "%$search%")
+                    ->orWhereHas('team', function ($q2) use ($search) {
+                        $q2->where('nama_tim', 'like', "%$search%");
+                    });
             });
         }
 
@@ -51,7 +48,6 @@ class JenisPekerjaanController extends Controller
                 'required',
                 'exists:teams,id',
                 function ($attribute, $value, $fail) {
-                    // pastikan tim yang dipilih ada leader
                     $team = Team::find($value);
                     if (!$team || !$team->pegawais()->where('pegawai_team.is_leader', 1)->exists()) {
                         $fail('Tim yang dipilih harus memiliki leader.');
@@ -73,7 +69,6 @@ class JenisPekerjaanController extends Controller
         $request->validate([
             'nama_pekerjaan'    => 'required|string',
             'satuan'            => 'required|string',
-            'bobot'             => 'required|numeric|min:0',
             'volume'            => 'required|numeric|min:0',
             'tim_id'            => 'required|exists:teams,id',
             'pemberi_pekerjaan' => 'nullable|string',
@@ -90,9 +85,6 @@ class JenisPekerjaanController extends Controller
         return back()->with('success', 'Jenis pekerjaan berhasil dihapus.');
     }
 
-    /**
-     * Export data Jenis Pekerjaan ke Excel
-     */
     public function export()
     {
         return Excel::download(new class implements
@@ -110,7 +102,6 @@ class JenisPekerjaanController extends Controller
                         'No'                 => $index + 1,
                         'Nama Pekerjaan'     => $item->nama_pekerjaan,
                         'Satuan'             => $item->satuan,
-                        'Bobot'              => $item->bobot,
                         'Volume'             => $item->volume,
                         'Pemberi Pekerjaan'  => $item->pemberi_pekerjaan,
                         'Tim'                => $item->team->nama_tim ?? '-',
@@ -124,7 +115,6 @@ class JenisPekerjaanController extends Controller
                     'No',
                     'Nama Pekerjaan',
                     'Satuan',
-                    'Bobot',
                     'Volume',
                     'Pemberi Pekerjaan',
                     'Tim'
@@ -136,7 +126,6 @@ class JenisPekerjaanController extends Controller
                 $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
 
-                // style header
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['horizontal' => 'center'],
@@ -147,7 +136,6 @@ class JenisPekerjaanController extends Controller
                     ]
                 ]);
 
-                // style data
                 $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
@@ -174,7 +162,6 @@ class JenisPekerjaanController extends Controller
                     return null;
                 }
 
-                // cari tim berdasarkan kolom 'Tim' atau 'nama_tim'
                 $team = null;
                 if (!empty($row['tim'])) {
                     $team = Team::where('nama_tim', trim($row['tim']))->first();
@@ -185,7 +172,6 @@ class JenisPekerjaanController extends Controller
                 return new JenisPekerjaan([
                     'nama_pekerjaan'    => $row['nama_pekerjaan'] ?? $row['nama pekerjaan'] ?? null,
                     'satuan'            => $row['satuan'] ?? null,
-                    'bobot'             => $row['bobot'] ?? 0,
                     'volume'            => $row['volume'] ?? 0,
                     'pemberi_pekerjaan' => $row['pemberi_pekerjaan'] ?? $row['pemberi pekerjaan'] ?? null,
                     'tim_id'            => $team?->id,

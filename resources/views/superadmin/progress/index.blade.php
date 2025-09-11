@@ -34,15 +34,14 @@
       </a>
     </div>
   </div>
-
   <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
     <table class="w-full table-auto text-sm text-gray-700">
       <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
         <tr>
           <th class="p-3 border">No.</th>
           <th class="p-3 border text-left">Nama Pegawai</th>
-          <th class="p-3 border text-left">Nama Tugas</th>
-          <th class="p-3 border">Bobot</th>
+          <th class="p-3 border text-left">Nama Pekerjaan</th>
+          <th class="p-3 border text-left">Nama Tim</th>
           <th class="p-3 border text-left">Asal</th>
           <th class="p-3 border">Target</th>
           <th class="p-3 border">Realisasi</th>
@@ -59,20 +58,26 @@
         @forelse($tugas as $t)
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-blue-50 border-b border-gray-200 transition-colors">
           <td class="px-3 py-2">{{ $loop->iteration + ($tugas->currentPage()-1)*$tugas->perPage() }}</td>
-          <td class="text-left px-3 py-2 font-medium">{{ $t->pegawai->nama }}</td>
-          <td class="text-left px-3 py-2">{{ $t->nama_tugas }}</td>
-          <td class="px-3 py-2">{{ $t->jenisPekerjaan->bobot ?? 0 }}</td>
+          <td class="text-left px-3 py-2 font-medium">{{ optional($t->pegawai)->nama ?? '-' }}</td>
+          {{-- Nama pekerjaan diambil dari jenisPekerjaan --}}
+          <td class="text-left px-3 py-2">{{ optional($t->jenisPekerjaan)->nama_pekerjaan ?? '-' }}</td>
+          <td class="text-left px-3 py-2"> {{ optional(optional($t->jenisPekerjaan)->team)->nama_tim ?? '-' }}</td>
           <td class="text-left px-3 py-2">{{ $t->asal ?? '-' }}</td>
-          <td class="px-3 py-2">{{ $t->target }}</td>
-          <td class="px-3 py-2">{{ $t->realisasi->realisasi ?? '-' }}</td>
-          <td class="px-3 py-2">{{ $t->satuan }}</td>
-          <td class="px-3 py-2 text-red-600">{{ \Carbon\Carbon::parse($t->deadline)->format('d M Y') }}</td>
-          <td class="px-3 py-2">{{ optional($t->realisasi)->tanggal_realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 text-green-600">{{ $t->realisasi->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 text-blue-600">{{ $t->realisasi->nilai_kuantitas ?? '-' }}</td>
-          <td class="text-left px-3 py-2 text-gray-500 italic">{{ $t->realisasi->catatan ?? '-' }}</td>
+          <td class="px-3 py-2">{{ $t->target ?? '-' }}</td>
+          <td class="px-3 py-2">{{ optional($t->realisasi)->realisasi ?? '-' }}</td>
+          <td class="px-3 py-2">{{ $t->satuan ?? '-' }}</td>
+          <td class="px-3 py-2 text-red-600">
+            {{ $t->deadline ? \Carbon\Carbon::parse($t->deadline)->format('d M Y') : '-' }}
+          </td>
           <td class="px-3 py-2">
-            @if($t->realisasi && $t->realisasi->file_bukti)
+            {{ optional(optional($t->realisasi)->tanggal_realisasi) 
+               ? \Carbon\Carbon::parse($t->realisasi->tanggal_realisasi)->format('d M Y') : '-' }}
+          </td>
+          <td class="px-3 py-2 text-green-600">{{ optional($t->realisasi)->nilai_kualitas ?? '-' }}</td>
+          <td class="px-3 py-2 text-blue-600">{{ optional($t->realisasi)->nilai_kuantitas ?? '-' }}</td>
+          <td class="text-left px-3 py-2 text-gray-500 italic">{{ optional($t->realisasi)->catatan ?? '-' }}</td>
+          <td class="px-3 py-2">
+            @if(optional($t->realisasi)->file_bukti)
             <a href="{{ asset('storage/' . $t->realisasi->file_bukti) }}" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
             @else
             <span class="text-gray-400">-</span>
@@ -208,7 +213,6 @@
           <th class="p-3 border">No.</th>
           <th class="p-3 border text-left">Nama Pegawai</th>
           <th class="p-3 border">NIP</th>
-          <th class="p-3 border">Total Bobot</th>
           <th class="p-3 border">Nilai Akhir</th>
         </tr>
       </thead>
@@ -216,20 +220,18 @@
         @forelse($progress as $p)
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-blue-50 border-b border-gray-200 transition-colors">
           <td class="px-4 py-2">{{ $loop->iteration + ($progress->currentPage()-1)*$progress->perPage() }}</td>
-          <td class="text-left px-4 py-2 font-medium">{{ $p->pegawai->nama }}</td>
-          <td class="px-4 py-2">{{ $p->pegawai->nip }}</td>
-          <td class="px-4 py-2">{{ $p->total_bobot }}</td>
+          <td class="text-left px-4 py-2 font-medium">{{ optional($p->pegawai)->nama ?? '-' }}</td>
+          <td class="px-4 py-2">{{ optional($p->pegawai)->nip ?? '-' }}</td>
           <td class="px-4 py-2 text-blue-700 font-semibold">{{ $p->nilai_akhir }}</td>
         </tr>
         @empty
         <tr>
-          <td colspan="5" class="text-center py-6 text-gray-500">Tidak ada data nilai akhir pegawai.</td>
+          <td colspan="4" class="text-center py-6 text-gray-500">Tidak ada data nilai akhir pegawai.</td>
         </tr>
         @endforelse
       </tbody>
     </table>
   </div>
-
   <!-- Paginasi -->
   @if ($progress->hasPages())
   <div class="flex items-center justify-between border-t border-white/10 px-4 py-3 sm:px-6">
