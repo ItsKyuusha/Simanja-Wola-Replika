@@ -203,9 +203,10 @@
                         $role = ucfirst(Auth::user()->role ?? 'Guest');
 
                         $leaderTeams = Auth::user()?->teams
-                        ?->filter(fn($t) => $t->pivot->is_leader)
+                        ?->filter(fn($t) => $t->pivot?->is_leader)
                         ->pluck('nama_tim')
                         ->toArray() ?? [];
+
                         @endphp
 
                         @if(count($leaderTeams) > 0)
