@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_pekerjaan');
             $table->string('satuan');
             $table->integer('volume')->default(0); // ✅ Tambahan kolom volume
+            $table->integer('bobot')->default(0); // ✅ Tambahan kolom bobot 1-100
             $table->string('pemberi_pekerjaan')->nullable();
             $table->foreignId('tim_id')->nullable()->constrained('teams')->onDelete('set null');
             $table->timestamps();

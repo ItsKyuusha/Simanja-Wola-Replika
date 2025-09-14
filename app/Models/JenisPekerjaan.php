@@ -9,7 +9,8 @@ class JenisPekerjaan extends Model
     protected $fillable = [
         'nama_pekerjaan',
         'satuan',
-        'volume',            // ✅ ganti bobot → volume
+        'volume',
+        'bobot', // ✅ tambahkan bobot di sini
         'pemberi_pekerjaan',
         'tim_id',
     ];

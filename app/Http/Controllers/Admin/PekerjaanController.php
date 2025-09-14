@@ -30,9 +30,9 @@ class PekerjaanController extends Controller
             ->where('asal', $pegawai->nama ?? $user->name)
             ->whereHas('jenisPekerjaan', fn($q) => $q->whereIn('tim_id', $teamIds))
             ->when($search, fn($query) => $query->where(function ($q) use ($search) {
-                $q->where('nama_tugas', 'like', "%{$search}%")
-                    ->orWhereHas('pegawai', fn($q2) => $q2->where('nama', 'like', "%{$search}%")
-                        ->orWhere('nip', 'like', "%{$search}%"));
+                $q->orWhereHas('pegawai', fn($q2) => $q2->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nip', 'like', "%{$search}%"))
+                    ->orWhereHas('jenisPekerjaan', fn($q3) => $q3->where('nama_pekerjaan', 'like', "%{$search}%"));
             }))
             ->get();
 
@@ -54,16 +54,13 @@ class PekerjaanController extends Controller
             'tugas' => $tugas,
             'pegawai' => $pegawaiList,
             'jenisPekerjaanModal' => $jenisPekerjaanModal,
-            'volumeTersisa' => $volumeTersisa, // Kirim ke Blade
+            'volumeTersisa' => $volumeTersisa,
         ]);
     }
-
-
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_tugas' => 'required|string',
             'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
             'target' => 'required|numeric',
@@ -87,7 +84,6 @@ class PekerjaanController extends Controller
         $pemberi = $pegawai->nama ?? auth()->user()->name ?? 'Tidak diketahui';
 
         Tugas::create([
-            'nama_tugas' => $request->nama_tugas,
             'pegawai_id' => $request->pegawai_id,
             'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
             'target' => $request->target,
@@ -102,7 +98,6 @@ class PekerjaanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_tugas' => 'required|string',
             'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
             'target' => 'required|numeric',
@@ -127,7 +122,6 @@ class PekerjaanController extends Controller
         $asalInstruksi = $teams->pluck('nama_tim')->join(', ') ?: 'Tidak diketahui';
 
         $tugas->update([
-            'nama_tugas' => $request->nama_tugas,
             'pegawai_id' => $request->pegawai_id,
             'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
             'target' => $request->target,
@@ -165,7 +159,6 @@ class PekerjaanController extends Controller
                     ->get()
                     ->map(fn($tugas, $index) => [
                         'No' => $index + 1,
-                        'Nama Tugas' => $tugas->nama_tugas,
                         'Pegawai' => $tugas->pegawai->nama ?? '-',
                         'Jenis Pekerjaan' => $tugas->jenisPekerjaan->nama_pekerjaan ?? '-',
                         'Target' => $tugas->target,
@@ -179,7 +172,6 @@ class PekerjaanController extends Controller
             {
                 return [
                     'No',
-                    'Nama Tugas',
                     'Pegawai',
                     'Jenis Pekerjaan',
                     'Target',
@@ -256,7 +248,6 @@ class PekerjaanController extends Controller
                 if (!$pegawaiId || !$jenisId) return null;
 
                 return new Tugas([
-                    'nama_tugas' => $row['nama_tugas'] ?? '-',
                     'pegawai_id' => $pegawaiId,
                     'jenis_pekerjaan_id' => $jenisId,
                     'target' => $row['target'] ?? 0,

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('tugas', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_tugas');
             $table->unsignedBigInteger('jenis_pekerjaan_id');
             $table->unsignedBigInteger('pegawai_id'); // penerima tugas
             $table->integer('target');

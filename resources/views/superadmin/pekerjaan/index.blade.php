@@ -92,53 +92,66 @@
           <th class="px-3 py-3 border text-left">Asal</th>
           <th class="px-3 py-3 border">Target</th>
           <th class="px-3 py-3 border">Realisasi</th>
-          <th class="px-3 py-3 border">Satuan</th>
-          <th class="px-3 py-3 border">Deadline</th>
-          <th class="px-3 py-3 border">Tgl Realisasi</th>
-          <th class="px-3 py-3 border">Kualitas</th>
-          <th class="px-3 py-3 border">Kuantitas</th>
-          <th class="px-3 py-3 border text-left">Catatan</th>
-          <th class="px-3 py-3 border">Bukti</th>
+          <th class="px-3 py-3 border text-left">Histori</th>
+          <th class="px-3 py-3 border">Bobot</th>
+          <th class="px-3 py-3 border">Hari Telat</th>
+          <th class="px-3 py-3 border">Nilai Akhir</th>
+          <th class="px-3 py-3 border">Status</th>
+          <th class="px-3 py-3 border">Lihat Bukti</th>
         </tr>
       </thead>
       <tbody>
         @forelse($tugas as $item)
-        @php
-        // Ambil realisasi terakhir yang sudah approved
-        $approvedRealisasi = $item->semuaRealisasi->last();
-        @endphp
         <tr class="text-center odd:bg-white even:bg-gray-50 hover:bg-gray-100">
           <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
           <td class="text-left px-3 py-2 border">{{ $item->jenisPekerjaan->nama_pekerjaan ?? '-' }}</td>
-          <td class="text-left px-3 py-2 border">{{ $item->jenisPekerjaan->team->nama_tim ?? '-' }}</td>
+          <td class="text-left px-3 py-2 border">{{ $item->namaTim ?? '-' }}</td>
           <td class="text-left px-3 py-2 border">{{ $item->asal ?? '-' }}</td>
           <td class="px-3 py-2 border">{{ $item->target }}</td>
-          <td class="px-3 py-2 border">{{ $approvedRealisasi->realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 border">{{ $item->satuan }}</td>
-          <td class="px-3 py-2 border text-red-500 font-medium">
-            {{ \Carbon\Carbon::parse($item->deadline)->format('d M Y') }}
-          </td>
-          <td class="px-3 py-2 border">{{ optional($approvedRealisasi)->tanggal_realisasi ?? '-' }}</td>
-          <td class="px-3 py-2 border text-green-600">{{ $approvedRealisasi->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 border text-yellow-600">{{ $approvedRealisasi->nilai_kuantitas ?? '-' }}</td>
-          <td class="text-left px-3 py-2 border italic text-gray-600">{{ $approvedRealisasi->catatan ?? '-' }}</td>
-          <td class="px-3 py-2 border">
-            @if($approvedRealisasi && $approvedRealisasi->file_bukti)
-            <a href="{{ asset('storage/' . $approvedRealisasi->file_bukti) }}" target="_blank"
-              class="text-blue-600 hover:underline font-semibold">Lihat</a>
+          <td class="px-3 py-2 border">{{ $item->semuaRealisasi->sum('realisasi') }}</td>
+          <td class="px-3 py-2 border text-left">
+            @if($item->semuaRealisasi->count())
+            <ul class="list-disc list-inside text-xs text-gray-700">
+              @foreach($item->semuaRealisasi as $h)
+              <li>{{ $h->realisasi }} ({{ \Carbon\Carbon::parse($h->tanggal_realisasi)->format('d/m/Y') }})</li>
+              @endforeach
+            </ul>
             @else
-            <span class="text-gray-400">-</span>
+            -
+            @endif
+          </td>
+          <td class="px-3 py-2 border">{{ $item->bobot }}</td>
+          <td class="px-3 py-2 border">{{ $item->hariTelat }}</td>
+          <td class="px-3 py-2 border">{{ $item->nilaiAkhir }}</td>
+          <td class="px-3 py-2 border">{{ $item->status }}</td>
+          <td class="px-3 py-2 border">
+            @if($item->semuaRealisasi->count())
+            @php
+            $lastRealisasi = $item->semuaRealisasi->last();
+            @endphp
+            @if($lastRealisasi->file_bukti)
+            <a href="{{ asset('storage/' . $lastRealisasi->file_bukti) }}" target="_blank"
+              class="px-3 py-1.5 text-xs font-semibold rounded border border-blue-400 text-blue-600
+                                      bg-white/50 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors duration-200">
+              Lihat Bukti
+            </a>
+            @else
+            <span class="text-gray-400">Tidak ada bukti</span>
+            @endif
+            @else
+            -
             @endif
           </td>
         </tr>
         @empty
         <tr>
-          <td colspan="13" class="text-center py-5 text-gray-500">Tidak ada data pekerjaan yang tersedia.</td>
+          <td colspan="12" class="text-center py-5 text-gray-500">Tidak ada data pekerjaan yang tersedia.</td>
         </tr>
         @endforelse
       </tbody>
     </table>
   </div>
+
 </div>
 <!-- Footer Pagination -->
 @if ($tugas->hasPages())

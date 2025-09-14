@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Tugas extends Model
 {
     protected $fillable = [
-        'nama_tugas',
         'jenis_pekerjaan_id',
         'pegawai_id',
         'target',

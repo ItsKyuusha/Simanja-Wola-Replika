@@ -18,8 +18,6 @@ return new class extends Migration
             $table->date('tanggal_realisasi');
             $table->text('catatan')->nullable();
             $table->string('file_bukti')->nullable();
-            $table->integer('nilai_kualitas')->nullable();
-            $table->integer('nilai_kuantitas')->nullable();
             $table->boolean('is_approved')->default(false); // << tambahan
             $table->timestamps();
 

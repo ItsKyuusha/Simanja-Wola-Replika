@@ -12,9 +12,7 @@ class RealisasiTugas extends Model
         'tanggal_realisasi',
         'catatan',
         'file_bukti',
-        'nilai_kualitas',
-        'nilai_kuantitas',
-        'is_approved', // ✅ tambahan
+        'is_approved', // ✅ tetap ada
     ];
 
     public function tugas()

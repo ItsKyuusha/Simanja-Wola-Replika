@@ -44,6 +44,7 @@ class JenisPekerjaanController extends Controller
             'nama_pekerjaan'    => 'required|string',
             'satuan'            => 'required|string',
             'volume'            => 'required|numeric|min:0',
+            'bobot'             => 'required|numeric|min:1|max:100', // ✅ validasi bobot
             'tim_id'            => [
                 'required',
                 'exists:teams,id',
@@ -70,6 +71,7 @@ class JenisPekerjaanController extends Controller
             'nama_pekerjaan'    => 'required|string',
             'satuan'            => 'required|string',
             'volume'            => 'required|numeric|min:0',
+            'bobot'             => 'required|numeric|min:1|max:100', // ✅ validasi bobot
             'tim_id'            => 'required|exists:teams,id',
             'pemberi_pekerjaan' => 'nullable|string',
         ]);
@@ -103,6 +105,7 @@ class JenisPekerjaanController extends Controller
                         'Nama Pekerjaan'     => $item->nama_pekerjaan,
                         'Satuan'             => $item->satuan,
                         'Volume'             => $item->volume,
+                        'Bobot'              => $item->bobot, // ✅ export bobot
                         'Pemberi Pekerjaan'  => $item->pemberi_pekerjaan,
                         'Tim'                => $item->team->nama_tim ?? '-',
                     ];
@@ -116,6 +119,7 @@ class JenisPekerjaanController extends Controller
                     'Nama Pekerjaan',
                     'Satuan',
                     'Volume',
+                    'Bobot', // ✅ heading bobot
                     'Pemberi Pekerjaan',
                     'Tim'
                 ];
@@ -173,6 +177,7 @@ class JenisPekerjaanController extends Controller
                     'nama_pekerjaan'    => $row['nama_pekerjaan'] ?? $row['nama pekerjaan'] ?? null,
                     'satuan'            => $row['satuan'] ?? null,
                     'volume'            => $row['volume'] ?? 0,
+                    'bobot'             => $row['bobot'] ?? 0, // ✅ import bobot
                     'pemberi_pekerjaan' => $row['pemberi_pekerjaan'] ?? $row['pemberi pekerjaan'] ?? null,
                     'tim_id'            => $team?->id,
                 ]);

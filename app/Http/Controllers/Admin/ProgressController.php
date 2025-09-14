@@ -4,104 +4,187 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tugas;
-use App\Models\RealisasiTugas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ProgressController extends Controller
 {
+    /**
+     * Tampilkan halaman progress tugas tim
+     */
     public function index(Request $request)
     {
-        $teamId = auth()->user()->pegawai->team_id;
+        $teamIds = DB::table('pegawai_team')
+            ->where('pegawai_id', auth()->user()->pegawai_id)
+            ->pluck('team_id')
+            ->toArray();
+
         $search = $request->input('search');
 
-        $tugas = Tugas::with(['pegawai', 'realisasi'])
-            ->whereHas('pegawai', function ($q) use ($teamId, $search) {
-                $q->where('team_id', $teamId);
+        $tugas = Tugas::with(['pegawai.teams', 'jenisPekerjaan.team', 'semuaRealisasi'])
+            ->whereHas('pegawai', function ($q) use ($teamIds, $search) {
+                $q->whereIn('id', function ($qq) use ($teamIds) {
+                    $qq->select('pegawai_id')
+                        ->from('pegawai_team')
+                        ->whereIn('team_id', $teamIds);
+                });
 
                 if ($search) {
-                    $q->where(function ($qq) use ($search) {
-                        $qq->where('nama', 'like', "%{$search}%")
-                            ->orWhere('nip', 'like', "%{$search}%");
-                    });
+                    $q->where('nama', 'like', "%{$search}%");
                 }
             })
-            ->when($search, function ($q) use ($search) {
-                $q->orWhere('nama_tugas', 'like', "%{$search}%");
-            })
-            ->get();
+            ->get()
+            ->map(function ($t) {
+                $totalRealisasi = $t->semuaRealisasi->sum('realisasi');
+                $progress = $t->target > 0 ? min($totalRealisasi / $t->target, 1) : 0;
+
+                $bobot = $t->jenisPekerjaan->bobot ?? 0;
+
+                $lastDate = $t->semuaRealisasi->max('tanggal_realisasi');
+                $hariTelat = 0;
+                if ($lastDate && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
+                    $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
+                }
+
+                $penalti = $bobot * 0.1 * $hariTelat;
+                $nilaiAkhir = max(0, ($bobot * $progress) - $penalti);
+
+                $realisasiTerakhir = $t->semuaRealisasi->last();
+
+                if (!$realisasiTerakhir) {
+                    $status = 'Belum Dikerjakan';
+                } elseif (!$realisasiTerakhir->is_approved) {
+                    $status = 'Menunggu Persetujuan';
+                } elseif ($totalRealisasi < $t->target) {
+                    $status = 'Ongoing';
+                } else {
+                    $status = 'Selesai Dikerjakan';
+                }
+
+                // Nama Tim pemberi tugas
+                $namaTim = $t->jenisPekerjaan->team->nama_tim ?? '-';
+
+                return [
+                    'id'               => $t->id,
+                    'pegawai'          => $t->pegawai->nama ?? '-',
+                    'tim'              => $namaTim,
+                    'nama_tugas'       => $t->jenisPekerjaan->nama_pekerjaan ?? '-',
+                    'target'           => $t->target,
+                    'satuan'           => $t->satuan,
+                    'totalRealisasi'   => $totalRealisasi,
+                    'realisasiTerakhir' => $realisasiTerakhir->realisasi ?? null,
+                    'histori'          => $t->semuaRealisasi,
+                    'bobot'            => $bobot,
+                    'hariTelat'        => $hariTelat,
+                    'nilaiAkhir'       => round($nilaiAkhir, 2),
+                    'status'           => $status,
+                    'isApproved'       => $realisasiTerakhir?->is_approved ?? false,
+                    'asal'             => $t->asal,
+                    'file_bukti'       => $realisasiTerakhir?->file_bukti ?? null,
+                ];
+            });
 
         return view('admin.progress.index', compact('tugas'));
     }
 
     /**
-     * Export data Progress ke Excel
+     * Approve realisasi terakhir dari tugas
+     */
+    public function approve($id)
+    {
+        $tugas = Tugas::with('semuaRealisasi')->findOrFail($id);
+        $realisasiTerakhir = $tugas->semuaRealisasi->last();
+
+        if (!$realisasiTerakhir) {
+            return redirect()->back()->with('error', 'Belum ada realisasi untuk disetujui.');
+        }
+
+        $realisasiTerakhir->update([
+            'is_approved' => true,
+        ]);
+
+        return redirect()->back()->with('success', 'Realisasi berhasil disetujui.');
+    }
+
+    /**
+     * Export data progress ke Excel
      */
     public function export(Request $request)
     {
-        $teamId = auth()->user()->pegawai->team_id;
+        $teamIds = DB::table('pegawai_team')
+            ->where('pegawai_id', auth()->user()->pegawai_id)
+            ->pluck('team_id')
+            ->toArray();
+
         $search = $request->input('search');
 
-        $export = new class($teamId, $search) implements
+        $export = new class($teamIds, $search) implements
             \Maatwebsite\Excel\Concerns\FromCollection,
             \Maatwebsite\Excel\Concerns\WithHeadings,
             \Maatwebsite\Excel\Concerns\ShouldAutoSize,
             \Maatwebsite\Excel\Concerns\WithStyles
         {
-            protected $teamId, $search;
+            protected $teamIds, $search;
 
-            public function __construct($teamId, $search)
+            public function __construct($teamIds, $search)
             {
-                $this->teamId = $teamId;
-                $this->search = $search;
+                $this->teamIds = $teamIds;
+                $this->search  = $search;
             }
 
             public function collection()
             {
-                $tugas = Tugas::with(['pegawai', 'realisasi'])
+                $tugas = Tugas::with(['pegawai.teams', 'jenisPekerjaan.team', 'semuaRealisasi'])
                     ->whereHas('pegawai', function ($q) {
-                        $q->where('team_id', $this->teamId);
+                        $q->whereIn('id', function ($qq) {
+                            $qq->select('pegawai_id')
+                                ->from('pegawai_team')
+                                ->whereIn('team_id', $this->teamIds);
+                        });
 
                         if ($this->search) {
-                            $q->where(function ($qq) {
-                                $qq->where('nama', 'like', "%{$this->search}%")
-                                    ->orWhere('nip', 'like', "%{$this->search}%");
-                            });
+                            $q->where('nama', 'like', "%{$this->search}%");
                         }
                     })
-                    ->when($this->search, function ($q) {
-                        $q->orWhere('nama_tugas', 'like', "%{$this->search}%");
-                    })
-                    ->get();
+                    ->get()
+                    ->map(function ($t, $index) {
+                        $totalRealisasi = $t->semuaRealisasi->sum('realisasi');
+                        $progress = $t->target > 0 ? min($totalRealisasi / $t->target, 1) : 0;
 
-                return $tugas->values()->map(function ($tugas, $index) {
-                    // Hitung total realisasi yang sudah di-approve
-                    $totalRealisasi = $tugas->realisasi->where('is_approved', true)->sum('realisasi');
-                    $jumlahTarget   = $tugas->target ?? 1;
-                    $persentase     = round(($totalRealisasi / $jumlahTarget) * 100, 2);
+                        $bobot = $t->jenisPekerjaan->bobot ?? 0;
 
-                    // Tentukan status
-                    if ($totalRealisasi == 0) {
-                        $status = 'Belum Dikerjakan';
-                    } elseif ($totalRealisasi < $jumlahTarget) {
-                        $status = 'Ongoing';
-                    } else {
-                        $status = 'Selesai Dikerjakan';
-                    }
+                        $lastDate = $t->semuaRealisasi->max('tanggal_realisasi');
+                        $hariTelat = 0;
+                        if ($lastDate && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
+                            $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
+                        }
 
-                    return [
-                        'No'              => $index + 1,
-                        'Nama Pegawai'    => $tugas->pegawai->nama ?? '',
-                        'NIP'             => $tugas->pegawai->nip ?? '',
-                        'Nama Tugas'      => $tugas->nama_tugas,
-                        'Tanggal Mulai'   => $tugas->tanggal_mulai,
-                        'Tanggal Selesai' => $tugas->tanggal_selesai,
-                        'Status'          => $status,
-                        'Realisasi'       => $persentase . '%',
-                    ];
-                });
+                        $penalti = $bobot * 0.1 * $hariTelat;
+                        $nilaiAkhir = max(0, ($bobot * $progress) - $penalti);
+
+                        $namaTim = $t->jenisPekerjaan->team->nama_tim ?? '-';
+                        $fileBukti = $t->semuaRealisasi->last()?->file_bukti ?? null;
+                        $fileBuktiUrl = $fileBukti ? asset('storage/' . $fileBukti) : '-';
+
+                        return [
+                            'No'            => $index + 1,
+                            'Nama Pegawai'  => $t->pegawai->nama ?? '-',
+                            'Nama Tim'      => $namaTim,
+                            'Nama Tugas'    => $t->jenisPekerjaan->nama_pekerjaan ?? '-',
+                            'Target'        => $t->target,
+                            'Realisasi'     => $totalRealisasi,
+                            'Bobot'         => $bobot,
+                            'Hari Telat'    => $hariTelat,
+                            'Nilai Akhir'   => round($nilaiAkhir, 2),
+                            'Bukti'         => $fileBuktiUrl,
+                        ];
+                    });
+
+                return $tugas;
             }
 
             public function headings(): array
@@ -109,12 +192,14 @@ class ProgressController extends Controller
                 return [
                     'No',
                     'Nama Pegawai',
-                    'NIP',
+                    'Nama Tim',
                     'Nama Tugas',
-                    'Tanggal Mulai',
-                    'Tanggal Selesai',
-                    'Status',
+                    'Target',
                     'Realisasi',
+                    'Bobot',
+                    'Hari Telat',
+                    'Nilai Akhir',
+                    'Bukti',
                 ];
             }
 
@@ -123,28 +208,17 @@ class ProgressController extends Controller
                 $highestRow    = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
 
-                // Header
                 $sheet->getStyle('A1:' . $highestColumn . '1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => ['horizontal' => 'center'],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                        ]
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                 ]);
 
-                // Data
                 $sheet->getStyle('A2:' . $highestColumn . $highestRow)->applyFromArray([
                     'alignment' => ['horizontal' => 'left'],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                        ]
-                    ]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
                 ]);
 
-                // Kolom "No" rata tengah
                 $sheet->getStyle('A2:A' . $highestRow)->applyFromArray([
                     'alignment' => ['horizontal' => 'center'],
                 ]);
@@ -154,34 +228,5 @@ class ProgressController extends Controller
         };
 
         return Excel::download($export, 'progress.xlsx');
-    }
-
-    /**
-     * Approve realisasi
-     */
-    public function approve($id)
-    {
-        $realisasi = \App\Models\RealisasiTugas::with('tugas.pegawai')->findOrFail($id);
-        $tugas = $realisasi->tugas;
-
-        $user = auth()->user();
-
-        // Guard case: pastikan user punya pegawai
-        if (!$user->pegawai) {
-            abort(403, 'User tidak terhubung dengan data pegawai.');
-        }
-
-        // Cek apakah pegawai login adalah pemberi pekerjaan (asal)
-        if ($tugas->asal !== $user->pegawai->nama) {
-            abort(403, 'Anda bukan pemberi pekerjaan, tidak bisa approve tugas ini.');
-        }
-
-        // Update hanya jika belum di-approve
-        if (!$realisasi->is_approved) {
-            $realisasi->update(['is_approved' => true]);
-        }
-
-        return redirect()->route('admin.progress.index')
-            ->with('success', 'Realisasi berhasil di-approve!');
     }
 }

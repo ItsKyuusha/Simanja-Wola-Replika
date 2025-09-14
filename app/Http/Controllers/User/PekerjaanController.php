@@ -18,9 +18,11 @@ class PekerjaanController extends Controller
         $tugasQuery = Tugas::with(['semuaRealisasi', 'jenisPekerjaan'])
             ->where('pegawai_id', $pegawaiId);
 
-        // Filter
+        // Filter nama pekerjaan
         if ($request->filled('search')) {
-            $tugasQuery->where('nama_tugas', 'like', '%' . $request->search . '%');
+            $tugasQuery->whereHas('jenisPekerjaan', function ($q) use ($request) {
+                $q->where('nama_pekerjaan', 'like', '%' . $request->search . '%');
+            });
         }
 
         if ($request->filled('jenis_pekerjaan')) {
@@ -29,6 +31,7 @@ class PekerjaanController extends Controller
             });
         }
 
+        // Filter deadline
         if ($request->filled('deadline_start') && $request->filled('deadline_end')) {
             $tugasQuery->whereBetween('deadline', [$request->deadline_start, $request->deadline_end]);
         } elseif ($request->filled('deadline_start')) {
@@ -40,29 +43,39 @@ class PekerjaanController extends Controller
         $tugas = $tugasQuery->get();
 
         foreach ($tugas as $t) {
-            $total = $t->semuaRealisasi->sum('realisasi');
-            $t->total_realisasi = $total;
-            $t->kuantitas = $t->target > 0 ? round(($total / $t->target) * 100, 2) : 0;
-            $t->kualitas  = $t->kuantitas;
+            // total realisasi & progress
+            $totalRealisasi = $t->semuaRealisasi->sum('realisasi');
+            $progress = $t->target > 0 ? min($totalRealisasi / $t->target, 1) : 0;
 
-            // jika selesai sebelum deadline → kualitas full
-            if ($total >= $t->target) {
-                $t->kualitas = 100;
+            // bobot dari jenis pekerjaan
+            $bobot = $t->jenisPekerjaan->bobot ?? 0;
 
-                // cek apakah telat
-                $lastDate = $t->semuaRealisasi->max('tanggal_realisasi');
-                if ($lastDate && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
-                    $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
-                    $t->kualitas = max(0, $t->kualitas - ($hariTelat * 10));
-                }
+            // keterlambatan (hari telat berdasarkan realisasi terakhir)
+            $lastDate = $t->semuaRealisasi->max('tanggal_realisasi');
+            $hariTelat = 0;
+            if ($lastDate && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
+                $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
             }
 
-            // cek deadline untuk status
-            $t->is_late = Carbon::now()->gt(Carbon::parse($t->deadline)) && $total < $t->target;
+            // penalti 10% per hari keterlambatan
+            $penalti = $bobot * 0.1 * $hariTelat;
 
-            // rincian histori
+            // nilai akhir (bobot * progress – penalti)
+            $nilaiAkhir = max(0, ($bobot * $progress) - $penalti);
+
+            // atribut untuk Blade
+            $t->setAttribute('bobot_asli', $bobot);
+            $t->setAttribute('penalti', $penalti);
+            $t->setAttribute('nilai_akhir', $nilaiAkhir);
+
+            $t->setAttribute(
+                'is_late',
+                Carbon::now()->gt(Carbon::parse($t->deadline)) && $totalRealisasi < $t->target
+            );
+
+            // rincian histori realisasi
             $akumulasi = 0;
-            $t->rincian = $t->semuaRealisasi->sortBy('tanggal_realisasi')->map(function ($r) use ($t, &$akumulasi) {
+            $rincian = $t->semuaRealisasi->sortBy('tanggal_realisasi')->map(function ($r) use ($t, &$akumulasi) {
                 $akumulasi += $r->realisasi;
                 $persen = $t->target > 0 ? round(($akumulasi / $t->target) * 100, 2) : 0;
 
@@ -77,6 +90,7 @@ class PekerjaanController extends Controller
                     'file_bukti' => $r->file_bukti,
                 ];
             });
+            $t->setAttribute('rincian', $rincian);
         }
 
         return view('user.pekerjaan.index', compact('tugas'));
@@ -90,8 +104,7 @@ class PekerjaanController extends Controller
             ->where('pegawai_id', $pegawaiId)
             ->firstOrFail();
 
-        $tanggalAwal  = $tugas->created_at->toDateString();
-        $tanggalAkhir = $tugas->deadline;
+        $tanggalAwal = $tugas->created_at->toDateString();
 
         $validated = $request->validate([
             'realisasi' => 'required|numeric|min:1',
@@ -100,35 +113,19 @@ class PekerjaanController extends Controller
             'file_bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // Hitung total yang sudah ada
+        // sisa target
         $currentTotal = $tugas->semuaRealisasi()->sum('realisasi');
         $sisa = $tugas->target - $currentTotal;
-
         if ($validated['realisasi'] > $sisa) {
             return back()->withErrors(['realisasi' => "Maksimal realisasi yang bisa dimasukkan hanya $sisa"]);
         }
 
+        // upload file bukti
         if ($request->hasFile('file_bukti')) {
             $validated['file_bukti'] = $request->file('file_bukti')->store('bukti', 'public');
         }
 
-        $newTotal = $currentTotal + $validated['realisasi'];
-        $target   = $tugas->target;
-
-        // Hitung kuantitas & kualitas
-        $nilaiKuantitas = $target > 0 ? round(($newTotal / $target) * 100, 2) : 0;
-        $nilaiKualitas  = $newTotal >= $target ? 100 : $nilaiKuantitas;
-
-        // Penalti keterlambatan (10% per hari)
-        if (Carbon::parse($validated['tanggal_realisasi'])->gt(Carbon::parse($tugas->deadline))) {
-            $hariTelat = Carbon::parse($validated['tanggal_realisasi'])
-                ->diffInDays(Carbon::parse($tugas->deadline));
-            $nilaiKualitas = max(0, $nilaiKualitas - ($hariTelat * 10));
-        }
-
         $validated['tugas_id'] = $tugas->id;
-        $validated['nilai_kuantitas'] = $nilaiKuantitas;
-        $validated['nilai_kualitas']  = $nilaiKualitas;
 
         RealisasiTugas::create($validated);
 
@@ -144,8 +141,7 @@ class PekerjaanController extends Controller
             ->firstOrFail();
 
         $tugas = $realisasi->tugas;
-        $tanggalAwal  = $tugas->created_at->toDateString();
-        $tanggalAkhir = $tugas->deadline;
+        $tanggalAwal = $tugas->created_at->toDateString();
 
         $validated = $request->validate([
             'realisasi' => 'required|numeric|min:1',
@@ -154,14 +150,14 @@ class PekerjaanController extends Controller
             'file_bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // Hitung total selain yang sedang diedit
+        // sisa target (selain yang sedang diedit)
         $otherTotal = $tugas->semuaRealisasi()->where('id', '<>', $realisasi->id)->sum('realisasi');
         $sisa = $tugas->target - $otherTotal;
-
         if ($validated['realisasi'] > $sisa) {
             return back()->withErrors(['realisasi' => "Maksimal realisasi yang bisa dimasukkan hanya $sisa"]);
         }
 
+        // update file bukti
         if ($request->hasFile('file_bukti')) {
             if ($realisasi->file_bukti) {
                 Storage::disk('public')->delete($realisasi->file_bukti);
@@ -170,23 +166,6 @@ class PekerjaanController extends Controller
         } else {
             $validated['file_bukti'] = $realisasi->file_bukti;
         }
-
-        $newTotal = $otherTotal + $validated['realisasi'];
-        $target   = $tugas->target;
-
-        // Hitung kuantitas & kualitas
-        $nilaiKuantitas = $target > 0 ? round(($newTotal / $target) * 100, 2) : 0;
-        $nilaiKualitas  = $newTotal >= $target ? 100 : $nilaiKuantitas;
-
-        // Penalti keterlambatan
-        if (Carbon::parse($validated['tanggal_realisasi'])->gt(Carbon::parse($tugas->deadline))) {
-            $hariTelat = Carbon::parse($validated['tanggal_realisasi'])
-                ->diffInDays(Carbon::parse($tugas->deadline));
-            $nilaiKualitas = max(0, $nilaiKualitas - ($hariTelat * 10));
-        }
-
-        $validated['nilai_kuantitas'] = $nilaiKuantitas;
-        $validated['nilai_kualitas']  = $nilaiKualitas;
 
         $realisasi->update($validated);
 
