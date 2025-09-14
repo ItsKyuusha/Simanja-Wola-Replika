@@ -3,139 +3,137 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Team;
-use App\Models\Tugas;
 use App\Models\Pegawai;
-use App\Models\Progress;
+use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $pegawai = auth()->user()->pegawai;
-        $teamId = $pegawai->team_id;
+        $userPegawai = auth()->user()->pegawai;
 
-        // Ambil filter dari request
-        $bulan = $request->bulan ?: null;
-        $tahun = $request->tahun ?: null;
-
-        // Array nama bulan dalam Bahasa Indonesia
-        $namaBulan = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
-        ];
-
-        // Label tampilan untuk Bulan dan Tahun
-        if ($bulan && $tahun) {
-            $labelBulanTahun = strtoupper($namaBulan[(int)$bulan]) . ' ' . $tahun;
-        } elseif ($bulan && !$tahun) {
-            $labelBulanTahun = strtoupper($namaBulan[(int)$bulan]) . ' - Semua Tahun';
-        } elseif (!$bulan && $tahun) {
-            $labelBulanTahun = 'Semua Bulan - ' . $tahun;
-        } else {
-            $labelBulanTahun = 'Semua Bulan & Tahun';
+        if (!$userPegawai) {
+            abort(403, 'Anda tidak memiliki data pegawai.');
         }
 
-        // === Search & Keywords ===
-        $search = trim((string) request('search', ''));
-        $keywords = $search === ''
-            ? []
-            : array_values(array_filter(array_map('trim', explode(',', $search))));
+        // ==============================
+        // Ambil semua ID tim user (ketua)
+        // ==============================
+        $teamIds = $userPegawai->teams->pluck('id')->toArray();
 
-        // Total Tugas untuk tim ini
-        $totalTugas = Tugas::whereHas('pegawai', fn($q) => $q->where('team_id', $teamId))
-            ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
-            ->count();
+        // ==============================
+        // Filter bulan & tahun
+        // ==============================
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
-        // Jumlah pegawai dalam tim
-        $jumlahPegawai = Pegawai::where('team_id', $teamId)->count();
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April',   5 => 'Mei',      6 => 'Juni',
+            7 => 'Juli',    8 => 'Agustus',  9 => 'September',
+            10 => 'Oktober',11 => 'November',12 => 'Desember'
+        ];
 
-        // Pegawai teraktif dalam tim ini
-        $mostActive = Pegawai::where('team_id', $teamId)
-            ->withCount(['tugas' => function ($query) use ($bulan, $tahun) {
-                $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                    ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
-            }])
-            ->orderByDesc('tugas_count')
-            ->first();
+        $labelBulanTahun = match (true) {
+            $bulan && $tahun => strtoupper($namaBulan[(int)$bulan]) . " $tahun",
+            $bulan && !$tahun => strtoupper($namaBulan[(int)$bulan]) . " - Semua Tahun",
+            !$bulan && $tahun => "Semua Bulan - $tahun",
+            default => 'Semua Bulan & Tahun'
+        };
 
-        // Tabel Grafik Jumlah kegiatan per pegawai (untuk tab "kegiatan")
-        $jumlahKegiatan = Pegawai::where('team_id', $teamId)
-            ->when($keywords, function ($query) use ($keywords) {
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('nama', 'like', '%' . $word . '%');
-                    }
-                });
-            })
-            ->withCount(['tugas' => function ($query) use ($bulan, $tahun) {
-                $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                    ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
-            }])
-            ->get();
+        // ==============================
+        // Ambil semua anggota tim user
+        // ==============================
+        $members = Pegawai::whereHas('teams', function ($q) use ($teamIds) {
+            $q->whereIn('teams.id', $teamIds);
+        })->get();
+        $memberIds = $members->pluck('id')->toArray();
 
-        // Nilai Kinerja Pegawai
-        $nilaiKinerja = Progress::with('pegawai')
-            ->whereHas('pegawai', function ($q) use ($teamId, $keywords) {
-                $q->where('team_id', $teamId)
-                    ->when($keywords, function ($qq) use ($keywords) {
-                        $qq->where(function ($sub) use ($keywords) {
-                            foreach ($keywords as $word) {
-                                $sub->orWhere('nama', 'like', '%' . $word . '%');
-                            }
-                        });
-                    });
-            })
-            ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
-            ->orderByDesc('nilai_akhir')
-            ->get();
+        // ==============================
+        // Ambil semua tugas (hanya dari ketua tim ini)
+        // ==============================
+        $tasksQuery = Tugas::with(['pegawai.teams', 'jenisPekerjaan', 'semuaRealisasi'])
+            ->whereIn('pegawai_id', $memberIds)
+            ->where('asal', $userPegawai->nama);
 
-        // Persentase Tugas Selesai
-        $persentaseSelesai = Pegawai::select(
-            'pegawais.id',
-            'pegawais.nama',
-            DB::raw('COUNT(t.id) as total_tugas'),
-            DB::raw('COUNT(rt.id) as tugas_selesai'),
-            DB::raw('ROUND(COUNT(rt.id) / NULLIF(COUNT(t.id), 0) * 100, 2) as persen_selesai')
-        )
-            ->leftJoin('tugas as t', 'pegawais.id', '=', 't.pegawai_id')
-            ->leftJoin('realisasi_tugas as rt', 't.id', '=', 'rt.tugas_id')
-            ->where('pegawais.team_id', $teamId)
-            ->when($keywords, function ($query) use ($keywords) {
-                $query->where(function ($sub) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $sub->orWhere('pegawais.nama', 'like', '%' . $word . '%');
-                    }
-                });
-            })
-            ->when($bulan, fn($q) => $q->whereMonth('t.created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('t.created_at', $tahun))
-            ->groupBy('pegawais.id', 'pegawais.nama')
-            ->orderByDesc('persen_selesai')
-            ->get();
+        if ($bulan) {
+            $tasksQuery->whereMonth('created_at', $bulan);
+        }
+        if ($tahun) {
+            $tasksQuery->whereYear('created_at', $tahun);
+        }
+
+        $tasks = $tasksQuery->get();
+
+        // ==============================
+        // Transform data tugas
+        // ==============================
+        $tasks->transform(function ($t) {
+            $approvedRealisasi = $t->semuaRealisasi->where('is_approved', true);
+            $totalRealisasi = $approvedRealisasi->sum('realisasi');
+            $progress = $t->target > 0 ? min($totalRealisasi / $t->target, 1) : 0;
+
+            $bobot = $t->jenisPekerjaan->bobot ?? 0;
+
+            $lastDate = $approvedRealisasi->max('tanggal_realisasi');
+            $hariTelat = 0;
+            if ($lastDate && $t->deadline && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
+                $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
+            }
+
+            $penalti = $bobot * 0.1 * $hariTelat;
+            $nilaiAkhir = max(0, ($bobot * $progress) - $penalti);
+
+            $t->bobot = $bobot;
+            $t->hariTelat = $hariTelat;
+            $t->nilaiAkhir = round($nilaiAkhir, 2);
+
+            $t->status = match (true) {
+                $approvedRealisasi->isEmpty() => ($t->semuaRealisasi->isNotEmpty() ? 'Menunggu Persetujuan' : 'Belum Dikerjakan'),
+                $totalRealisasi < $t->target => 'Ongoing',
+                default => 'Selesai Dikerjakan'
+            };
+
+            $t->namaTim = $t->pegawai->teams->pluck('nama_tim')->join(', ');
+
+            // simpan total target & realisasi untuk grafik
+            $t->totalTarget = $t->target ?? 0;
+            $t->totalRealisasi = $totalRealisasi ?? 0;
+
+            return $t;
+        });
+
+        // ==============================
+        // Statistik global
+        // ==============================
+        $totalTugas = $tasks->count();
+        $tugasSelesai = $tasks->where('status', 'Selesai Dikerjakan')->count();
+        $tugasOngoing = $tasks->where('status', 'Ongoing')->count();
+        $tugasBelum = $tasks->where('status', 'Belum Dikerjakan')->count();
+
+        // rata-rata nilai akhir
+        $rataNilaiAkhir = $tasks->count() > 0 ? round($tasks->avg('nilaiAkhir'), 2) : 0;
+
+        // data grafik
+        $grafikLabels = $tasks->pluck('jenisPekerjaan.nama_pekerjaan')->toArray();
+        $grafikTarget = $tasks->pluck('totalTarget')->toArray();
+        $grafikRealisasi = $tasks->pluck('totalRealisasi')->toArray();
 
         return view('admin.dashboard', compact(
+            'members',
+            'tasks',
             'totalTugas',
-            'jumlahPegawai',
-            'mostActive',
-            'labelBulanTahun',
-            'jumlahKegiatan',
-            'nilaiKinerja',
-            'persentaseSelesai',
+            'tugasSelesai',
+            'tugasOngoing',
+            'tugasBelum',
+            'rataNilaiAkhir',
+            'grafikLabels',
+            'grafikTarget',
+            'grafikRealisasi',
+            'labelBulanTahun'
         ));
     }
 }
