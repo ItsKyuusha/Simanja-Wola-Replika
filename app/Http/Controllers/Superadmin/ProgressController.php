@@ -23,11 +23,25 @@ class ProgressController extends Controller
 
             foreach ($pegawai->tugas as $tugas) {
                 if ($tugas->realisasi && $tugas->realisasi->is_approved) {
-                    $kualitas  = $tugas->realisasi->nilai_kualitas ?? 0;
-                    $kuantitas = $tugas->realisasi->nilai_kuantitas ?? 0;
-                    $nilai     = ($kualitas + $kuantitas) / 2;
+                    // hitung nilai akhir tiap tugas
+                    $target    = $tugas->target ?? 0;
+                    $realisasi = $tugas->realisasi->realisasi ?? 0;
+                    $progress  = $target > 0 ? min($realisasi / $target, 1) : 0;
 
-                    $totalNilai  += $nilai;
+                    $bobot     = $tugas->jenisPekerjaan->bobot ?? 0;
+
+                    // penalti (opsional)
+                    $deadline  = $tugas->deadline;
+                    $tglReal   = $tugas->realisasi->tanggal_realisasi;
+                    $hariTelat = 0;
+                    if ($deadline && $tglReal && strtotime($tglReal) > strtotime($deadline)) {
+                        $hariTelat = (new \Carbon\Carbon($deadline))->diffInDays(new \Carbon\Carbon($tglReal));
+                    }
+                    $penalti   = $bobot * 0.1 * $hariTelat;
+
+                    $nilaiAkhirTugas = max(0, ($bobot * $progress) - $penalti);
+
+                    $totalNilai  += $nilaiAkhirTugas;
                     $jumlahTugas++;
                 }
             }
@@ -86,7 +100,6 @@ class ProgressController extends Controller
         return view('superadmin.progress.detail', compact('pegawai'));
     }
 
-
     public function exportKinerja()
     {
         return Excel::download(new class implements FromCollection, WithHeadings, \Maatwebsite\Excel\Concerns\WithStyles {
@@ -95,6 +108,23 @@ class ProgressController extends Controller
                 $tugas = Tugas::with(['pegawai', 'realisasi', 'jenisPekerjaan.team'])->get();
 
                 return $tugas->map(function ($tugas, $index) {
+                    // hitung nilai akhir per tugas
+                    $target    = $tugas->target ?? 0;
+                    $realisasi = ($tugas->realisasi && $tugas->realisasi->is_approved)
+                        ? $tugas->realisasi->realisasi : 0;
+                    $progress  = $target > 0 ? min($realisasi / $target, 1) : 0;
+                    $bobot     = $tugas->jenisPekerjaan->bobot ?? 0;
+
+                    $deadline  = $tugas->deadline;
+                    $tglReal   = $tugas->realisasi->tanggal_realisasi ?? null;
+                    $hariTelat = 0;
+                    if ($deadline && $tglReal && strtotime($tglReal) > strtotime($deadline)) {
+                        $hariTelat = (new \Carbon\Carbon($deadline))->diffInDays(new \Carbon\Carbon($tglReal));
+                    }
+                    $penalti = $bobot * 0.1 * $hariTelat;
+
+                    $nilaiAkhirTugas = max(0, ($bobot * $progress) - $penalti);
+
                     return [
                         'No'                => $index + 1,
                         'Nama Pegawai'      => $tugas->pegawai->nama ?? '-',
@@ -102,17 +132,14 @@ class ProgressController extends Controller
                         'Nama Tim'          => $tugas->jenisPekerjaan->team->nama ?? '-',
                         'Asal'              => $tugas->asal ?? '-',
                         'Target'            => $tugas->target ?? 0,
-                        'Realisasi'         => ($tugas->realisasi && $tugas->realisasi->is_approved)
-                            ? $tugas->realisasi->realisasi : '-',
+                        'Realisasi'         => $realisasi,
                         'Satuan'            => $tugas->satuan ?? '-',
                         'Deadline'          => $tugas->deadline
                             ? date('d-m-Y', strtotime($tugas->deadline)) : '-',
                         'Tanggal Realisasi' => ($tugas->realisasi && $tugas->realisasi->is_approved && $tugas->realisasi->tanggal_realisasi)
                             ? date('d-m-Y', strtotime($tugas->realisasi->tanggal_realisasi)) : '-',
-                        'Nilai Kualitas'    => ($tugas->realisasi && $tugas->realisasi->is_approved)
-                            ? $tugas->realisasi->nilai_kualitas : '-',
-                        'Nilai Kuantitas'   => ($tugas->realisasi && $tugas->realisasi->is_approved)
-                            ? $tugas->realisasi->nilai_kuantitas : '-',
+                        'Bobot'             => $bobot,
+                        'Nilai Akhir'       => round($nilaiAkhirTugas, 2),
                         'Catatan'           => $tugas->realisasi->catatan ?? '-',
                         'Bukti'             => $tugas->realisasi->file_bukti ?? '-',
                     ];
@@ -132,8 +159,8 @@ class ProgressController extends Controller
                     'Satuan',
                     'Deadline',
                     'Tgl Realisasi',
-                    'Nilai Kualitas',
-                    'Nilai Kuantitas',
+                    'Bobot',
+                    'Nilai Akhir',
                     'Catatan',
                     'Bukti',
                 ];

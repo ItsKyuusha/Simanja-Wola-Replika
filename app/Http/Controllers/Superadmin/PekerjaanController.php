@@ -62,7 +62,7 @@ class PekerjaanController extends Controller
             'pegawai.teams'
         ])->paginate(10)->withQueryString();
 
-        // Tambahkan bobot, keterlambatan, nilai akhir, dan status
+        // Tambahkan bobot, keterlambatan, nilai akhir, status, dan nama tim pemberi tugas
         $tugas->getCollection()->transform(function ($t) {
             // Ambil realisasi yang sudah approved
             $approvedRealisasi = $t->semuaRealisasi->where('is_approved', true);
@@ -95,11 +95,11 @@ class PekerjaanController extends Controller
                 $status = 'Selesai Dikerjakan';
             }
 
-            // Nama tim
-            $namaTim = $t->pegawai->teams->pluck('nama_tim')->join(', ');
+            // 🔹 Nama tim pemberi tugas (bukan semua tim pegawai)
+            $namaTim = $t->jenisPekerjaan->team->nama_tim ?? '-';
 
             // Tambahkan properti baru ke model
-            $t->bobot      = $bobot;
+            $t->bobot       = $bobot;
             $t->hariTelat   = $hariTelat;
             $t->nilaiAkhir  = round($nilaiAkhir, 2);
             $t->status      = $status;

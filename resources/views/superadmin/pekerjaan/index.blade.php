@@ -124,15 +124,13 @@
           <td class="px-3 py-2 border">{{ $item->hariTelat }}</td>
           <td class="px-3 py-2 border">{{ $item->nilaiAkhir }}</td>
           <td class="px-3 py-2 border">{{ $item->status }}</td>
-          <td class="px-3 py-2 border">
+          <td class="px-3 py-2 border min-w-[120px]">
             @if($item->semuaRealisasi->count())
-            @php
-            $lastRealisasi = $item->semuaRealisasi->last();
-            @endphp
+            @php $lastRealisasi = $item->semuaRealisasi->last(); @endphp
             @if($lastRealisasi->file_bukti)
             <a href="{{ asset('storage/' . $lastRealisasi->file_bukti) }}" target="_blank"
               class="px-3 py-1.5 text-xs font-semibold rounded border border-blue-400 text-blue-600
-                                      bg-white/50 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors duration-200">
+               bg-white/50 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors duration-200 whitespace-nowrap">
               Lihat Bukti
             </a>
             @else
@@ -142,6 +140,7 @@
             -
             @endif
           </td>
+
         </tr>
         @empty
         <tr>

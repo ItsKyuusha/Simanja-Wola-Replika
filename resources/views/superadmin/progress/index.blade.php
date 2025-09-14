@@ -48,8 +48,8 @@
           <th class="p-3 border">Satuan</th>
           <th class="p-3 border text-red-500">Deadline</th>
           <th class="p-3 border">Tgl Realisasi</th>
-          <th class="p-3 border">Nilai Kualitas</th>
-          <th class="p-3 border">Nilai Kuantitas</th>
+          <th class="p-3 border">Bobot</th>
+          <th class="p-3 border">Nilai Akhir</th>
           <th class="p-3 border text-left">Catatan</th>
           <th class="p-3 border">Bukti</th>
         </tr>
@@ -73,8 +73,11 @@
             {{ optional(optional($t->realisasi)->tanggal_realisasi) 
                ? \Carbon\Carbon::parse($t->realisasi->tanggal_realisasi)->format('d M Y') : '-' }}
           </td>
-          <td class="px-3 py-2 text-green-600">{{ optional($t->realisasi)->nilai_kualitas ?? '-' }}</td>
-          <td class="px-3 py-2 text-blue-600">{{ optional($t->realisasi)->nilai_kuantitas ?? '-' }}</td>
+          <td>{{ $t->jenisPekerjaan->bobot ?? '-' }}</td>
+          <td>
+            {{-- ambil dari tabel progress atau langsung hitung --}}
+            {{ \App\Models\Progress::where('pegawai_id',$t->pegawai_id)->value('nilai_akhir') ?? 0 }}
+          </td>
           <td class="text-left px-3 py-2 text-gray-500 italic">{{ optional($t->realisasi)->catatan ?? '-' }}</td>
           <td class="px-3 py-2">
             @if(optional($t->realisasi)->file_bukti)
@@ -311,8 +314,9 @@
       </div>
     </div>
   </div>
+  
   @endif
-
+</div>
   <!-- Footer -->
   <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
     © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
