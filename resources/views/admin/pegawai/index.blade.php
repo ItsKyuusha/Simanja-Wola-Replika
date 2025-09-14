@@ -164,7 +164,7 @@
         </tbody>
       </table>
     </div>
-
+  </div>
 
     {{-- Footer --}}
     <footer class="text-center text-sm text-gray-500 py-4 border-t mt-10">

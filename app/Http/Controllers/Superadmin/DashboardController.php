@@ -3,126 +3,126 @@
 namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Pegawai;
 use App\Models\Team;
 use App\Models\Tugas;
-use App\Models\Progress;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bulan = request('bulan') ?: null;
-        $tahun = request('tahun') ?: null;
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
-        $namaBulan = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
-        ];
+        // ambil semua tim untuk header tabel
+        $teams = Team::orderBy('nama_tim')->get();
 
-        if ($bulan && $tahun) {
-            $labelBulanTahun = strtoupper($namaBulan[(int)$bulan]) . ' ' . $tahun;
-        } elseif ($bulan && !$tahun) {
-            $labelBulanTahun = strtoupper($namaBulan[(int)$bulan]) . ' - Semua Tahun';
-        } elseif (!$bulan && $tahun) {
-            $labelBulanTahun = 'Semua Bulan - ' . $tahun;
-        } else {
-            $labelBulanTahun = 'Semua Bulan & Tahun';
-        }
+        // ambil semua pegawai + relasi yang diperlukan
+        $pegawais = Pegawai::with(['teams', 'tugas.jenisPekerjaan', 'tugas.semuaRealisasi'])->get();
 
-        $search = trim((string) request('search', ''));
-        $keywords = $search === ''
-            ? []
-            : array_values(array_filter(array_map('trim', explode(',', $search))));
-
-        $totalProject = Tugas::when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
-            ->count();
-
-        $totalTeam = Team::count();
+        // kartu ringkasan
         $totalPegawai = Pegawai::count();
 
-        $mostActive = Pegawai::withCount(['tugas' => function ($query) use ($bulan, $tahun) {
-            $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
-        }])
-            ->orderByDesc('tugas_count')
-            ->first();
+        $tugasQuery = Tugas::query();
+        if ($bulan) $tugasQuery->whereMonth('created_at', $bulan);
+        if ($tahun) $tugasQuery->whereYear('created_at', $tahun);
 
-        $jumlahKegiatan = Pegawai::select('id', 'nama')
-            ->when($keywords, function ($query) use ($keywords) {
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('nama', 'like', '%' . $word . '%');
-                    }
+        $totalTugas = (clone $tugasQuery)->count();
+
+        // ongoing = target belum tercapai
+        $ongoing = (clone $tugasQuery)
+            ->get()
+            ->filter(fn($t) => $t->semuaRealisasi->sum('realisasi') < $t->target)
+            ->count();
+
+        // selesai = total realisasi >= target
+        $selesai = (clone $tugasQuery)
+            ->get()
+            ->filter(fn($t) => $t->semuaRealisasi->sum('realisasi') >= $t->target)
+            ->count();
+
+        // nilai keseluruhan (persentase rata-rata)
+        $allTugas = (clone $tugasQuery)->with('semuaRealisasi')->get();
+        $nilaiKeseluruhan = 0;
+        if ($allTugas->count() > 0) {
+            $persenList = $allTugas->map(function ($t) {
+                $totalRealisasi = $t->semuaRealisasi->sum('realisasi');
+                return $t->target > 0 ? min($totalRealisasi / $t->target, 1) * 100 : 0;
+            });
+            $nilaiKeseluruhan = round($persenList->avg(), 2);
+        }
+
+        // mapping pegawai -> tim -> target & realisasi + score & grade
+        $data = $pegawais->map(function ($pegawai) use ($teams, $bulan, $tahun) {
+            $teamsData = $teams->map(function ($team) use ($pegawai, $bulan, $tahun) {
+                $tugasQuery = $pegawai->tugas()->whereHas('jenisPekerjaan', function ($q) use ($team) {
+                    $q->where('tim_id', $team->id);
                 });
-            })
-            ->withCount(['tugas' => function ($query) use ($bulan, $tahun) {
-                $query->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-                    ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun));
-            }])
-            ->orderByDesc('tugas_count')
-            ->get();
 
-        // HAPUS bobotPerPegawai
+                if ($bulan) $tugasQuery->whereMonth('created_at', $bulan);
+                if ($tahun) $tugasQuery->whereYear('created_at', $tahun);
 
-        $nilaiKinerja = Progress::with('pegawai')
-            ->whereHas('pegawai', function ($q) use ($keywords) {
-                if (!empty($keywords)) {
-                    $q->where(function ($sub) use ($keywords) {
-                        foreach ($keywords as $word) {
-                            $sub->orWhere('nama', 'like', "%{$word}%");
-                        }
-                    });
-                }
-            })
-            ->when($bulan, fn($q) => $q->whereMonth('created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('created_at', $tahun))
-            ->orderByDesc('nilai_akhir')
-            ->get();
+                $tugasTim = $tugasQuery->with('semuaRealisasi')->get();
+                $totalTarget = $tugasTim->sum('target');
+                $totalRealisasi = $tugasTim
+                    ->flatMap->semuaRealisasi
+                    ->where('is_approved', true)
+                    ->sum('realisasi');
 
-        $persentaseSelesai = Pegawai::select(
-            'pegawais.id',
-            'pegawais.nama',
-            DB::raw('COUNT(t.id) as total_tugas'),
-            DB::raw('COUNT(rt.id) as tugas_selesai'),
-            DB::raw('ROUND(COUNT(rt.id) / NULLIF(COUNT(t.id), 0) * 100, 2) as persen_selesai')
-        )
-            ->when(!empty($keywords), function ($query) use ($keywords) {
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('pegawais.nama', 'like', "%{$word}%");
-                    }
-                });
-            })
-            ->leftJoin('tugas as t', 'pegawais.id', '=', 't.pegawai_id')
-            ->leftJoin('realisasi_tugas as rt', 't.id', '=', 'rt.tugas_id')
-            ->when($bulan, fn($q) => $q->whereMonth('t.created_at', $bulan))
-            ->when($tahun, fn($q) => $q->whereYear('t.created_at', $tahun))
-            ->groupBy('pegawais.id', 'pegawais.nama')
-            ->orderByDesc('persen_selesai')
-            ->get();
+                return [
+                    'team_id'         => $team->id,
+                    'nama_tim'        => $team->nama_tim ?? $team->nama ?? '—',
+                    'total_target'    => $totalTarget,
+                    'total_realisasi' => $totalRealisasi,
+                ];
+            });
+
+            $grandTarget = $teamsData->sum('total_target');
+            $grandRealisasi = $teamsData->sum('total_realisasi');
+
+            // hitung score
+            $score = $grandTarget > 0 ? round(($grandRealisasi / $grandTarget) * 100, 2) : 0;
+
+            // tentukan grade
+            if ($score >= 90) {
+                $grade = 'SANGAT BAIK';
+            } elseif ($score >= 80) {
+                $grade = 'BAIK';
+            } elseif ($score >= 70) {
+                $grade = 'CUKUP';
+            } elseif ($score >= 60) {
+                $grade = 'SEDANG';
+            } else {
+                $grade = 'KURANG';
+            }
+
+            return [
+                'pegawai'  => $pegawai,
+                'teams'    => $teamsData,
+                'score'    => $score,
+                'grade'    => $grade,
+                'grand_target' => $grandTarget,
+                'grand_realisasi' => $grandRealisasi,
+            ];
+        });
+
+        // siapkan data untuk chart
+        $chartLabels = $data->pluck('pegawai.nama')->toArray();
+        $chartTarget = $data->pluck('grand_target')->toArray();
+        $chartRealisasi = $data->pluck('grand_realisasi')->toArray();
 
         return view('superadmin.dashboard', compact(
-            'totalProject',
-            'totalTeam',
+            'data',
+            'teams',
             'totalPegawai',
-            'mostActive',
-            'jumlahKegiatan',
-            'nilaiKinerja',
-            'persentaseSelesai',
-            'labelBulanTahun',
+            'totalTugas',
+            'ongoing',
+            'selesai',
+            'nilaiKeseluruhan',
+            'chartLabels',
+            'chartTarget',
+            'chartRealisasi'
         ));
     }
 }
