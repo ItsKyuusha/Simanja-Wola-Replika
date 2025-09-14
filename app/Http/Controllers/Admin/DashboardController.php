@@ -1,5 +1,6 @@
 <?php
 
+// DashboardController
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -19,121 +20,94 @@ class DashboardController extends Controller
             abort(403, 'Anda tidak memiliki data pegawai.');
         }
 
-        // ==============================
-        // Ambil semua ID tim user (ketua)
-        // ==============================
+        // semua ID tim user (ketua)
         $teamIds = $userPegawai->teams->pluck('id')->toArray();
 
-        // ==============================
-        // Filter bulan & tahun
-        // ==============================
+        // filter bulan & tahun
         $bulan = $request->input('bulan');
         $tahun = $request->input('tahun');
 
         $namaBulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
-            4 => 'April',   5 => 'Mei',      6 => 'Juni',
-            7 => 'Juli',    8 => 'Agustus',  9 => 'September',
-            10 => 'Oktober',11 => 'November',12 => 'Desember'
+            1=>'Januari',2=>'Februari',3=>'Maret',
+            4=>'April',5=>'Mei',6=>'Juni',
+            7=>'Juli',8=>'Agustus',9=>'September',
+            10=>'Oktober',11=>'November',12=>'Desember'
         ];
 
         $labelBulanTahun = match (true) {
-            $bulan && $tahun => strtoupper($namaBulan[(int)$bulan]) . " $tahun",
-            $bulan && !$tahun => strtoupper($namaBulan[(int)$bulan]) . " - Semua Tahun",
-            !$bulan && $tahun => "Semua Bulan - $tahun",
-            default => 'Semua Bulan & Tahun'
+            $bulan && $tahun   => strtoupper($namaBulan[(int)$bulan])." $tahun",
+            $bulan && !$tahun  => strtoupper($namaBulan[(int)$bulan])." - Semua Tahun",
+            !$bulan && $tahun  => "Semua Bulan - $tahun",
+            default            => 'Semua Bulan & Tahun'
         };
 
-        // ==============================
-        // Ambil semua anggota tim user
-        // ==============================
+        // ambil anggota tim
         $members = Pegawai::whereHas('teams', function ($q) use ($teamIds) {
             $q->whereIn('teams.id', $teamIds);
         })->get();
         $memberIds = $members->pluck('id')->toArray();
 
-        // ==============================
-        // Ambil semua tugas (hanya dari ketua tim ini)
-        // ==============================
-        $tasksQuery = Tugas::with(['pegawai.teams', 'jenisPekerjaan', 'semuaRealisasi'])
+        // ambil tugas hanya dari ketua tim ini
+        $tasksQuery = Tugas::with(['pegawai.teams','jenisPekerjaan.team','semuaRealisasi'])
             ->whereIn('pegawai_id', $memberIds)
             ->where('asal', $userPegawai->nama);
 
-        if ($bulan) {
-            $tasksQuery->whereMonth('created_at', $bulan);
-        }
-        if ($tahun) {
-            $tasksQuery->whereYear('created_at', $tahun);
-        }
+        if ($bulan) $tasksQuery->whereMonth('created_at',$bulan);
+        if ($tahun) $tasksQuery->whereYear('created_at',$tahun);
 
         $tasks = $tasksQuery->get();
 
-        // ==============================
-        // Transform data tugas
-        // ==============================
+        // transform data tugas
         $tasks->transform(function ($t) {
             $approvedRealisasi = $t->semuaRealisasi->where('is_approved', true);
             $totalRealisasi = $approvedRealisasi->sum('realisasi');
-            $progress = $t->target > 0 ? min($totalRealisasi / $t->target, 1) : 0;
+            $progress = $t->target>0 ? min($totalRealisasi/$t->target,1) : 0;
 
             $bobot = $t->jenisPekerjaan->bobot ?? 0;
 
             $lastDate = $approvedRealisasi->max('tanggal_realisasi');
-            $hariTelat = 0;
+            $hariTelat=0;
             if ($lastDate && $t->deadline && Carbon::parse($lastDate)->gt(Carbon::parse($t->deadline))) {
                 $hariTelat = Carbon::parse($lastDate)->diffInDays(Carbon::parse($t->deadline));
             }
 
-            $penalti = $bobot * 0.1 * $hariTelat;
-            $nilaiAkhir = max(0, ($bobot * $progress) - $penalti);
+            $penalti = $bobot*0.1*$hariTelat;
+            $nilaiAkhir = max(0,($bobot*$progress)-$penalti);
 
-            $t->bobot = $bobot;
-            $t->hariTelat = $hariTelat;
-            $t->nilaiAkhir = round($nilaiAkhir, 2);
-
-            $t->status = match (true) {
-                $approvedRealisasi->isEmpty() => ($t->semuaRealisasi->isNotEmpty() ? 'Menunggu Persetujuan' : 'Belum Dikerjakan'),
-                $totalRealisasi < $t->target => 'Ongoing',
-                default => 'Selesai Dikerjakan'
+            $status = match (true) {
+                $approvedRealisasi->isEmpty() => ($t->semuaRealisasi->isNotEmpty()?'Menunggu Persetujuan':'Belum Dikerjakan'),
+                $totalRealisasi<$t->target    => 'Ongoing',
+                default                       => 'Selesai Dikerjakan'
             };
 
-            $t->namaTim = $t->pegawai->teams->pluck('nama_tim')->join(', ');
+            // nama tim: langsung ambil dari jenis pekerjaan (tim pemberi tugas)
+            $t->namaTim = $t->jenisPekerjaan->team->nama_tim ?? '-';
 
-            // simpan total target & realisasi untuk grafik
-            $t->totalTarget = $t->target ?? 0;
-            $t->totalRealisasi = $totalRealisasi ?? 0;
+            $t->bobot=$bobot;
+            $t->hariTelat=$hariTelat;
+            $t->nilaiAkhir=round($nilaiAkhir,2);
+            $t->status=$status;
+            $t->totalTarget=$t->target??0;
+            $t->totalRealisasi=$totalRealisasi??0;
 
             return $t;
         });
 
-        // ==============================
-        // Statistik global
-        // ==============================
         $totalTugas = $tasks->count();
-        $tugasSelesai = $tasks->where('status', 'Selesai Dikerjakan')->count();
-        $tugasOngoing = $tasks->where('status', 'Ongoing')->count();
-        $tugasBelum = $tasks->where('status', 'Belum Dikerjakan')->count();
+        $tugasSelesai=$tasks->where('status','Selesai Dikerjakan')->count();
+        $tugasOngoing=$tasks->where('status','Ongoing')->count();
+        $tugasBelum=$tasks->where('status','Belum Dikerjakan')->count();
 
-        // rata-rata nilai akhir
-        $rataNilaiAkhir = $tasks->count() > 0 ? round($tasks->avg('nilaiAkhir'), 2) : 0;
+        $rataNilaiAkhir=$totalTugas>0?round($tasks->avg('nilaiAkhir'),2):0;
 
-        // data grafik
-        $grafikLabels = $tasks->pluck('jenisPekerjaan.nama_pekerjaan')->toArray();
-        $grafikTarget = $tasks->pluck('totalTarget')->toArray();
-        $grafikRealisasi = $tasks->pluck('totalRealisasi')->toArray();
+        $grafikLabels=$tasks->pluck('jenisPekerjaan.nama_pekerjaan')->toArray();
+        $grafikTarget=$tasks->pluck('totalTarget')->toArray();
+        $grafikRealisasi=$tasks->pluck('totalRealisasi')->toArray();
 
-        return view('admin.dashboard', compact(
-            'members',
-            'tasks',
-            'totalTugas',
-            'tugasSelesai',
-            'tugasOngoing',
-            'tugasBelum',
-            'rataNilaiAkhir',
-            'grafikLabels',
-            'grafikTarget',
-            'grafikRealisasi',
-            'labelBulanTahun'
+        return view('admin.dashboard',compact(
+            'members','tasks','totalTugas','tugasSelesai',
+            'tugasOngoing','tugasBelum','rataNilaiAkhir',
+            'grafikLabels','grafikTarget','grafikRealisasi','labelBulanTahun'
         ));
     }
 }
