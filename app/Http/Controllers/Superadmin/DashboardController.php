@@ -19,9 +19,34 @@ class DashboardController extends Controller
         $teams = Team::orderBy('nama_tim')->get();
 
         // ambil semua pegawai + relasi yang diperlukan
-        $pegawais = Pegawai::with(['teams', 'tugas.jenisPekerjaan', 'tugas.semuaRealisasi'])->get();
+$search = trim((string) $request->input('search', ''));
 
-        // kartu ringkasan
+$pegawais = Pegawai::with([
+    'teams',
+    'tugas' => function ($q) use ($bulan, $tahun) {
+        if ($bulan) $q->whereMonth('created_at', $bulan);
+        if ($tahun) $q->whereYear('created_at', $tahun);
+    },
+    'tugas.jenisPekerjaan',
+    'tugas.semuaRealisasi'
+])
+->when($search, function ($q) use ($search) {
+    $names = array_filter(array_map('trim', explode(',', $search)));
+    $q->where(function ($sub) use ($names) {
+        foreach ($names as $name) {
+            $sub->orWhere('nama', 'like', "%$name%");
+        }
+    });
+})
+->when($bulan || $tahun, function ($q) use ($bulan, $tahun) {
+    $q->whereHas('tugas', function ($q2) use ($bulan, $tahun) {
+        if ($bulan) $q2->whereMonth('created_at', $bulan);
+        if ($tahun) $q2->whereYear('created_at', $tahun);
+    });
+})
+->get();
+
+// kartu ringkasan
         $totalPegawai = Pegawai::count();
 
         $tugasQuery = Tugas::query();
