@@ -11,7 +11,7 @@
 <div x-data="{ tambahModal: false, editModal: null, openImport: false }">
 
   {{-- Header: Judul & tombol --}}
-  <div class="bg-white rounded-2xl p-6  border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-wrap">
+  <div class="bg-white rounded-2xl p-6 mb-6 border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-blue-600">Daftar Tugas Tim</h2>
 
     <div class="flex flex-col sm:flex-row items-center gap-3">
@@ -60,6 +60,7 @@
           <th class="p-3 border">No.</th>
           <th class="p-3 border">Nama Pekerjaan</th>
           <th class="p-3 border">Pegawai</th>
+
           <th class="p-3 border">Target</th>
           <th class="p-3 border">Pemberi Pekerjaan</th>
           <th class="p-3 border">Deadline</th>
@@ -177,7 +178,6 @@
       </tbody>
     </table>
   </div>
-  
 
   {{-- Modal Tambah --}}
   <div x-show="tambahModal" x-cloak
@@ -255,12 +255,12 @@
   </div>
 </div>
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-10">
-  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-</footer>
+      © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    </footer> 
 
 {{-- Script --}}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Modal Tambah
     const jenisTambah = document.getElementById('jenisTambah');
     const satuanTambah = document.getElementById('satuanTambah');
@@ -268,11 +268,11 @@
     const targetTambah = document.getElementById('targetTambah');
 
     function updateVolumeTambah() {
-      const selected = jenisTambah.selectedOptions[0];
-      const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
-      const target = parseFloat(targetTambah.value ?? 0);
-      volumeTambah.value = Math.max(sisaVolume - target, 0);
-      satuanTambah.value = selected?.dataset.satuan ?? '';
+        const selected = jenisTambah.selectedOptions[0];
+        const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
+        const target = parseFloat(targetTambah.value ?? 0);
+        volumeTambah.value = Math.max(sisaVolume - target, 0);
+        satuanTambah.value = selected?.dataset.satuan ?? '';
     }
 
     jenisTambah?.addEventListener('change', updateVolumeTambah);
@@ -280,31 +280,15 @@
 
     // Modal Edit
     @foreach($tugas as $t)
-    const jenisEdit {
-      {
-        $t - > id
-      }
-    } = document.getElementById('jenisEdit{{ $t->id }}');
-    const satuanEdit {
-      {
-        $t - > id
-      }
-    } = document.getElementById('satuanInput{{ $t->id }}');
+    const jenisEdit{{ $t->id }} = document.getElementById('jenisEdit{{ $t->id }}');
+    const satuanEdit{{ $t->id }} = document.getElementById('satuanInput{{ $t->id }}');
 
-    jenisEdit {
-      {
-        $t - > id
-      }
-    }?.addEventListener('change', function() {
-      const selected = this.selectedOptions[0];
-      satuanEdit {
-        {
-          $t - > id
-        }
-      }.value = selected?.dataset.satuan ?? '';
+    jenisEdit{{ $t->id }}?.addEventListener('change', function() {
+        const selected = this.selectedOptions[0];
+        satuanEdit{{ $t->id }}.value = selected?.dataset.satuan ?? '';
     });
     @endforeach
-  });
+});
 </script>
 
 @endsection

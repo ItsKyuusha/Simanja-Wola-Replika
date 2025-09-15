@@ -114,11 +114,7 @@
                     <i class="fas fa-user w-5"></i>
                     <span class="ml-3">Pegawai</span>
                 </a>
-                <a href="{{ route('admin.support') }}"
-                    class="{{ request()->routeIs('admin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
-                    <i class="fas fa-life-ring w-5"></i>
-                    <span class="ml-3">Support</span>
-                </a>
+
 
                 {{-- Jika admin juga anggota tim, tampilkan menu tambahan --}}
                 @if(Auth::user()->pegawai && Auth::user()->pegawai->teams->isNotEmpty())
@@ -126,13 +122,19 @@
                 <p class="text-xs uppercase tracking-wide text-blue-200 font-semibold px-4">Menu Tim</p>
                 <a href="{{ route('user.dashboard') }}"
                     class="{{ request()->routeIs('user.dashboard') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
-                    <i class="fas fa-users w-5"></i>
+                    <i class="fas fa-home w-5"></i>
                     <span class="ml-3">Dashboard Tim</span>
                 </a>
                 <a href="{{ route('user.pekerjaan.index') }}"
                     class="{{ request()->routeIs('user.pekerjaan.index') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
                     <i class="fas fa-briefcase w-5"></i>
                     <span class="ml-3">Pekerjaan Tim</span>
+                </a>
+                <hr class="my-3 border-blue-600">
+                <a href="{{ route('admin.support') }}"
+                    class="{{ request()->routeIs('admin.support') ? 'bg-yellow-400 text-blue-900 font-semibold' : 'hover:bg-blue-700' }} flex items-center px-4 py-2 rounded transition">
+                    <i class="fas fa-life-ring w-5"></i>
+                    <span class="ml-3">Support</span>
                 </a>
                 @endif
 
