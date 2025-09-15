@@ -97,6 +97,14 @@ class PekerjaanController extends Controller
 
     public function update(Request $request, $id)
     {
+        $tugas = Tugas::with('realisasi')->findOrFail($id);
+
+        // Cek apakah sudah dikerjakan
+        if ($tugas->realisasi && $tugas->realisasi->realisasi >= $tugas->target) {
+            return redirect()->route('admin.pekerjaan.index')
+                ->with('error', 'Tugas sudah dikerjakan dan tidak bisa diedit.');
+        }
+
         $request->validate([
             'pegawai_id' => 'required|exists:pegawais,id',
             'jenis_pekerjaan_id' => 'required|exists:jenis_pekerjaans,id',
@@ -105,7 +113,6 @@ class PekerjaanController extends Controller
             'deadline' => 'required|date',
         ]);
 
-        $tugas = Tugas::findOrFail($id);
         $pegawai = auth()->user()->pegawai;
         $teams = $pegawai?->teams ?? collect();
         $teamIds = $teams->pluck('id');

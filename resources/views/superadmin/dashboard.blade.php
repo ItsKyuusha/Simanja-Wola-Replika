@@ -38,7 +38,7 @@
             <a href="{{ route('superadmin.dashboard.export', request()->all()) }}"
                 class="px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
               hover:bg-green-600 hover:text-white transition">
-                Export Excel
+                Export Tabel
             </a>
         </div>
     </div>

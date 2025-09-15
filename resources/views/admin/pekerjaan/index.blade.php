@@ -8,10 +8,10 @@
   }
 </style>
 
-<div x-data="{ tambahModal: false, editModal: null, openImport: false }"class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
+<div x-data="{ tambahModal: false, editModal: null, openImport: false }" class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
   {{-- Header: Judul & tombol --}}
- <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-blue-600">Daftar Tugas Tim</h2>
 
     <div class="flex flex-col sm:flex-row items-center gap-3">
@@ -31,11 +31,7 @@
         <i class="fas fa-file-excel mr-2"></i> Export Tabel
       </a>
 
-      {{-- Import --}}
-      <button @click="openImport = true"
-        class="inline-flex items-center px-4 py-2 rounded-lg border border-purple-400 text-purple-600 font-medium bg-purple-200/20 hover:bg-purple-300/30 hover:border-purple-500 hover:text-purple-700 transition duration-200 transform hover:scale-105">
-        <i class="fas fa-file-upload mr-2"></i> Upload Data
-      </button>
+
 
       {{-- Tambah --}}
       <button @click="tambahModal = true"
@@ -60,7 +56,6 @@
           <th class="p-3 border">No.</th>
           <th class="p-3 border">Nama Pekerjaan</th>
           <th class="p-3 border">Pegawai</th>
-
           <th class="p-3 border">Target</th>
           <th class="p-3 border">Pemberi Pekerjaan</th>
           <th class="p-3 border">Deadline</th>
@@ -87,9 +82,7 @@
               @endif
           </td>
           <td class="p-3 border space-x-1">
-            <button @click="editModal = {{ $t->id }}" class="px-3 py-1 rounded-lg border border-yellow-400 text-yellow-600 bg-yellow-100/40 hover:bg-yellow-200 hover:text-yellow-700 transition text-xs">
-              <i class="fas fa-edit mr-1"></i> Edit
-            </button>
+            @if (!$t->realisasi)
             <form action="{{ route('admin.pekerjaan.destroy', $t->id) }}" method="POST" class="inline">
               @csrf
               @method('DELETE')
@@ -97,6 +90,9 @@
                 <i class="fas fa-trash mr-1"></i> Hapus
               </button>
             </form>
+            @else
+            <span class="text-gray-400 text-xs">Tidak bisa dihapus</span>
+            @endif
           </td>
         </tr>
 
@@ -128,7 +124,7 @@
                 {{-- Jenis Pekerjaan --}}
                 <div>
                   <label class="block mb-1">Jenis Pekerjaan</label>
-                  <select name="jenis_pekerjaan_id" class="w-full border rounded px-3 py-2" id="jenisEdit{{ $t->id }}" required>
+                  <select name="jenis_pekerjaan_id" class="w-full border rounded px-3 py-2 jenis-edit" data-id="{{ $t->id }}" required>
                     <option value="">-- Pilih Jenis Pekerjaan --</option>
                     @foreach($jenisPekerjaanModal as $jp)
                     <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}" {{ $t->jenis_pekerjaan_id == $jp->id ? 'selected' : '' }}>
@@ -172,7 +168,7 @@
         </div>
         @empty
         <tr>
-          <td colspan="9" class="text-center border px-4 py-6 text-gray-500">Belum ada tugas yang ditambahkan.</td>
+          <td colspan="8" class="text-center border px-4 py-6 text-gray-500">Belum ada tugas yang ditambahkan.</td>
         </tr>
         @endforelse
       </tbody>
@@ -204,7 +200,7 @@
           {{-- Jenis Pekerjaan --}}
           <div>
             <label class="block mb-1">Jenis Pekerjaan</label>
-            <select name="jenis_pekerjaan_id" class="w-full border rounded px-3 py-2" id="jenisTambah" required>
+            <select name="jenis_pekerjaan_id" id="jenisTambah" class="w-full border rounded px-3 py-2" required>
               <option value="">-- Pilih Jenis Pekerjaan --</option>
               @foreach($jenisPekerjaanModal as $jp)
               <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}" data-volume="{{ $volumeTersisa[$jp->id] ?? $jp->volume }}">
@@ -219,7 +215,6 @@
             <label class="block mb-1">Sisa Volume</label>
             <input type="text" id="volumeTambah" class="w-full border rounded px-3 py-2" value="" readonly>
           </div>
-
 
           {{-- Target --}}
           <div>
@@ -254,13 +249,14 @@
     </div>
   </div>
 </div>
+
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-10">
-      © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
-    </footer> 
+  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+</footer>
 
 {{-- Script --}}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
     // Modal Tambah
     const jenisTambah = document.getElementById('jenisTambah');
     const satuanTambah = document.getElementById('satuanTambah');
@@ -268,27 +264,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const targetTambah = document.getElementById('targetTambah');
 
     function updateVolumeTambah() {
-        const selected = jenisTambah.selectedOptions[0];
-        const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
-        const target = parseFloat(targetTambah.value ?? 0);
-        volumeTambah.value = Math.max(sisaVolume - target, 0);
-        satuanTambah.value = selected?.dataset.satuan ?? '';
+      const selected = jenisTambah.selectedOptions[0];
+      const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
+      const target = parseFloat(targetTambah.value ?? 0);
+      volumeTambah.value = Math.max(sisaVolume - target, 0);
+      satuanTambah.value = selected?.dataset.satuan ?? '';
     }
 
     jenisTambah?.addEventListener('change', updateVolumeTambah);
     targetTambah?.addEventListener('input', updateVolumeTambah);
 
     // Modal Edit
-    @foreach($tugas as $t)
-    const jenisEdit{{ $t->id }} = document.getElementById('jenisEdit{{ $t->id }}');
-    const satuanEdit{{ $t->id }} = document.getElementById('satuanInput{{ $t->id }}');
-
-    jenisEdit{{ $t->id }}?.addEventListener('change', function() {
+    document.querySelectorAll('.jenis-edit').forEach(select => {
+      const id = select.dataset.id;
+      const satuanInput = document.getElementById('satuanInput' + id);
+      select.addEventListener('change', function() {
         const selected = this.selectedOptions[0];
-        satuanEdit{{ $t->id }}.value = selected?.dataset.satuan ?? '';
+        satuanInput.value = selected?.dataset.satuan ?? '';
+      });
     });
-    @endforeach
-});
+  });
 </script>
 
 @endsection

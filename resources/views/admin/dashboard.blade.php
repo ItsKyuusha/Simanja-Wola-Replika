@@ -38,7 +38,7 @@
             <a href="{{ route('admin.dashboard.export', request()->query()) }}"
                 class="px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
           hover:bg-green-600 hover:text-white transition">
-                Export Excel
+                Export Tabel
             </a>
         </div>
     </div>
@@ -149,12 +149,35 @@
 
 {{-- Script Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="grafikRealisasiTarget"></canvas>
+
 <script>
     const ctx = document.getElementById('grafikRealisasiTarget').getContext('2d');
+
+    // ambil data dari Blade
+    const rawLabels = @json($grafikLabels) || [];
+
+    // fungsi untuk memecah label menjadi beberapa baris, tiap 5 kata
+    function wrapLabel(label, wordsPerLine) {
+        wordsPerLine = wordsPerLine || 5;
+        if (!label) return [''];
+        var words = label.split(' ');
+        var lines = [];
+        for (var i = 0; i < words.length; i += wordsPerLine) {
+            lines.push(words.slice(i, i + wordsPerLine).join(' '));
+        }
+        return lines;
+    }
+
+    // proses semua label
+    var labels = rawLabels.map(function(item) {
+        return wrapLabel(item, 5);
+    });
+
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: @json($grafikLabels),
+            labels: labels,
             datasets: [{
                     label: 'Target',
                     data: @json($grafikTarget),
@@ -175,6 +198,13 @@
                 }
             },
             scales: {
+                x: {
+                    ticks: {
+                        autoSkip: false, // tampilkan semua label
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                },
                 y: {
                     beginAtZero: true
                 }
@@ -182,4 +212,5 @@
         }
     });
 </script>
+
 @endsection

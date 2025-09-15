@@ -13,20 +13,20 @@
                 <select name="bulan" class="px-4 py-2 border rounded-lg">
                     <option value="">Semua Bulan</option>
                     @foreach(['Januari','Februari','Maret','April','Mei','Juni',
-                              'Juli','Agustus','September','Oktober','November','Desember'] as $index => $bulan)
-                        <option value="{{ $index+1 }}" {{ request('bulan') == $index+1 ? 'selected' : '' }}>
-                            {{ $bulan }}
-                        </option>
+                    'Juli','Agustus','September','Oktober','November','Desember'] as $index => $bulan)
+                    <option value="{{ $index+1 }}" {{ request('bulan') == $index+1 ? 'selected' : '' }}>
+                        {{ $bulan }}
+                    </option>
                     @endforeach
                 </select>
 
                 {{-- Input Tahun --}}
                 <input type="number" name="tahun" class="px-4 py-2 border rounded-lg w-24"
-                       placeholder="Tahun" value="{{ request('tahun') }}">
+                    placeholder="Tahun" value="{{ request('tahun') }}">
 
                 {{-- Search --}}
                 <input type="text" name="search" class="px-4 py-2 border rounded-lg"
-                       placeholder="Cari nama pekerjaan..." value="{{ request('search') }}">
+                    placeholder="Cari nama pekerjaan..." value="{{ request('search') }}">
 
                 {{-- Tombol Filter --}}
                 <button type="submit"
@@ -54,9 +54,9 @@
         </div>
     </div>
 
-    {{-- Tombol Aksi Tunggal --}}
+    {{-- Tombol Aksi --}}
     <div class="flex gap-2 mb-4">
-        <button @click="showTable = !showTable; showChart = !showChart" 
+        <button @click="showTable = !showTable; showChart = !showChart"
             class="px-3 py-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 text-sm">
             <i :class="showTable ? 'fas fa-chart-bar' : 'fas fa-table' " class="mr-1"></i>
             <span x-text="showTable ? 'Tampilkan Grafik' : 'Tampilkan Tabel'"></span>
@@ -73,7 +73,10 @@
         <table class="w-full table-auto text-sm text-gray-700">
             <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-center text-sm text-gray-700">
                 <tr>
+                    <th class="px-3 py-2 border">No.</th>
                     <th class="px-3 py-2 border">Nama Pekerjaan</th>
+                    <th class="px-3 py-2 border">Tanggal</th>
+                    <th class="px-3 py-2 border">Bulan</th>
                     <th class="px-3 py-2 border">Tim</th>
                     <th class="px-3 py-2 border">Target</th>
                     <th class="px-3 py-2 border">Realisasi</th>
@@ -85,7 +88,10 @@
             <tbody>
                 @forelse($rincian as $t)
                 <tr class="text-center hover:bg-gray-50">
+                    <td class="px-3 py-2 border">{{ $loop->iteration }}</td>
                     <td class="px-3 py-2 border">{{ $t->nama_pekerjaan }}</td>
+                    <td class="px-3 py-2 border">{{ $t->tanggal }}</td>
+                    <td class="px-3 py-2 border">{{ $t->bulan }}</td>
                     <td class="px-3 py-2 border">{{ $t->nama_tim ?? '-' }}</td>
                     <td class="px-3 py-2 border">{{ $t->target }}</td>
                     <td class="px-3 py-2 border">{{ $t->realisasi ?? 0 }}</td>
@@ -95,7 +101,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center px-3 py-4 border text-gray-500">Belum ada tugas.</td>
+                    <td colspan="10" class="text-center px-3 py-4 border text-gray-500">Belum ada tugas.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -119,10 +125,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('grafikUser').getContext('2d');
+
+    const rawLabels = @json($rincian->pluck('nama_pekerjaan')) || [];
+
+    function wrapLabel(label, wordsPerLine = 5) {
+        if (!label) return [''];
+        const words = label.split(' ');
+        const lines = [];
+        for (let i = 0; i < words.length; i += wordsPerLine) {
+            lines.push(words.slice(i, i + wordsPerLine).join(' '));
+        }
+        return lines;
+    }
+
+    const labels = rawLabels.map(function(item) {
+        return wrapLabel(item, 5);
+    });
+
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: @json($rincian->pluck('nama_pekerjaan')),
+            labels: labels,
             datasets: [
                 {
                     label: 'Target',
@@ -138,9 +161,15 @@
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { beginAtZero: true } }
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 } },
+                y: { beginAtZero: true }
+            }
         }
     });
 </script>
+
 @endsection
