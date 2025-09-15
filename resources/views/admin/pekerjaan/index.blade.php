@@ -8,10 +8,10 @@
   }
 </style>
 
-<div x-data="{ tambahModal: false, editModal: null, openImport: false }">
+<div x-data="{ tambahModal: false, editModal: null, openImport: false }"class="bg-white rounded-2xl p-6 mb-12 border border-gray-200">
 
   {{-- Header: Judul & tombol --}}
-  <div class="bg-white rounded-2xl p-6 mb-6 border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-wrap">
+ <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-wrap">
     <h2 class="text-2xl font-semibold text-blue-600">Daftar Tugas Tim</h2>
 
     <div class="flex flex-col sm:flex-row items-center gap-3">

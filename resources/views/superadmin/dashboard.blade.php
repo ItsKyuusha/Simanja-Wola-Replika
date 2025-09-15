@@ -35,6 +35,11 @@
                     Filter
                 </button>
             </form>
+            <a href="{{ route('superadmin.dashboard.export', request()->all()) }}"
+                class="px-4 py-2 rounded-lg border border-green-400 text-green-600 font-medium
+              hover:bg-green-600 hover:text-white transition">
+                Export Excel
+            </a>
         </div>
     </div>
 
@@ -73,7 +78,7 @@
 
     {{-- Tabel Pegawai --}}
 
-   
+
 
     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm mb-6">
         <table class="w-full table-auto text-sm text-gray-700 border-collapse">
@@ -132,7 +137,7 @@
         </table>
 
     </div>
-     <div class="mb-2 text-sm text-gray-600">
+    <div class="mb-2 text-sm text-gray-600">
         <span class="font-semibold">Keterangan:</span>
         <span class="px-2 py-1 bg-blue-300 text-white rounded">T = Target</span>
         <span class="px-2 py-1 bg-blue-300 text-white rounded">R = Realisasi</span>
@@ -147,7 +152,7 @@
 
 </div>
 <footer class="text-center text-sm text-gray-500 py-4 border-t mt-8">
-  © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
+    © {{ date('Y') }} <strong>WOLA</strong>. All rights reserved.
 </footer>
 
 {{-- Chart.js --}}

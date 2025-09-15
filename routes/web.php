@@ -44,7 +44,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('dashboard/export', [AdminDashboardController::class, 'exportExcel'])
-    ->name('dashboard.export');
+        ->name('dashboard.export');
     Route::get('pegawai', [AdminPegawaiController::class, 'index'])->name('pegawai.index');
     Route::get('pegawai/export', [AdminPegawaiController::class, 'exportExcel'])->name('pegawai.export');
     Route::get('pekerjaan', [AdminPekerjaanController::class, 'index'])->name('pekerjaan.index');
@@ -58,7 +58,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('progress/export', [AdminProgressController::class, 'export'])->name('progress.export');
     Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
     Route::patch('/progress/{id}/approve', [AdminProgressController::class, 'approve'])->name('progress.approve');
-    
 });
 
 
@@ -71,6 +70,8 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
     Route::get('dashboard', [SuperadminDashboardController::class, 'index'])
         ->name('dashboard');
 
+    Route::get('dashboard/export', [SuperadminDashboardController::class, 'exportExcel'])
+        ->name('dashboard.export');
     // User Routes
     Route::get('user', [UserController::class, 'index'])->name('master_user.index');
     Route::post('user/create', [UserController::class, 'create'])->name('master_user.create');

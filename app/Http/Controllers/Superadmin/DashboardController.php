@@ -125,4 +125,169 @@ class DashboardController extends Controller
             'chartRealisasi'
         ));
     }
+    public function exportExcel(Request $request)
+    {
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
+        $search = trim((string) $request->input('search', ''));
+
+        $teams = Team::orderBy('nama_tim')->get();
+
+        $pegawais = Pegawai::with(['tugas.jenisPekerjaan', 'tugas.semuaRealisasi'])
+            ->when($search, fn($q) => $q->where('nama', 'like', "%$search%"))
+            ->get();
+
+        // ---- Export dengan multi heading ----
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new class($pegawais, $teams, $bulan, $tahun) implements
+                \Maatwebsite\Excel\Concerns\FromCollection,
+                \Maatwebsite\Excel\Concerns\WithHeadings,
+                \Maatwebsite\Excel\Concerns\WithMapping,
+                \Maatwebsite\Excel\Concerns\WithStyles,
+                \Maatwebsite\Excel\Concerns\WithEvents
+            {
+                private $pegawais, $teams, $bulan, $tahun;
+
+                public function __construct($pegawais, $teams, $bulan, $tahun)
+                {
+                    $this->pegawais = $pegawais;
+                    $this->teams = $teams;
+                    $this->bulan = $bulan;
+                    $this->tahun = $tahun;
+                }
+
+                public function collection()
+                {
+                    return $this->pegawais;
+                }
+
+                public function headings(): array
+                {
+                    // baris header pertama
+                    $head1 = ['No', 'Nama Pegawai', 'Jabatan', 'Score (%)', 'Grade'];
+                    foreach ($this->teams as $team) {
+                        $head1[] = $team->nama_tim;
+                        $head1[] = '';
+                    }
+
+                    // baris header kedua
+                    $head2 = ['', '', '', '', ''];
+                    foreach ($this->teams as $team) {
+                        $head2[] = 'T';
+                        $head2[] = 'R';
+                    }
+
+                    return [$head1, $head2];
+                }
+
+                public function map($pegawai): array
+                {
+                    $teamsData = $this->teams->map(function ($team) use ($pegawai) {
+                        $tugasQuery = $pegawai->tugas()->whereHas('jenisPekerjaan', function ($q) use ($team) {
+                            $q->where('tim_id', $team->id);
+                        });
+
+                        if ($this->bulan) $tugasQuery->whereMonth('created_at', $this->bulan);
+                        if ($this->tahun) $tugasQuery->whereYear('created_at', $this->tahun);
+
+                        $tugasTim = $tugasQuery->with('semuaRealisasi')->get();
+                        $totalTarget = $tugasTim->sum('target');
+                        $totalRealisasi = $tugasTim
+                            ->flatMap->semuaRealisasi
+                            ->where('is_approved', true)
+                            ->sum('realisasi');
+
+                        return ['target' => $totalTarget, 'realisasi' => $totalRealisasi];
+                    });
+
+                    $grandTarget = $teamsData->sum('target');
+                    $grandRealisasi = $teamsData->sum('realisasi');
+                    $score = $grandTarget > 0 ? round(($grandRealisasi / $grandTarget) * 100, 2) : 0;
+
+                    if ($score >= 90) $grade = 'SANGAT BAIK';
+                    elseif ($score >= 80) $grade = 'BAIK';
+                    elseif ($score >= 70) $grade = 'CUKUP';
+                    elseif ($score >= 60) $grade = 'SEDANG';
+                    else $grade = 'KURANG';
+
+                    $row = [
+                        $pegawai->id,
+                        $pegawai->nama,
+                        $pegawai->jabatan,
+                        $score . '%',
+                        $grade,
+                    ];
+
+                    foreach ($teamsData as $teamData) {
+                        $row[] = number_format($teamData['target'], 2);
+                        $row[] = number_format($teamData['realisasi'], 2);
+                    }
+
+                    return $row;
+                }
+
+                // ✅ Tambah style
+                public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet)
+                {
+                    $highestRow    = $sheet->getHighestRow();
+                    $highestColumn = $sheet->getHighestColumn();
+
+                    // Style header baris 1 & 2
+                    $sheet->getStyle('A1:' . $highestColumn . '2')->applyFromArray([
+                        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                        'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+                        'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'color' => ['rgb' => '4F81BD'] // biru tua
+                        ],
+                    ]);
+
+                    // Style isi tabel
+                    $sheet->getStyle('A3:' . $highestColumn . $highestRow)->applyFromArray([
+                        'alignment' => ['vertical' => 'center'],
+                        'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+                    ]);
+
+                    // Kolom No rata tengah
+                    $sheet->getStyle('A3:A' . $highestRow)->getAlignment()->setHorizontal('center');
+
+                    // Kolom Score (%) & Grade rata tengah
+                    $sheet->getStyle('D3:E' . $highestRow)->getAlignment()->setHorizontal('center');
+
+                    // Tinggi header
+                    $sheet->getRowDimension(1)->setRowHeight(25);
+                    $sheet->getRowDimension(2)->setRowHeight(20);
+
+                    return [];
+                }
+
+                public function registerEvents(): array
+                {
+                    return [
+                        \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                            $sheet = $event->sheet->getDelegate();
+
+                            // Merge header nama tim
+                            $colIndex = 6; // mulai kolom tim
+                            foreach ($this->teams as $team) {
+                                $colLetterStart = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                                $colLetterEnd   = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+
+                                $sheet->mergeCells("{$colLetterStart}1:{$colLetterEnd}1");
+                                $colIndex += 2;
+                            }
+
+                            // Autosize semua kolom
+                            $highestColumn = $sheet->getHighestColumn();
+                            foreach (range('A', $highestColumn) as $col) {
+                                $sheet->getColumnDimension($col)->setAutoSize(true);
+                            }
+                        },
+                    ];
+                }
+            },
+            'laporan_dashboard_superadmin.xlsx'
+        );
+    }
 }
