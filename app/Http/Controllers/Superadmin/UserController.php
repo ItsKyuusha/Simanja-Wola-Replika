@@ -159,6 +159,60 @@ class UserController extends Controller
         return back()->with('success', 'User & Pegawai berhasil dihapus.');
     }
 
+
+    // =========================
+// EXPORT
+// =========================
+public function export()
+{
+    $users = User::with(['pegawai.teams'])->get();
+
+    return Excel::download(new class($users) implements \Maatwebsite\Excel\Concerns\FromCollection, 
+                                                       \Maatwebsite\Excel\Concerns\WithHeadings, 
+                                                       \Maatwebsite\Excel\Concerns\WithMapping {
+        private $users;
+
+        public function __construct($users)
+        {
+            $this->users = $users;
+        }
+
+        // Data yang diexport
+        public function collection()
+        {
+            return $this->users;
+        }
+
+        // Header kolom
+        public function headings(): array
+        {
+            return [
+                'Nama Pegawai',
+                'NIP',
+                'Jabatan',
+                'Email',
+                'Role',
+                'Tim',
+                'Tim yang Dipimpin'
+            ];
+        }
+
+        // Mapping data per baris
+        public function map($user): array
+        {
+            return [
+                $user->pegawai->nama ?? '-',
+                $user->pegawai->nip ?? '-',
+                $user->pegawai->jabatan ?? '-',
+                $user->email,
+                $user->role,
+                $user->pegawai ? $user->pegawai->teams->pluck('nama_tim')->implode(', ') : '-',
+                $user->pegawai ? $user->pegawai->teams->where('pivot.is_leader', true)->pluck('nama_tim')->implode(', ') : '-',
+            ];
+        }
+    }, 'users.xlsx');
+}
+
     // =========================
     // IMPORT
     // =========================
