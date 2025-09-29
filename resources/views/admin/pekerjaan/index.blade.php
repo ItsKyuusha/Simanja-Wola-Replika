@@ -198,23 +198,26 @@
           </div>
 
           {{-- Jenis Pekerjaan --}}
-          <div>
-            <label class="block mb-1">Jenis Pekerjaan</label>
-            <select name="jenis_pekerjaan_id" id="jenisTambah" class="w-full border rounded px-3 py-2" required>
-              <option value="">-- Pilih Jenis Pekerjaan --</option>
-              @foreach($jenisPekerjaanModal as $jp)
-              <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}" data-volume="{{ $volumeTersisa[$jp->id] ?? $jp->volume }}">
-                {{ $jp->nama_pekerjaan }} (Sisa Volume: {{ $volumeTersisa[$jp->id] ?? $jp->volume }})
-              </option>
-              @endforeach
-            </select>
-          </div>
+<div>
+  <label class="block mb-1">Jenis Pekerjaan</label>
+  <select name="jenis_pekerjaan_id" id="jenisTambah" class="w-full border rounded px-3 py-2" required>
+    <option value="">-- Pilih Jenis Pekerjaan --</option>
+    @foreach($jenisPekerjaanModal as $jp)
+      <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}" data-volume="{{ $jp->volume }}">
+        {{ $jp->nama_pekerjaan }} (Volume: {{ $jp->volume }})
+      </option>
+    @endforeach
+  </select>
+</div>
 
-          {{-- Sisa Volume --}}
-          <div>
-            <label class="block mb-1">Sisa Volume</label>
-            <input type="text" id="volumeTambah" class="w-full border rounded px-3 py-2" value="" readonly>
-          </div>
+
+          {{-- Volume --}}
+<div>
+  <label class="block mb-1">Volume</label>
+  <input type="number" name="volume" id="volumeTambah" class="w-full border rounded px-3 py-2" required>
+</div>
+
+
 
           {{-- Target --}}
           <div>
@@ -267,7 +270,7 @@
       const selected = jenisTambah.selectedOptions[0];
       const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
       const target = parseFloat(targetTambah.value ?? 0);
-      volumeTambah.value = Math.max(sisaVolume - target, 0);
+volumeTambah.value = sisaVolume; // tampilkan volume apa adanya
       satuanTambah.value = selected?.dataset.satuan ?? '';
     }
 

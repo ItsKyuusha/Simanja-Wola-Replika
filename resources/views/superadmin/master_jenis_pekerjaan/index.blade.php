@@ -79,7 +79,7 @@
           <th class="p-3 border">No.</th>
           <th class="p-3 border">Nama</th>
           <th class="p-3 border">Satuan</th>
-          <th class="p-3 border">Volume</th>
+     
           <th class="p-3 border">Bobot</th>
           <th class="p-3 border">Tim</th>
           <th class="p-3 border">Aksi</th>
@@ -91,8 +91,10 @@
           <td class="p-3 border text-center">{{ $loop->iteration }}</td>
           <td class="p-3 border">{{ $item->nama_pekerjaan }}</td>
           <td class="p-3 border text-center">{{ $item->satuan }}</td>
-          <td class="p-3 border text-center">{{ $item->volume }}</td>
-          <td class="p-3 border text-center">{{ $item->bobot }}</td>
+          
+<td class="p-3 border text-center">
+    {{ rtrim(rtrim(number_format($item->bobot, 2, ',', '.'), '0'), ',') }}
+</td>
           <td class="p-3 border">{{ $item->team->nama_tim ?? '-' }}</td>
           <td class="p-3 border text-center">
             <div class="flex justify-center gap-2">
@@ -128,9 +130,11 @@
                 <div class="grid grid-cols-1 gap-3">
                   <input name="nama_pekerjaan" class="border rounded px-3 py-2" value="{{ $item->nama_pekerjaan }}" required>
                   <input name="satuan" class="border rounded px-3 py-2" value="{{ $item->satuan }}" required>
-                  <input name="volume" type="number" step="any" class="border rounded px-3 py-2" value="{{ $item->volume }}" required>
-                  <input name="bobot" type="number" min="1" max="100" class="border rounded px-3 py-2" value="{{ $item->bobot }}" required>
-                  <select name="tim_id" class="border rounded px-3 py-2" required>
+
+<input name="bobot" type="number" step="0.01" min="0" max="100" 
+       class="border rounded px-3 py-2" value="{{ $item->bobot }}" 
+       required>
+                         <select name="tim_id" class="border rounded px-3 py-2" required>
                     <option value="">-- Pilih Tim --</option>
                     @foreach($teams as $team)
                     <option value="{{ $team->id }}" {{ $item->tim_id == $team->id ? 'selected' : '' }}>
@@ -168,9 +172,11 @@
           <div class="grid grid-cols-1 gap-3">
             <input name="nama_pekerjaan" class="border rounded px-3 py-2" placeholder="Nama Pekerjaan" required>
             <input name="satuan" class="border rounded px-3 py-2" placeholder="Satuan" required>
-            <input name="volume" type="number" step="any" class="border rounded px-3 py-2" placeholder="Volume" required>
-            <input name="bobot" type="number" min="1" max="100" class="border rounded px-3 py-2" placeholder="Bobot (1-100)" required>
-            <select name="tim_id" class="border rounded px-3 py-2" required>
+
+<input name="bobot" type="number" step="0.01" min="0" max="100" 
+       class="border rounded px-3 py-2" placeholder="Bobot (0-100)" 
+       required>
+                   <select name="tim_id" class="border rounded px-3 py-2" required>
               <option value="">-- Pilih Tim --</option>
               @foreach($teams as $team)
               <option value="{{ $team->id }}">{{ $team->nama_tim }}</option>

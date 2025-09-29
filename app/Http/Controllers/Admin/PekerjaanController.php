@@ -32,7 +32,7 @@ class PekerjaanController extends Controller
             ->when($search, fn($query) => $query->where(function ($q) use ($search) {
                 $q->orWhereHas('pegawai', fn($q2) => $q2->where('nama', 'like', "%{$search}%")
                     ->orWhere('nip', 'like', "%{$search}%"))
-                    ->orWhereHas('jenisPekerjaan', fn($q3) => $q3->where('nama_pekerjaan', 'like', "%{$search}%"));
+                  ->orWhereHas('jenisPekerjaan', fn($q3) => $q3->where('nama_pekerjaan', 'like', "%{$search}%"));
             }))
             ->get();
 
@@ -40,21 +40,13 @@ class PekerjaanController extends Controller
 
         $jenisPekerjaanModal = JenisPekerjaan::whereHas('team.pegawais', function ($q) use ($pegawai) {
             $q->where('pegawai_team.is_leader', 1)
-                ->where('pegawai_team.pegawai_id', $pegawai->id);
+              ->where('pegawai_team.pegawai_id', $pegawai->id);
         })->whereIn('tim_id', $teamIds)->get();
-
-        // Hitung sisa volume untuk setiap jenis pekerjaan
-        $volumeTersisa = [];
-        foreach ($jenisPekerjaanModal as $jp) {
-            $totalTarget = $tugas->where('jenis_pekerjaan_id', $jp->id)->sum('target');
-            $volumeTersisa[$jp->id] = max($jp->volume - $totalTarget, 0);
-        }
 
         return view('admin.pekerjaan.index', [
             'tugas' => $tugas,
             'pegawai' => $pegawaiList,
             'jenisPekerjaanModal' => $jenisPekerjaanModal,
-            'volumeTersisa' => $volumeTersisa,
         ]);
     }
 
