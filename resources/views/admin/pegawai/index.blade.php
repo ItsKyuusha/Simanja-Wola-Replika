@@ -55,7 +55,14 @@
             <td class="px-3 py-2 border text-center">{{ $loop->iteration }}</td>
             <td class="px-4 py-2 border">{{ $p->nama }}</td>
             <td class="px-4 py-2 border">{{ $p->nip }}</td>
-            <td class="px-4 py-2 border">{{ $p->jabatan }}</td>
+<td class="px-4 py-2 border">
+  {{ $p->jabatan }}
+  @if($p->teams->firstWhere('pivot.is_leader', 1))
+    <span class="ml-2 inline-block text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+      Ketua
+    </span>
+  @endif
+</td>
           </tr>
           @empty
           <tr>

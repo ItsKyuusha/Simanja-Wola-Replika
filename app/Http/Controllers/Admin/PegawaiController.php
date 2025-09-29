@@ -17,36 +17,44 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 class PegawaiController extends Controller
 {
     public function index(Request $request)
-    {
-        $teamId = auth()->user()->pegawai->team_id;
+{
+    $user = auth()->user();
 
-        $searchTim = $request->input('search_tim');
-        $searchGlobal = $request->input('search_global');
+    // Ambil semua ID tim yang diikuti user login
+    $teamsUser = $user->pegawai->teams->pluck('id');
 
-        // Pegawai dalam tim
-        $pegawaiQuery = Pegawai::where('team_id', $teamId);
-        if ($searchTim) {
-            $pegawaiQuery->where(function ($q) use ($searchTim) {
-                $q->where('nama', 'like', "%{$searchTim}%")
-                    ->orWhere('nip', 'like', "%{$searchTim}%")
-                    ->orWhere('jabatan', 'like', "%{$searchTim}%");
-            });
-        }
-        $pegawai = $pegawaiQuery->get();
+    $searchTim = $request->input('search_tim');
+    $searchGlobal = $request->input('search_global');
 
-        // Pegawai global
-        $pegawaiGlobalQuery = Pegawai::query();
-        if ($searchGlobal) {
-            $pegawaiGlobalQuery->where(function ($q) use ($searchGlobal) {
-                $q->where('nama', 'like', "%{$searchGlobal}%")
-                    ->orWhere('nip', 'like', "%{$searchGlobal}%")
-                    ->orWhere('jabatan', 'like', "%{$searchGlobal}%");
-            });
-        }
-        $pegawaiGlobal = $pegawaiGlobalQuery->get();
+    // ================== PEGAWAI TIM USER ==================
+    $pegawaiQuery = Pegawai::whereHas('teams', function ($q) use ($teamsUser) {
+        $q->whereIn('teams.id', $teamsUser);
+    });
 
-        return view('admin.pegawai.index', compact('pegawai', 'pegawaiGlobal', 'searchTim', 'searchGlobal'));
+    if ($searchTim) {
+        $pegawaiQuery->where(function ($q) use ($searchTim) {
+            $q->where('nama', 'like', "%{$searchTim}%")
+              ->orWhere('nip', 'like', "%{$searchTim}%")
+              ->orWhere('jabatan', 'like', "%{$searchTim}%");
+        });
     }
+
+    $pegawai = $pegawaiQuery->with('teams')->get();
+
+    // ================== PEGAWAI GLOBAL ==================
+    $pegawaiGlobalQuery = Pegawai::query();
+    if ($searchGlobal) {
+        $pegawaiGlobalQuery->where(function ($q) use ($searchGlobal) {
+            $q->where('nama', 'like', "%{$searchGlobal}%")
+              ->orWhere('nip', 'like', "%{$searchGlobal}%")
+              ->orWhere('jabatan', 'like', "%{$searchGlobal}%");
+        });
+    }
+    $pegawaiGlobal = $pegawaiGlobalQuery->with('teams')->get();
+
+    return view('admin.pegawai.index', compact('pegawai', 'pegawaiGlobal', 'searchTim', 'searchGlobal'));
+}
+
 
     // ====== EXPORT EXCEL ======
     public function exportExcel(Request $request)
