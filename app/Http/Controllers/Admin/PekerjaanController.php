@@ -118,14 +118,15 @@ class PekerjaanController extends Controller
             return back()->withErrors(['jenis_pekerjaan_id' => 'Jenis pekerjaan tidak valid untuk tim Anda.']);
         }
 
-        $asalInstruksi = $teams->pluck('nama_tim')->join(', ') ?: 'Tidak diketahui';
+        // PERBAIKAN: Gunakan logika yang sama seperti method store()
+        $pemberi = $pegawai->nama ?? auth()->user()->name ?? 'Tidak diketahui';
 
         $tugas->update([
             'pegawai_id' => $request->pegawai_id,
             'jenis_pekerjaan_id' => $request->jenis_pekerjaan_id,
             'target' => $request->target,
             'satuan' => $request->satuan,
-            'asal' => $asalInstruksi,
+            'asal' => $pemberi, // PERBAIKAN: Gunakan nama user, bukan nama tim
             'deadline' => $request->deadline,
         ]);
 
@@ -162,7 +163,7 @@ class PekerjaanController extends Controller
                         'Jenis Pekerjaan' => $tugas->jenisPekerjaan->nama_pekerjaan ?? '-',
                         'Target' => $tugas->target,
                         'Satuan' => $tugas->satuan,
-                        'Asal Instruksi' => $tugas->asal,
+                        'Pemberi Pekerjaan' => $tugas->asal, // PERBAIKAN: Ubah label
                         'Deadline' => $tugas->deadline ? Carbon::parse($tugas->deadline)->format('d-m-Y') : '-',
                     ]);
             }
@@ -175,7 +176,7 @@ class PekerjaanController extends Controller
                     'Jenis Pekerjaan',
                     'Target',
                     'Satuan',
-                    'Asal Instruksi',
+                    'Pemberi Pekerjaan', // PERBAIKAN: Ubah heading
                     'Deadline'
                 ];
             }
@@ -251,7 +252,7 @@ class PekerjaanController extends Controller
                     'jenis_pekerjaan_id' => $jenisId,
                     'target' => $row['target'] ?? 0,
                     'satuan' => $row['satuan'] ?? '-',
-                    'asal' => $row['asal_instruksi'] ?? '-',
+                    'asal' => $row['pemberi_pekerjaan'] ?? '-', // PERBAIKAN: Sesuaikan dengan heading baru
                     'deadline' => $deadline,
                 ]);
             }

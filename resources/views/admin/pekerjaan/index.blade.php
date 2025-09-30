@@ -31,8 +31,6 @@
         <i class="fas fa-file-excel mr-2"></i> Export Tabel
       </a>
 
-
-
       {{-- Tambah --}}
       <button @click="tambahModal = true"
         class="inline-flex items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium bg-blue-200/20 hover:bg-blue-300/30 hover:border-blue-600 hover:text-blue-700 transition duration-200 transform hover:scale-105">
@@ -143,13 +141,13 @@
                 {{-- Satuan --}}
                 <div>
                   <label class="block mb-1">Satuan</label>
-                  <input type="text" name="satuan" id="satuanInput{{ $t->id }}" class="w-full border rounded px-3 py-2" value="{{ $t->satuan }}" readonly required>
+                  <input type="text" name="satuan" id="satuanInput{{ $t->id }}" class="w-full border rounded px-3 py-2 bg-gray-100" value="{{ $t->satuan }}" readonly required>
                 </div>
 
                 {{-- Pemberi --}}
                 <div>
                   <label class="block mb-1">Pemberi Pekerjaan</label>
-                  <input type="text" name="asal" class="w-full border rounded px-3 py-2" value="{{ $t->asal ?? auth()->user()->pegawai->nama ?? auth()->user()->name }}" readonly>
+                  <input type="text" name="asal" class="w-full border rounded px-3 py-2 bg-gray-100" value="{{ $t->asal ?? auth()->user()->pegawai->nama ?? auth()->user()->name }}" readonly>
                 </div>
 
                 {{-- Deadline --}}
@@ -198,43 +196,34 @@
           </div>
 
           {{-- Jenis Pekerjaan --}}
-<div>
-  <label class="block mb-1">Jenis Pekerjaan</label>
-  <select name="jenis_pekerjaan_id" id="jenisTambah" class="w-full border rounded px-3 py-2" required>
-    <option value="">-- Pilih Jenis Pekerjaan --</option>
-    @foreach($jenisPekerjaanModal as $jp)
-      <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}" data-volume="{{ $jp->volume }}">
-        {{ $jp->nama_pekerjaan }} (Volume: {{ $jp->volume }})
-      </option>
-    @endforeach
-  </select>
-</div>
-
-
-          {{-- Volume --}}
-<div>
-  <label class="block mb-1">Volume</label>
-  <input type="number" name="volume" id="volumeTambah" class="w-full border rounded px-3 py-2" required>
-</div>
-
-
+          <div>
+            <label class="block mb-1">Jenis Pekerjaan</label>
+            <select name="jenis_pekerjaan_id" id="jenisTambah" class="w-full border rounded px-3 py-2" required>
+              <option value="">-- Pilih Jenis Pekerjaan --</option>
+              @foreach($jenisPekerjaanModal as $jp)
+                <option value="{{ $jp->id }}" data-satuan="{{ $jp->satuan }}">
+                  {{ $jp->nama_pekerjaan }} ({{ $jp->team->nama_tim ?? '-' }})
+                </option>
+              @endforeach
+            </select>
+          </div>
 
           {{-- Target --}}
           <div>
             <label class="block mb-1">Target</label>
-            <input type="number" name="target" id="targetTambah" class="w-full border rounded px-3 py-2" value="0" required>
+            <input type="number" name="target" id="targetTambah" class="w-full border rounded px-3 py-2" required>
           </div>
 
           {{-- Satuan --}}
           <div>
             <label class="block mb-1">Satuan</label>
-            <input type="text" name="satuan" id="satuanTambah" class="w-full border rounded px-3 py-2" readonly required>
+            <input type="text" name="satuan" id="satuanTambah" class="w-full border rounded px-3 py-2 bg-gray-100" readonly required>
           </div>
 
           {{-- Pemberi --}}
           <div>
             <label class="block mb-1">Pemberi Pekerjaan</label>
-            <input type="text" name="asal" class="w-full border rounded px-3 py-2" value="{{ auth()->user()->pegawai->nama ?? auth()->user()->name }}" readonly required>
+            <input type="text" name="asal" class="w-full border rounded px-3 py-2 bg-gray-100" value="{{ auth()->user()->pegawai->nama ?? auth()->user()->name }}" readonly required>
           </div>
 
           {{-- Deadline --}}
@@ -260,31 +249,41 @@
 {{-- Script --}}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Modal Tambah
+    // Modal Tambah - Update satuan otomatis
     const jenisTambah = document.getElementById('jenisTambah');
     const satuanTambah = document.getElementById('satuanTambah');
-    const volumeTambah = document.getElementById('volumeTambah');
-    const targetTambah = document.getElementById('targetTambah');
 
-    function updateVolumeTambah() {
-      const selected = jenisTambah.selectedOptions[0];
-      const sisaVolume = parseFloat(selected?.dataset.volume ?? 0);
-      const target = parseFloat(targetTambah.value ?? 0);
-volumeTambah.value = sisaVolume; // tampilkan volume apa adanya
-      satuanTambah.value = selected?.dataset.satuan ?? '';
+    if (jenisTambah && satuanTambah) {
+      // Update satuan saat jenis pekerjaan berubah
+      jenisTambah.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const satuan = selectedOption.getAttribute('data-satuan') || '';
+        satuanTambah.value = satuan;
+      });
+
+      // Trigger change event sekali saat modal dibuka untuk mengisi satuan jika ada nilai default
+      setTimeout(() => {
+        jenisTambah.dispatchEvent(new Event('change'));
+      }, 100);
     }
 
-    jenisTambah?.addEventListener('change', updateVolumeTambah);
-    targetTambah?.addEventListener('input', updateVolumeTambah);
-
-    // Modal Edit
+    // Modal Edit - Update satuan otomatis
     document.querySelectorAll('.jenis-edit').forEach(select => {
       const id = select.dataset.id;
       const satuanInput = document.getElementById('satuanInput' + id);
-      select.addEventListener('change', function() {
-        const selected = this.selectedOptions[0];
-        satuanInput.value = selected?.dataset.satuan ?? '';
-      });
+      
+      if (select && satuanInput) {
+        select.addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          const satuan = selectedOption.getAttribute('data-satuan') || '';
+          satuanInput.value = satuan;
+        });
+
+        // Trigger change event sekali untuk mengisi nilai awal
+        setTimeout(() => {
+          select.dispatchEvent(new Event('change'));
+        }, 100);
+      }
     });
   });
 </script>
