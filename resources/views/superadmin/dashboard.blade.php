@@ -78,44 +78,44 @@
 
     {{-- Tabel Pegawai --}}
     <div x-show="showTable" x-transition class="mb-6">
-        <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-            <div class="min-w-full inline-block align-middle">
-                <table class="min-w-full table-auto text-sm text-gray-700 border-collapse">
-                    <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-700 text-center">
-                        <tr>
-                            <th rowspan="2" class="px-3 py-2 border sticky left-0 bg-blue-100 z-10">No.</th>
-                            <th rowspan="2" class="px-3 py-2 border text-left sticky left-8 bg-blue-100 z-10">Nama Pegawai</th>
-                            <th rowspan="2" class="px-3 py-2 border">Jabatan</th>
-                            <th rowspan="2" class="px-3 py-2 border">Score (%)</th>
-                            <th rowspan="2" class="px-3 py-2 border">Grade</th>
-                            @foreach ($teams as $team)
-                            <th colspan="2" class="px-3 py-2 border bg-blue-400 text-white">
-                                {{ strtoupper($team->nama_tim) }}
-                            </th>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            @foreach ($teams as $team)
-                            <th class="px-2 py-1 border bg-blue-300 text-white">T</th>
-                            <th class="px-2 py-1 border bg-blue-300 text-white">R</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($data as $index => $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-3 py-2 border text-center sticky left-0 bg-white z-10">{{ $index + 1 }}</td>
-                            <td class="px-3 py-2 border text-left sticky left-8 bg-white z-10">{{ $item['pegawai']->nama }}</td>
-                            <td class="px-3 py-2 border text-center">{{ $item['pegawai']->jabatan }}</td>
-                            <td class="px-3 py-2 border text-center text-blue-700 font-semibold">{{ $item['score'] }}%</td>
-                            <td class="px-3 py-2 border text-center font-semibold
-                                @if($item['grade'] == 'SANGAT BAIK') text-blue-700
-                                @elseif($item['grade'] == 'KURANG') text-red-600
-                                @else text-gray-700
-                                @endif">{{ $item['grade'] }}</td>
-                            @foreach ($teams as $team)
+        <div class="table-wrapper w-full md:w-[1600px]"> {{-- bisa atur width sesuai kebutuhan --}}
+    <div class="md-card-content overflow-x-auto">
+        <table class="table-auto text-sm text-gray-700 border-collapse min-w-max">
+            <thead class="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-700 text-center">
+                <tr>
+                    <th rowspan="2" class="px-3 py-2 border sticky left-0 bg-blue-100 z-10">No.</th>
+                    <th rowspan="2" class="px-3 py-2 border text-left sticky left-12 bg-blue-100 z-10">Nama Pegawai</th>
+                    <th rowspan="2" class="px-3 py-2 border">Jabatan</th>
+                    <th rowspan="2" class="px-3 py-2 border">Score (%)</th>
+                    <th rowspan="2" class="px-3 py-2 border">Grade</th>
+                    @foreach ($teams as $team)
+                        <th colspan="2" class="px-3 py-2 border bg-blue-400 text-white">
+                            {{ strtoupper($team->nama_tim) }}
+                        </th>
+                    @endforeach
+                </tr>
+                <tr>
+                    @foreach ($teams as $team)
+                        <th class="px-2 py-1 border bg-blue-300 text-white">T</th>
+                        <th class="px-2 py-1 border bg-blue-300 text-white">R</th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($data as $index => $item)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 border text-center sticky left-0 bg-white z-10">{{ $index + 1 }}</td>
+                        <td class="px-3 py-2 border text-left sticky left-12 bg-white z-10">{{ $item['pegawai']->nama }}</td>
+                        <td class="px-3 py-2 border text-center">{{ $item['pegawai']->jabatan }}</td>
+                        <td class="px-3 py-2 border text-center text-blue-700 font-semibold">{{ $item['score'] }}%</td>
+                        <td class="px-3 py-2 border text-center font-semibold
+                            @if($item['grade'] == 'SANGAT BAIK') text-blue-700
+                            @elseif($item['grade'] == 'KURANG') text-red-600
+                            @else text-gray-700
+                            @endif">{{ $item['grade'] }}</td>
+                        @foreach ($teams as $team)
                             @php
-                            $row = collect($item['teams'])->firstWhere('team_id', $team->id);
+                                $row = collect($item['teams'])->firstWhere('team_id', $team->id);
                             @endphp
                             <td class="px-3 py-2 border text-center text-blue-700 font-semibold">
                                 {{ $row ? number_format($row['total_target'], 2) : '0.00' }}
@@ -123,19 +123,20 @@
                             <td class="px-3 py-2 border text-center text-green-600 font-semibold">
                                 {{ $row ? number_format($row['total_realisasi'], 2) : '0.00' }}
                             </td>
-                            @endforeach
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ 5 + ($teams->count() * 2) }}" class="px-3 py-4 border text-center text-gray-500">
-                                Tidak ada data.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        @endforeach
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ 5 + ($teams->count() * 2) }}" class="px-3 py-4 border text-center text-gray-500">
+                            Tidak ada data.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
         <div class="mt-2 text-sm text-gray-600">
             <span class="font-semibold">Keterangan:</span>
             <span class="px-2 py-1 bg-blue-300 text-white rounded">T = Target</span>
